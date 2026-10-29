@@ -5,10 +5,10 @@
 	"description": "See invites expiration date, view inviter profile and preview servers before joining. Long-press a message with an invite link and tap Invite info.",
 	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
 	"icon": "LinkIcon",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"dependencies": {
 		"valenced.api": {
-			"version": ">=1.2.1 <2"
+			"version": ">=1 <2"
 		},
 		"discord": {
 			"version": "*"
