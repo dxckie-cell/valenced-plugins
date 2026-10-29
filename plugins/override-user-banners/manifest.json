@@ -4,7 +4,7 @@
 	"name": "Override User Banners",
 	"description": "Allows you to set a custom profile banner for any Discord user.",
 	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
-	"version": "1.0.2",
+	"version": "1.1.0",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"
