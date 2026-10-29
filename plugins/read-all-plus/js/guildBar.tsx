@@ -16,6 +16,10 @@ const guildsBarRefs = new Set<any>()
 // Discord has renamed this hook before, so match any guild bar style hook.
 const HOOK = /^use\w*guild\w*(bar|list|rail|nav)/i
 
+// Put on the footer functions we install, so a footer is never wrapped twice. The hook's return
+// value and the list element's props can share the same (already wrapped) functions.
+const WRAPPED = Symbol.for('dxckie.read-all-plus')
+
 /**
  * Adds the Read All button below the native buttons in the guild bar footer.
  * Takes either the hook's return value (older Discord) or the list's props.
@@ -24,16 +28,21 @@ function patchFooter(patched: WeakSet<object>, target: any) {
 	const props = target?.listDataProps ?? (target?.footerSize && target?.renderFooter ? target : undefined)
 	if (!props || patched.has(props)) return
 	if (typeof props.footerSize !== 'function' || typeof props.renderFooter !== 'function') return
+	if (props.renderFooter[WRAPPED] || props.footerSize[WRAPPED]) return
 
 	const { footerSize, renderFooter } = props
 	try {
-		props.footerSize = () => footerSize.call(props) + FOOTER_EXTRA
-		props.renderFooter = () => (
+		const size = () => footerSize.call(props) + FOOTER_EXTRA
+		const render = () => (
 			<View style={{ alignSelf: 'stretch' }} collapsable={false}>
 				{renderFooter.call(props)}
 				<ReadButton />
 			</View>
 		)
+		;(size as any)[WRAPPED] = true
+		;(render as any)[WRAPPED] = true
+		props.footerSize = size
+		props.renderFooter = render
 		patched.add(props)
 	} catch {}
 }
