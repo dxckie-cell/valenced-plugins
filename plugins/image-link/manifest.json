@@ -1,7 +1,7 @@
 {
 	"format": 1,
 	"id": "dxckie.image-link",
-	"name": "ImageLink",
+	"name": "Show Images Link",
 	"description": "Shows the link text when a message is just a linked image.",
 	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
 	"version": "0.1.0",
