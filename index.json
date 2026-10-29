@@ -1,0 +1,220 @@
+{
+  "format": 1,
+  "name": "dxckie-cell",
+  "description": "dxckie-cell's plugins for Valenced.",
+  "plugins": {
+    "dxckie.better-invites": {
+      "name": "BetterInvites",
+      "description": "See invites expiration date, view inviter profile and preview servers before joining. Long-press a message with an invite link and tap Invite info.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "icon": "LinkIcon",
+      "channels": {
+        "latest": "1.0.3"
+      },
+      "versions": {
+        "1.0.3": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.better-invites@1.0.3.zip",
+          "sha256": "16b7e43ac953011ad398f1c4af3e4542efb474e980f434978d74607125ee074e",
+          "size": 2663,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1.2.1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "dxckie.clyde-editor": {
+      "name": "Clyde Editor",
+      "description": "Change Clyde's name, picture, banner, name color and bot badge.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "icon": "RobotIcon",
+      "channels": {
+        "latest": "1.1.3"
+      },
+      "versions": {
+        "1.1.3": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.clyde-editor@1.1.3.zip",
+          "sha256": "86c4ab56df9942bb9f7b1167fdb52f3038c60d0ae60fdd56450d2885e949e85b",
+          "size": 3434,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1.2.1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "dxckie.copystatus": {
+      "name": "CopyStatus",
+      "description": "Long-press a user's custom status on their profile to select and copy the text.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "icon": "PencilIcon",
+      "channels": {
+        "latest": "1.0.4"
+      },
+      "versions": {
+        "1.0.4": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.copystatus@1.0.4.zip",
+          "sha256": "e2a2b52a5f44d188e3255e0422c08a8c73a5030fd1586d7c1c132f636044dd20",
+          "size": 1050,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "dxckie.discord-editor": {
+      "name": "Discord Editor",
+      "description": "Change the official Discord account's name, picture, banner, name color and bot badge.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "icon": "ClydeIcon",
+      "channels": {
+        "latest": "1.1.0"
+      },
+      "versions": {
+        "1.1.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.discord-editor@1.1.0.zip",
+          "sha256": "d5c15f8144968b828846b0dd4e459b20553e7a8e70596e4075cd0ce7ded112c9",
+          "size": 3482,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1.2.1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "dxckie.hide-messages": {
+      "name": "HideMessages",
+      "description": "Temporarily hide messages until you restart.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "icon": "EyeIcon",
+      "channels": {
+        "latest": "1.0.2"
+      },
+      "versions": {
+        "1.0.2": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.hide-messages@1.0.2.zip",
+          "sha256": "75556efce2e07c36a7720815de00dc2ce8a84f4d72256178e4fac1176ddd78a0",
+          "size": 1910,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "dxckie.local-pins": {
+      "name": "Local Pins",
+      "description": "Pin messages locally and browse them in a channel's Pins tab.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "icon": "PinIcon",
+      "channels": {
+        "latest": "1.1.4"
+      },
+      "versions": {
+        "1.1.4": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.local-pins@1.1.4.zip",
+          "sha256": "20db8995e4eb50f09924903f663e2d78605bf3e6bfb3bd222e377bab8fdc451c",
+          "size": 5587,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "dxckie.override-server-appearance": {
+      "name": "Override Server Appearance",
+      "description": "Set a custom icon and banner for any Discord server, only on your device.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "channels": {
+        "latest": "2.0.9"
+      },
+      "versions": {
+        "2.0.9": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-server-appearance@2.0.9.zip",
+          "sha256": "e11ceed5d875ec73fff3dd6f4693fce606a2c2026d4ff7e96f5c6d406dda4596",
+          "size": 2008,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "dxckie.override-user-avatars": {
+      "name": "Override User Avatars",
+      "description": "Allows you to set a custom profile picture for any Discord user.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "channels": {
+        "latest": "1.0.3"
+      },
+      "versions": {
+        "1.0.3": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-user-avatars@1.0.3.zip",
+          "sha256": "7a19ddda7ec84bb1c4a372a788ff28282c6ba376ae69468631f3fa25e9c472fe",
+          "size": 1904,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1.2.1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
+    "dxckie.override-user-banners": {
+      "name": "Override User Banners",
+      "description": "Allows you to set a custom profile banner for any Discord user.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "channels": {
+        "latest": "1.0.1"
+      },
+      "versions": {
+        "1.0.1": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-user-banners@1.0.1.zip",
+          "sha256": "eeed8282259efe201f5ea8fdc6ae22b714a291a3285c6dce4cbe00c5655a1fda",
+          "size": 2007,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1.2.1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    }
+  }
+}
