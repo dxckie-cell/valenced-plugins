@@ -1,0 +1,20 @@
+{
+	"format": 1,
+	"id": "dxckie.better-invites",
+	"name": "BetterInvites",
+	"description": "See invites expiration date, view inviter profile and preview servers before joining. Long-press a message with an invite link and tap Invite info.",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"icon": "LinkIcon",
+	"version": "1.0.3",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1.2.1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}

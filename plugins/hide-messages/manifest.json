@@ -1,0 +1,20 @@
+{
+	"format": 1,
+	"id": "dxckie.hide-messages",
+	"name": "HideMessages",
+	"description": "Temporarily hide messages until you restart.",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"icon": "EyeIcon",
+	"version": "1.0.2",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}

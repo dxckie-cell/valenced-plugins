@@ -1,0 +1,15 @@
+# Build output
+build/
+plugins/*/build/
+
+# JS
+node_modules/
+
+# CI working files
+published/
+releases.json
+
+# Misc
+.DS_Store
+.idea/
+*.iml

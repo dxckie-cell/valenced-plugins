@@ -1,0 +1,20 @@
+{
+	"format": 1,
+	"id": "dxckie.discord-editor",
+	"name": "Discord Editor",
+	"description": "Change the official Discord account's name, picture, banner, name color and bot badge.",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"icon": "ClydeIcon",
+	"version": "1.1.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1.2.1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"format": 1,
+	"id": "dxckie.override-server-appearance",
+	"name": "Override Server Appearance",
+	"description": "Set a custom icon and banner for any Discord server, only on your device.",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"version": "2.0.9",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}
