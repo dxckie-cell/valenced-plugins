@@ -9,7 +9,7 @@
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "LinkIcon",
       "channels": {
-        "latest": "1.0.3"
+        "latest": "1.0.4"
       },
       "versions": {
         "1.0.3": {
@@ -24,6 +24,19 @@
               "version": "*"
             }
           }
+        },
+        "1.0.4": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.better-invites@1.0.4.zip",
+          "sha256": "310bcd93407323e72345132ac97431a9172c736caa748f368198670dcfd976bb",
+          "size": 2660,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
         }
       }
     },
@@ -33,7 +46,7 @@
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "RobotIcon",
       "channels": {
-        "latest": "1.1.3"
+        "latest": "1.1.4"
       },
       "versions": {
         "1.1.3": {
@@ -43,6 +56,19 @@
           "dependencies": {
             "valenced.api": {
               "version": ">=1.2.1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.1.4": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.clyde-editor@1.1.4.zip",
+          "sha256": "694c190098d500dd5169f5682cf411a7e4b72f25ff1c318fdeb1b1de86986563",
+          "size": 3431,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
             },
             "discord": {
               "version": "*"
@@ -81,7 +107,7 @@
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "ClydeIcon",
       "channels": {
-        "latest": "1.1.0"
+        "latest": "1.1.1"
       },
       "versions": {
         "1.1.0": {
@@ -91,6 +117,19 @@
           "dependencies": {
             "valenced.api": {
               "version": ">=1.2.1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.1.1": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.discord-editor@1.1.1.zip",
+          "sha256": "2a2132feecda53fe293d6d403554c944e2854fdd9d7ac6a5ded4d6c13d24aed0",
+          "size": 3477,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
             },
             "discord": {
               "version": "*"
@@ -175,7 +214,7 @@
       "description": "Allows you to set a custom profile picture for any Discord user.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.0.3"
+        "latest": "1.0.4"
       },
       "versions": {
         "1.0.3": {
@@ -190,6 +229,19 @@
               "version": "*"
             }
           }
+        },
+        "1.0.4": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-user-avatars@1.0.4.zip",
+          "sha256": "ae1c8048b9e7e35791992e92901b58c1ffdd165560e01246bd0150ded586de78",
+          "size": 1901,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
         }
       }
     },
@@ -198,7 +250,7 @@
       "description": "Allows you to set a custom profile banner for any Discord user.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.0.1"
+        "latest": "1.0.2"
       },
       "versions": {
         "1.0.1": {
@@ -208,6 +260,19 @@
           "dependencies": {
             "valenced.api": {
               "version": ">=1.2.1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.0.2": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-user-banners@1.0.2.zip",
+          "sha256": "7838a25cd6d79d3915522fbc01b6702dc6d1f9fdbec31a5abb4df8218e86a79e",
+          "size": 2005,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
             },
             "discord": {
               "version": "*"
