@@ -2,6 +2,8 @@ import { getAssetIdByName } from '@valenced/assets'
 import { AlertActionCreators, ToastActionCreators } from '@valenced/discord/actions'
 import { Design } from '@valenced/discord/design'
 import { Dispatcher, Stores } from '@valenced/discord/flux'
+import { lookupModule } from '@valenced/modules/finders'
+import { withProps } from '@valenced/modules/finders/filters'
 import { Image, Pressable, StyleSheet, View } from 'react-native'
 import { isDMExcluded, isServerExcluded } from './state'
 import { useThemeColors } from './theme'
@@ -75,12 +77,41 @@ function getUnreadChannels(mode: Mode) {
 	return unread
 }
 
-function markRead(mode: Mode) {
-	const channels = getUnreadChannels(mode)
-	if (channels.length === 0) return toast('No unread notifications!')
+const isDispatcher = (d: any) => !!d && typeof d.dispatch === 'function' && typeof d.subscribe === 'function'
 
-	Dispatcher.dispatch({ type: 'BULK_ACK', context: 'APP', channels })
-	toast(`Cleared ${channels.length} unread!`)
+/** Finds Discord's Flux dispatcher, trying the exported one first. */
+function getDispatcher(): any {
+	const attempts: (() => any)[] = [
+		() => Dispatcher,
+		() => {
+			const found: any = lookupModule(withProps('dispatch', 'subscribe', 'wait'))
+			const mod = Array.isArray(found) ? found[0] : found
+			return mod?.dispatch ? mod : mod?.default
+		},
+	]
+	for (const attempt of attempts) {
+		try {
+			const d = attempt()
+			if (isDispatcher(d)) return d
+		} catch {}
+	}
+}
+
+function markRead(mode: Mode) {
+	try {
+		if (!store('ReadStateStore')) return toast("Read All: couldn't find Discord's read state")
+
+		const channels = getUnreadChannels(mode)
+		if (channels.length === 0) return toast('No unread notifications!')
+
+		const dispatcher = getDispatcher()
+		if (!dispatcher) return toast("Read All: couldn't find Discord's dispatcher")
+
+		dispatcher.dispatch({ type: 'BULK_ACK', context: 'APP', channels })
+		toast(`Cleared ${channels.length} unread!`)
+	} catch (e: any) {
+		toast(`Read All failed: ${e?.message ?? e}`)
+	}
 }
 
 function eyeIcon() {
@@ -93,6 +124,14 @@ function eyeIcon() {
 }
 
 function openOptions() {
+	try {
+		showOptions()
+	} catch (e: any) {
+		toast(`Read All failed: ${e?.message ?? e}`)
+	}
+}
+
+function showOptions() {
 	const { AlertModal, AlertActionButton } = Design
 	const close = () => AlertActionCreators.dismissAlert(ALERT_KEY)
 	const run = (mode: Mode) => () => {
