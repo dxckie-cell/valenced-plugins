@@ -1,6 +1,6 @@
 # dxckie-cell plugins for Valenced
 
-Nine Valenced plugins in one repository.
+Ten Valenced plugins in one repository.
 
 ## Install
 
@@ -23,6 +23,7 @@ Then install the plugins you want and reload Valenced.
 | Discord Editor | `dxckie.discord-editor` | Change the official Discord account's name, picture, banner, name color and bot badge. |
 | Clyde Editor | `dxckie.clyde-editor` | Change Clyde's name, picture, banner, name color and bot badge. |
 | Local Pins | `dxckie.local-pins` | Pin messages locally and browse them in a channel's Pins tab. |
+| Read All Plus | `dxckie.read-all-plus` | Adds an eye button to the guild bar that marks unread servers and DMs as read, with per-server and per-DM exclusions. |
 
 ## Development
 

@@ -1,0 +1,20 @@
+{
+	"format": 1,
+	"id": "dxckie.read-all-plus",
+	"name": "Read All Plus",
+	"description": "Adds an eye button to the guild bar that marks unread servers and DMs as read.",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"icon": "EyeIcon",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}
