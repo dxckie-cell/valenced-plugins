@@ -280,6 +280,30 @@
           }
         }
       }
+    },
+    "dxckie.read-all-plus": {
+      "name": "Read All Plus",
+      "description": "Adds an eye button to the guild bar that marks unread servers and DMs as read.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "icon": "EyeIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.read-all-plus@1.0.0.zip",
+          "sha256": "ef709693c66dfc75ad321807356d530fff34b9e53fb1760ab214882a7b6e5c3f",
+          "size": 4185,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
     }
   }
 }
