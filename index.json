@@ -438,13 +438,26 @@
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "PinIcon",
       "channels": {
-        "latest": "1.1.4"
+        "latest": "1.1.5"
       },
       "versions": {
         "1.1.4": {
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.local-pins@1.1.4.zip",
           "sha256": "20db8995e4eb50f09924903f663e2d78605bf3e6bfb3bd222e377bab8fdc451c",
           "size": 5587,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.1.5": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.local-pins@1.1.5.zip",
+          "sha256": "855db4d961989d1f4d72b98d3eac494218d108af81cd7a5ce77bf18574cdb5eb",
+          "size": 5671,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
