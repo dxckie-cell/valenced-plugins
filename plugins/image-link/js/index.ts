@@ -2,70 +2,72 @@
 //
 // Vencord's ImageLink patches a small util module (it holds { linkCount: 0, onlyLinks: false }) so
 // that "embed type is simple and embed is inline" is never true; Discord then never hides the link.
-// 0.3.2 only looks for that module in the running app: it lists exports whose names look related
-// and shows them in one alert. Nothing changes on screen.
+// 0.3.3 only looks for that module in the running app: it lists the finder API and exports whose
+// names look related, in one alert. Nothing changes on screen.
 
 type Cleanup = () => void
 
 const NAME_HINT = /simple|inline|onlyLink|linkCount|hideContent|shouldHide|embedOnly|hideLink/i
 
-function modulesObject(): { source: string; mods: any } | undefined {
-	const g: any = globalThis
-	const tries: [string, () => any][] = [
-		['globalThis.modules', () => g.modules],
-		['valenced.modules.metro', () => (valenced as any).modules?.metro?.modules],
-		['__r.getModules', () => g.__r?.getModules?.()],
-	]
-	for (const [source, get] of tries) {
-		try {
-			const mods = get()
-			if (mods && (typeof mods.size === 'number' || typeof mods === 'object')) return { source, mods }
-		} catch {}
+function keysOf(v: any): string {
+	try {
+		return v && (typeof v === 'object' || typeof v === 'function') ? Object.keys(v).join(',') : String(v)
+	} catch (e: any) {
+		return `<err ${e?.message ?? e}>`
 	}
-	return undefined
+}
+
+/** Runs a plain filter over every loaded module through Valenced's finders. */
+function scanWithFinders(lines: string[]) {
+	const finders: any = (valenced as any).modules?.finders
+	const names = ['lookupModules', 'lookupAllModules', 'lookupModule']
+	const fn = names.find((n) => typeof finders?.[n] === 'function')
+	if (!fn) {
+		lines.push('no lookup function on finders')
+		return
+	}
+
+	let tested = 0
+	const matches: string[] = []
+	const filter = (exports: any, id: any) => {
+		tested++
+		try {
+			if (!exports || (typeof exports !== 'object' && typeof exports !== 'function')) return false
+			for (const root of [exports, exports.default]) {
+				if (!root || (typeof root !== 'object' && typeof root !== 'function')) continue
+				for (const k of Object.keys(root)) {
+					let name = ''
+					try {
+						name = typeof root[k] === 'function' ? root[k].name || '' : ''
+					} catch {}
+					if ((NAME_HINT.test(k) || NAME_HINT.test(name)) && matches.length < 18) {
+						matches.push(`${id}: ${root === exports ? '' : 'default.'}${k}${name && name !== k ? `(${name})` : ''}`)
+					}
+				}
+			}
+		} catch {}
+		return false
+	}
+
+	const result = finders[fn](filter)
+	if (result && typeof result[Symbol.iterator] === 'function') for (const _ of result) break
+	lines.push(`used finders.${fn}, tested ${tested}`, ...matches)
 }
 
 function scan(): string {
-	const found = modulesObject()
-	if (!found) return 'no module registry found'
-
-	const entries: [any, any][] = typeof found.mods.entries === 'function' ? [...found.mods.entries()] : Object.entries(found.mods)
-	const lines: string[] = [`registry: ${found.source}, ${entries.length} modules`]
-	let looked = 0
-
-	for (const [id, mod] of entries) {
-		let exports: any
-		try {
-			exports = mod?.publicModule?.exports ?? mod?.exports
-		} catch {
-			continue
-		}
-		if (!exports || (typeof exports !== 'object' && typeof exports !== 'function')) continue
-		looked++
-
-		let keys: string[] = []
-		try {
-			keys = Object.keys(exports)
-		} catch {}
-		const roots = [['', exports], ...(exports.default && typeof exports.default === 'object' ? [['default.', exports.default]] : [])] as [string, any][]
-		for (const [prefix, obj] of roots) {
-			let ks: string[] = []
-			try {
-				ks = Object.keys(obj)
-			} catch {}
-			for (const k of ks) {
-				let name = ''
-				try {
-					name = typeof obj[k] === 'function' ? obj[k].name || '' : ''
-				} catch {}
-				if (NAME_HINT.test(k) || NAME_HINT.test(name)) {
-					lines.push(`${id}: ${prefix}${k}${name && name !== k ? `(${name})` : ''} [${keys.length}k]`)
-				}
-			}
-		}
-		if (lines.length >= 24) break
+	const v: any = valenced
+	const lines: string[] = [
+		`valenced: ${keysOf(v)}`,
+		`modules: ${keysOf(v.modules)}`,
+		`finders: ${keysOf(v.modules?.finders)}`,
+		`filters: ${keysOf(v.modules?.finders?.filters)}`,
+		`discord.utils.modules: ${keysOf(v.discord?.utils?.modules)}`,
+	]
+	try {
+		scanWithFinders(lines)
+	} catch (e: any) {
+		lines.push(`scan error: ${e?.message ?? e}`)
 	}
-	lines.splice(1, 0, `initialised: ${looked}`)
 	return lines.join('\n')
 }
 
@@ -78,7 +80,7 @@ function patch(): Cleanup {
 			report = `scan failed: ${e?.message ?? e}`
 		}
 		try {
-			;(valenced.react as any).ReactNative?.Alert?.alert('Show Images Link 0.3.2', report)
+			;(valenced.react as any).ReactNative?.Alert?.alert('Show Images Link 0.3.3', report)
 		} catch {}
 	}, 3000)
 	return () => clearTimeout(timer)
