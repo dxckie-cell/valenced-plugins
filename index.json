@@ -167,7 +167,7 @@
       "description": "Shows the link text when a message is just a linked image.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "0.3.0"
+        "latest": "0.3.1"
       },
       "versions": {
         "0.1.0": {
@@ -265,6 +265,19 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.image-link@0.3.0.zip",
           "sha256": "ca5afb08be83d65571f1c490cdf459056f2f06e650a1d63ad2bfbd5f5e6a8e7f",
           "size": 1423,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "0.3.1": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.image-link@0.3.1.zip",
+          "sha256": "1d87d42ff6e53cb4ea21b824b7eb82778aa0c2a55ca6ee096bd4bc5d2c4f4ce7",
+          "size": 1410,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
