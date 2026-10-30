@@ -3,7 +3,6 @@ import { Stores } from '@valenced/discord/flux'
 import { useEffect, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { nativeFooterRef } from './nativeRef'
-import { getColorOverrides } from './state'
 
 type Rgba = [number, number, number, number]
 
@@ -197,9 +196,8 @@ export function useThemeColors() {
 	}, [version])
 
 	const fb = fallbackColors()
-	const custom = getColorOverrides()
-	const tile = custom.tile ?? sampled?.tile ?? fb.tile
-	let circle = custom.circle ?? sampled?.circle ?? fb.circle
+	const tile = sampled?.tile ?? fb.tile
+	let circle = sampled?.circle ?? fb.circle
 	// Never let the "+" shape disappear into the tile.
 	if (!distinct(circle, tile)) circle = distinct(fb.circle, tile) ? fb.circle : '#ffffff'
 

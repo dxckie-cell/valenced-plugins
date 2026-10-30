@@ -7,7 +7,6 @@ import type { PluginSettingsComponent } from '@valenced/plugins/types'
 import { DEFAULT_SETTINGS, type Settings } from './state'
 
 type Field = 'excludedServers' | 'excludedDMs'
-type ColorField = 'tileColor' | 'circleColor'
 
 function ExcludeSection({
 	title,
@@ -86,29 +85,9 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 		storage.set(merged, true)
 	}
 
-	const updateColor = (field: ColorField, value: string) => {
-		const merged = { ...settings, [field]: value }
-		setSettings(merged)
-		storage.set(merged, true)
-	}
-
 	return (
 		<ScrollView keyboardShouldPersistTaps="handled">
 			<Page>
-				<Design.TableRowGroup title="Button colors (leave empty to match the theme)">
-					<Design.TextInput
-						label="Tile color"
-						placeholder="#2b2d31"
-						value={settings.tileColor}
-						onChange={(v: string) => updateColor('tileColor', v)}
-					/>
-					<Design.TextInput
-						label="Circle color"
-						placeholder="#dbdee1"
-						value={settings.circleColor}
-						onChange={(v: string) => updateColor('circleColor', v)}
-					/>
-				</Design.TableRowGroup>
 				<ExcludeSection
 					title="Exclude Server"
 					placeholder="Enter Server ID"
