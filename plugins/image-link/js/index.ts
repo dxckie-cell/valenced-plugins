@@ -6,6 +6,8 @@
 // with an invisible character, so it no longer looks like "only a URL" and the link stays shown.
 // The embed is untouched, so the image still renders.
 //
+// 0.2.3 reports the shape of the row object and of every rowGenerator and modifyRow call.
+//
 // 0.2.2 also hooks the list's rowGenerator and modifyRow props, because rows are built from the
 // message ahead of rendering.
 //
@@ -63,6 +65,16 @@ function brief(v: any): string {
 	return typeof v === 'function' ? 'fn' : 'obj'
 }
 
+
+/** Compact structure of a value: keys with short values, two levels deep. */
+function shape(v: any, depth = 0): string {
+	if (v == null || typeof v !== 'object') return brief(v)
+	if (Array.isArray(v)) return `[${v.length}${v.length && depth < 2 ? `:${shape(v[0], depth + 1)}` : ''}]`
+	const keys = Object.keys(v).slice(0, 28)
+	if (depth >= 2) return `{${keys.length}k}`
+	return `{${keys.map((k) => `${k}=${shape(v[k], depth + 1)}`).join(',')}}`
+}
+
 function componentName(type: any): string {
 	if (typeof type === 'string') return type
 	return (
@@ -81,21 +93,15 @@ function touchesDebugMessage(props: any): boolean {
 	return props.message?.id === debugId || props.messageId === debugId || props.id === debugId
 }
 
-function recordDebug(kind: string, type: any, props: any) {
-	const keys = Object.keys(props).map((k) => {
-		if (k === 'message') return `message(marked=${String(props.message?.content).startsWith(MARKER)})`
-		return /^(content|hide|embed|text|link|only|media|show|parsed)/i.test(k) ? `${k}=${brief(props[k])}` : k
-	})
-	const line = `${kind}:${componentName(type)} ${keys.join(',')}`
-	if (debugSeen.has(line) || debugLines.length >= 24) return
-	debugSeen.add(line)
-	debugLines.push(line)
+function recordDebug(_kind: string, _type: any, props: any) {
+	if (props?.row) recordLine(`row ${shape(props.row)}`, true)
 }
 
-function recordLine(line: string) {
+function recordLine(line: string, top = false) {
 	if (debugSeen.has(line) || debugLines.length >= 24) return
 	debugSeen.add(line)
-	debugLines.push(line)
+	if (top) debugLines.unshift(line)
+	else debugLines.push(line)
 }
 
 function startDebug(message: any) {
@@ -105,24 +111,14 @@ function startDebug(message: any) {
 	setTimeout(() => {
 		try {
 			const alert = (valenced.react as any).ReactNative?.Alert
-			alert?.alert('ImageLink debug 0.2.2', debugLines.join('\n') || '(nothing recorded)')
+			alert?.alert('ImageLink debug 0.2.3', debugLines.join('\n') || '(nothing recorded)')
 		} catch {}
-	}, 2500)
+	}, 4000)
 }
 
 // ---- end DEBUG probe ----
 
 // ---- Row hooks ----
-
-const ROW_KEYS = /^(content|hide|embed|type|only|text|link|media|show|parsed|message|id)/i
-
-function describe(v: any): string {
-	if (!v || typeof v !== 'object') return brief(v)
-	const keys = Object.keys(v)
-		.slice(0, 14)
-		.map((k) => (ROW_KEYS.test(k) ? `${k}=${brief(v[k])}` : k))
-	return `{${keys.join(',')}}`
-}
 
 /** Passes a link-only image message (or an object that holds one) on with the marked view. */
 function substitute(arg: any): any {
@@ -139,6 +135,8 @@ function substitute(arg: any): any {
 	return arg
 }
 
+let rowGeneratorCalls = 0
+let modifyRowCalls = 0
 const linkRows = new WeakSet<object>()
 const wrappedRowGenerators = new WeakMap<object, any>()
 const wrappedModifiers = new WeakMap<object, any>()
@@ -151,9 +149,9 @@ function wrapRowGenerator(fn: any): any {
 			const next = args.map(substitute)
 			const changed = next.some((a, i) => a !== args[i])
 			const row = fn.apply(this, next)
-			if (changed) {
-				if (row && typeof row === 'object') linkRows.add(row)
-				recordLine(`rowGenerator(${args.map(describe).join(' | ')}) -> ${describe(row)}`)
+			if (changed && row && typeof row === 'object') linkRows.add(row)
+			if (changed || rowGeneratorCalls++ < 3) {
+				recordLine(`rowGenerator${changed ? '*' : ''}(${args.map((a) => shape(a)).join(' | ')}) -> ${shape(row)}`)
 			}
 			return row
 		}
@@ -169,8 +167,9 @@ function wrapModifyRow(fn: any): any {
 		wrapper = function (this: any, ...args: any[]) {
 			const out = fn.apply(this, args)
 			try {
-				if (args.some((a) => a && typeof a === 'object' && linkRows.has(a))) {
-					recordLine(`modifyRow(${args.map(describe).join(' | ')}) -> ${describe(out)}`)
+				const linked = args.some((a) => a && typeof a === 'object' && linkRows.has(a))
+				if (linked || modifyRowCalls++ < 3) {
+					recordLine(`modifyRow${linked ? '*' : ''}(${args.map((a) => shape(a)).join(' | ')}) -> ${shape(out)}`)
 				}
 			} catch {}
 			return out
