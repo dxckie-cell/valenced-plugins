@@ -3,6 +3,7 @@ import { Stores } from '@valenced/discord/flux'
 import { useEffect, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { nativeFooterRef } from './nativeRef'
+import { getColorOverrides } from './state'
 
 type Rgba = [number, number, number, number]
 
@@ -51,8 +52,12 @@ function fiberOf(host: any): any {
 	}
 }
 
-// Colors can be strings or native color objects. Both are valid in a style, so both are kept.
-// Fully transparent ones are skipped, they are not the tile.
+// Colors can be strings or native color objects (PlatformColor and friends). Both are valid in
+// a style, so both are kept. Anything else (token objects, flags) is ignored, and fully
+// transparent colors are skipped, they are not the tile.
+const isNativeColor = (v: any) =>
+	!!v && typeof v === 'object' && ('semantic' in v || 'dynamic' in v || 'resource_paths' in v)
+
 function readColor(value: any): any {
 	if (value && typeof value === 'object' && typeof value.__getValue === 'function') {
 		try {
@@ -63,9 +68,18 @@ function readColor(value: any): any {
 	}
 	if (typeof value === 'string') {
 		const parsed = parse(value)
-		return parsed && parsed[3] < 0.05 ? undefined : value
+		return parsed && parsed[3] < 0.05 ? undefined : parsed ? value : undefined
 	}
-	return value && typeof value === 'object' ? value : undefined
+	return isNativeColor(value) ? value : undefined
+}
+
+// True when two colors are clearly different. Colors that can't be compared count as different
+// unless they are the same value.
+function distinct(a: any, b: any): boolean {
+	const pa = parse(a)
+	const pb = parse(b)
+	if (!pa || !pb) return a !== b
+	return Math.hypot(pa[0] - pb[0], pa[1] - pb[1], pa[2] - pb[2]) > 30
 }
 
 interface Sampled {
@@ -73,7 +87,12 @@ interface Sampled {
 	circle?: any
 }
 
-/** Walks the native footer's views: first background is the tile, first tint is the "+" shape. */
+const TINT_PROPS = ['tintColor', 'color', 'fill', 'stroke']
+
+/**
+ * Walks the native footer: the first background is the tile. The "+" shape is the first icon
+ * color (tint, fill, color prop) that differs from the tile, else a nested background that does.
+ */
 function sampleNative(host: any): Sampled | undefined {
 	const root = fiberOf(host)
 	if (!root) return
@@ -83,23 +102,29 @@ function sampleNative(host: any): Sampled | undefined {
 	let visited = 0
 
 	const visit = (fiber: any, depth: number) => {
-		for (let f = fiber; f && visited < 400; f = f.sibling) {
+		for (let f = fiber; f && visited < 600; f = f.sibling) {
 			visited++
-			if (typeof f.type === 'string') {
-				const props = f.memoizedProps ?? {}
-				const style: any = StyleSheet.flatten(props.style) ?? {}
-				const bg = readColor(style.backgroundColor)
-				if (bg !== undefined) backgrounds.push(bg)
-				const tint = readColor(props.tintColor ?? style.tintColor)
-				if (tint !== undefined) tints.push(tint)
+			const props = f.memoizedProps
+			if (props && typeof props === 'object') {
+				const style: any = typeof f.type === 'string' ? (StyleSheet.flatten(props.style) ?? {}) : {}
+				if (typeof f.type === 'string') {
+					const bg = readColor(style.backgroundColor)
+					if (bg !== undefined) backgrounds.push(bg)
+				}
+				for (const key of TINT_PROPS) {
+					const tint = readColor(props[key] ?? style[key])
+					if (tint !== undefined) tints.push(tint)
+				}
 			}
 			if (f.child && depth < 60) visit(f.child, depth + 1)
 		}
 	}
 	visit(root.child, 0)
 
-	if (backgrounds[0] === undefined) return
-	return { tile: backgrounds[0], circle: tints[0] ?? backgrounds[1] }
+	const tile = backgrounds[0]
+	if (tile === undefined) return
+	const circle = tints.find(c => distinct(c, tile)) ?? backgrounds.find(c => distinct(c, tile))
+	return { tile, circle }
 }
 
 // ---- Fallback: theme color tokens, used until (or unless) the tile can be read ----------------
@@ -160,7 +185,11 @@ export function useThemeColors() {
 			try {
 				next = sampleNative(nativeFooterRef.current)
 			} catch {}
-			setSampled(prev => (sameSample(prev, next) ? prev : next))
+			setSampled(prev => {
+				if (sameSample(prev, next)) return prev
+				console.log('[read-all-plus] native tile colors', JSON.stringify(next ?? null))
+				return next
+			})
 		}
 		read()
 		const timer = setTimeout(read, 300)
@@ -168,8 +197,11 @@ export function useThemeColors() {
 	}, [version])
 
 	const fb = fallbackColors()
-	const tile = sampled?.tile ?? fb.tile
-	const circle = sampled?.circle ?? fb.circle
+	const custom = getColorOverrides()
+	const tile = custom.tile ?? sampled?.tile ?? fb.tile
+	let circle = custom.circle ?? sampled?.circle ?? fb.circle
+	// Never let the "+" shape disappear into the tile.
+	if (!distinct(circle, tile)) circle = distinct(fb.circle, tile) ? fb.circle : '#ffffff'
 
 	// The eye is cut out of the circle, so it takes the tile color. If the tile is translucent,
 	// flatten it over the bar background so the cut-out is not see-through.
