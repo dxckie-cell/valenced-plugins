@@ -494,7 +494,7 @@
       "description": "Allows you to set a custom profile banner for any Discord user.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.1.0"
+        "latest": "1.1.1"
       },
       "versions": {
         "1.0.1": {
@@ -527,6 +527,19 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-user-banners@1.1.0.zip",
           "sha256": "a19c3e224806daf836cddf553067778ccffe794deba83d57456aed777aabf70c",
           "size": 2291,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.1.1": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-user-banners@1.1.1.zip",
+          "sha256": "20a0495fbec85a6997d9a0ef81c090aa3e1bb3b066e3e160e1d88b73791132d5",
+          "size": 2004,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
