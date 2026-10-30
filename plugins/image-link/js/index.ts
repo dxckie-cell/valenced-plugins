@@ -1,102 +1,71 @@
 // Show Images Link for Valenced: keeps the link text visible when a message is just a linked image.
 //
-// Vencord's ImageLink patches a small util module (it holds { linkCount: 0, onlyLinks: false }) so
-// that "embed type is simple and embed is inline" is never true; Discord then never hides the link.
-// 0.3.6 only looks for that module in the running app: it lists the finder API and exports whose
-// names look related, in one alert. Nothing changes on screen.
+// Discord hides the link of a message that is only links whose embeds are all "simple" (image or
+// gif). Vencord's ImageLink patches that check to be always false. On mobile the check lives in two
+// small helpers, checkForSimpleEmbedMessage and hasOnlySimpleEmbed (found by a name scan in 0.3.6).
+// We patch both so a `true` result becomes `false`, which leaves the link in place; the embed is
+// untouched, so the image still renders.
+//
+// 0.4.0 is an experiment: it shows one alert with what the two helpers returned.
 
 type Cleanup = () => void
 
-const NAME_HINT = /embed.*(inline|simple|hide|only|content|media)|(hide|only|skip|suppress).*(embed|link|media)|linkCount|onlyLinks|simpleEmbed|isEmbedInline|hideContent/i
+const TARGETS = ['checkForSimpleEmbedMessage', 'hasOnlySimpleEmbed']
 
-function keysOf(v: any): string {
+const stats: Record<string, { calls: number; trueResults: number; types: Set<string> }> = {}
+const notes: string[] = []
+
+function findExports(name: string): any {
+	const finders: any = (valenced as any).modules?.finders
+	const found = finders.lookupModule(finders.filters.withProps(name))
+	const exports = Array.isArray(found) ? found[0] : found
+	return exports && typeof exports[name] === 'function' ? exports : exports?.default
+}
+
+function patchHelper(name: string): Cleanup | undefined {
+	const owner = findExports(name)
+	if (!owner || typeof owner[name] !== 'function') {
+		notes.push(`${name}: module not found`)
+		return undefined
+	}
+
+	stats[name] = { calls: 0, trueResults: 0, types: new Set() }
+	const unpatch = valenced.patcher.after(owner, name, (_args: any, result: any) => {
+		const s = stats[name]
+		s.calls++
+		s.types.add(typeof result)
+		if (result === true) {
+			s.trueResults++
+			return false
+		}
+		return undefined
+	})
+	notes.push(`${name}: patched`)
+	return typeof unpatch === 'function' ? (unpatch as Cleanup) : undefined
+}
+
+function showReport() {
+	const lines = [...notes]
+	for (const [name, s] of Object.entries(stats)) {
+		lines.push(`${name}: calls ${s.calls}, true ${s.trueResults}, types ${[...s.types].join('/') || '-'}`)
+	}
 	try {
-		return v && (typeof v === 'object' || typeof v === 'function') ? Object.keys(v).join(',') : String(v)
-	} catch (e: any) {
-		return `<err ${e?.message ?? e}>`
-	}
-}
-
-const MAX_ID = 40000
-
-/** Walks module ids through the metro helpers and scans the exports of the initialised ones. */
-function scanMetro(lines: string[]) {
-	const metro: any = (valenced as any).modules?.metro
-	if (typeof metro?.isModuleInitialized !== 'function' || typeof metro?.getInitializedModuleExports !== 'function') {
-		lines.push(`metro helpers missing: ${keysOf(metro)}`)
-		return
-	}
-
-	let initialised = 0
-	let found = 0
-	for (let id = 0; id < MAX_ID; id++) {
-		let exports: any
-		try {
-			if (!metro.isModuleInitialized(id)) continue
-			exports = metro.getInitializedModuleExports(id)
-		} catch {
-			continue
-		}
-		if (!exports || (typeof exports !== 'object' && typeof exports !== 'function')) continue
-		initialised++
-		let count = 0
-		try {
-			count = Object.keys(exports).length
-		} catch {}
-		if (count > 80) continue
-
-		for (const root of [exports, exports.default]) {
-			if (!root || (typeof root !== 'object' && typeof root !== 'function')) continue
-			let ks: string[] = []
-			try {
-				ks = Object.keys(root)
-			} catch {}
-			for (const k of ks) {
-				let name = ''
-				try {
-					name = typeof root[k] === 'function' ? root[k].name || '' : ''
-				} catch {}
-				if ((NAME_HINT.test(k) || NAME_HINT.test(name)) && found < 24) {
-					found++
-					lines.push(`${id}: ${root === exports ? '' : 'default.'}${k}${name && name !== k ? `(${name})` : ''} [${ks.length}k]`)
-				}
-			}
-		}
-	}
-	lines.unshift(`initialised modules with exports: ${initialised}`)
-}
-
-function scan(): string {
-	const lines: string[] = []
-	try {
-		scanMetro(lines)
-	} catch (e: any) {
-		lines.push(`scan error: ${e?.message ?? e}`)
-	}
-	return lines.join('\n')
-}
-
-function patch(): Cleanup {
-	const timer = setTimeout(() => {
-		let report: string
-		try {
-			report = scan()
-		} catch (e: any) {
-			report = `scan failed: ${e?.message ?? e}`
-		}
-		try {
-			;(valenced.react as any).ReactNative?.Alert?.alert('Show Images Link 0.3.6', report)
-		} catch {}
-	}, 3000)
-	return () => clearTimeout(timer)
+		;(valenced.react as any).ReactNative?.Alert?.alert('Show Images Link 0.4.0', lines.join('\n'))
+	} catch {}
 }
 
 export default plugin({
 	start({ cleanup, plugin }) {
-		try {
-			cleanup(patch())
-		} catch (error) {
-			plugin.reportError(error)
+		for (const name of TARGETS) {
+			try {
+				const unpatch = patchHelper(name)
+				if (unpatch) cleanup(unpatch)
+			} catch (error) {
+				notes.push(`${name}: ${(error as any)?.message ?? error}`)
+				plugin.reportError(error)
+			}
 		}
+		const timer = setTimeout(showReport, 10000)
+		cleanup(() => clearTimeout(timer))
 	},
 })
