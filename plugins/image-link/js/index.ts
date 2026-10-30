@@ -6,8 +6,6 @@
 // with an invisible character, so it no longer looks like "only a URL" and the link stays shown.
 // The embed is untouched, so the image still renders.
 //
-// 0.2.3 reports the shape of the row object and of every rowGenerator and modifyRow call.
-//
 // 0.2.2 also hooks the list's rowGenerator and modifyRow props, because rows are built from the
 // message ahead of rendering.
 //
@@ -65,16 +63,6 @@ function brief(v: any): string {
 	return typeof v === 'function' ? 'fn' : 'obj'
 }
 
-
-/** Compact structure of a value: keys with short values, two levels deep. */
-function shape(v: any, depth = 0): string {
-	if (v == null || typeof v !== 'object') return brief(v)
-	if (Array.isArray(v)) return `[${v.length}${v.length && depth < 2 ? `:${shape(v[0], depth + 1)}` : ''}]`
-	const keys = Object.keys(v).slice(0, 28)
-	if (depth >= 2) return `{${keys.length}k}`
-	return `{${keys.map((k) => `${k}=${shape(v[k], depth + 1)}`).join(',')}}`
-}
-
 function componentName(type: any): string {
 	if (typeof type === 'string') return type
 	return (
@@ -93,15 +81,12 @@ function touchesDebugMessage(props: any): boolean {
 	return props.message?.id === debugId || props.messageId === debugId || props.id === debugId
 }
 
-function recordDebug(_kind: string, _type: any, props: any) {
-	if (props?.row) recordLine(`row ${shape(props.row)}`, true)
-}
+function recordDebug(_kind: string, _type: any, _props: any) {}
 
-function recordLine(line: string, top = false) {
+function recordLine(line: string) {
 	if (debugSeen.has(line) || debugLines.length >= 24) return
 	debugSeen.add(line)
-	if (top) debugLines.unshift(line)
-	else debugLines.push(line)
+	debugLines.push(line)
 }
 
 function startDebug(message: any) {
@@ -111,14 +96,24 @@ function startDebug(message: any) {
 	setTimeout(() => {
 		try {
 			const alert = (valenced.react as any).ReactNative?.Alert
-			alert?.alert('ImageLink debug 0.2.3', debugLines.join('\n') || '(nothing recorded)')
+			alert?.alert('ImageLink debug 0.2.2', debugLines.join('\n') || '(nothing recorded)')
 		} catch {}
-	}, 4000)
+	}, 2500)
 }
 
 // ---- end DEBUG probe ----
 
 // ---- Row hooks ----
+
+const ROW_KEYS = /^(content|hide|embed|type|only|text|link|media|show|parsed|message|id)/i
+
+function describe(v: any): string {
+	if (!v || typeof v !== 'object') return brief(v)
+	const keys = Object.keys(v)
+		.slice(0, 14)
+		.map((k) => (ROW_KEYS.test(k) ? `${k}=${brief(v[k])}` : k))
+	return `{${keys.join(',')}}`
+}
 
 /** Passes a link-only image message (or an object that holds one) on with the marked view. */
 function substitute(arg: any): any {
@@ -135,8 +130,6 @@ function substitute(arg: any): any {
 	return arg
 }
 
-let rowGeneratorCalls = 0
-let modifyRowCalls = 0
 const linkRows = new WeakSet<object>()
 const wrappedRowGenerators = new WeakMap<object, any>()
 const wrappedModifiers = new WeakMap<object, any>()
@@ -149,9 +142,9 @@ function wrapRowGenerator(fn: any): any {
 			const next = args.map(substitute)
 			const changed = next.some((a, i) => a !== args[i])
 			const row = fn.apply(this, next)
-			if (changed && row && typeof row === 'object') linkRows.add(row)
-			if (changed || rowGeneratorCalls++ < 3) {
-				recordLine(`rowGenerator${changed ? '*' : ''}(${args.map((a) => shape(a)).join(' | ')}) -> ${shape(row)}`)
+			if (changed) {
+				if (row && typeof row === 'object') linkRows.add(row)
+				recordLine(`rowGenerator(${args.map(describe).join(' | ')}) -> ${describe(row)}`)
 			}
 			return row
 		}
@@ -161,16 +154,45 @@ function wrapRowGenerator(fn: any): any {
 }
 
 /** Wraps modifyRow only to report what it does to rows built for link-only image messages. */
+function storeMessage(row: any): any {
+	try {
+		const m = row?.message
+		const store = (valenced.discord.flux as any).Stores?.MessageStore
+		return store?.getMessage?.(m?.channelId, m?.id)
+	} catch {
+		return undefined
+	}
+}
+
+const FIELD_HINT = /content|embed|attach|link|hide|media|image|parsed|text$|body|url/i
+let sawLinked = false
+let sawOther = false
+
+/** Records which fields row.message has, for one link-only row and one ordinary row. */
+function probeRow(row: any) {
+	const msg = row?.message
+	if (!msg || typeof msg !== 'object') return
+	const source = storeMessage(row)
+	const linked = !!source && isLinkedImageOnly(source)
+	if (linked && !sawLinked) {
+		sawLinked = true
+		recordLine(`LINKED row keys: ${Object.keys(row).join(',')}`, true)
+		recordLine(`LINKED msg keys: ${Object.keys(msg).join(',')}`, true)
+		for (const k of Object.keys(msg)) if (FIELD_HINT.test(k)) recordLine(`LINKED msg.${k} = ${shape(msg[k])}`, true)
+	} else if (!linked && source && !sawOther) {
+		sawOther = true
+		recordLine(`OTHER msg keys: ${Object.keys(msg).join(',')}`)
+		for (const k of Object.keys(msg)) if (FIELD_HINT.test(k)) recordLine(`OTHER msg.${k} = ${shape(msg[k])}`)
+	}
+}
+
 function wrapModifyRow(fn: any): any {
 	let wrapper = wrappedModifiers.get(fn)
 	if (!wrapper) {
 		wrapper = function (this: any, ...args: any[]) {
 			const out = fn.apply(this, args)
 			try {
-				const linked = args.some((a) => a && typeof a === 'object' && linkRows.has(a))
-				if (linked || modifyRowCalls++ < 3) {
-					recordLine(`modifyRow${linked ? '*' : ''}(${args.map((a) => shape(a)).join(' | ')}) -> ${shape(out)}`)
-				}
+				probeRow(args[0])
 			} catch {}
 			return out
 		}
