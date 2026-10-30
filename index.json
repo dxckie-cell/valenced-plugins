@@ -162,6 +162,29 @@
         }
       }
     },
+    "dxckie.image-link": {
+      "name": "Show Images Link",
+      "description": "Shows the link text when a message is just a linked image.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "channels": {
+        "latest": "0.1.0"
+      },
+      "versions": {
+        "0.1.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.image-link@0.1.0.zip",
+          "sha256": "cb0be9bb70fa4c05227a756d0e5020751f982fd43fcf6348fc4bdd0783228473",
+          "size": 1152,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
     "dxckie.local-pins": {
       "name": "Local Pins",
       "description": "Pin messages locally and browse them in a channel's Pins tab.",
