@@ -1,5 +1,4 @@
 import { applyPatches } from './patches'
-import { prefetchOverrides, resetPrefetch } from './prefetch'
 import { SettingsComponent } from './settings'
 import { DEFAULT_SETTINGS, resetStatus, type Settings, setStorage, status } from './state'
 
@@ -19,9 +18,7 @@ export default plugin<{ jsonStorage: Settings }>({
 		// Reads the overrides from disk if they are not in memory yet.
 		jsonStorage
 			.get()
-			.then(() => prefetchOverrides())
 			.catch(e => status('settings', `could not read settings: ${(e as Error)?.message}`))
-		cleanup(resetPrefetch)
 
 		applyPatches(unscoped.discord.flux.getStore, cleanup)
 	},

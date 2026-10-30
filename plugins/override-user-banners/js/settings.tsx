@@ -2,7 +2,6 @@ import Page from '@valenced/components/Page'
 import { Design } from '@valenced/discord/design'
 import { useEffect, useState } from 'react'
 import { ScrollView } from 'react-native'
-import { schedulePrefetch } from './prefetch'
 import { type BannerOverride, getStatusLines } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
@@ -25,7 +24,6 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 	const update = (next: BannerOverride[]) => {
 		setRows(next)
 		storage.set({ overrides: next }, true)
-		schedulePrefetch()
 	}
 
 	const edit = (index: number, changes: Partial<BannerOverride>) =>
