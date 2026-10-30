@@ -1,6 +1,6 @@
 # dxckie-cell plugins for Valenced
 
-Ten Valenced plugins in one repository.
+Eleven Valenced plugins in one repository.
 
 ## Install
 
@@ -16,6 +16,7 @@ Then install the plugins you want and reload Valenced.
 |---|---|---|
 | BetterInvites | `dxckie.better-invites` | See invite expiry, view the inviter's profile and preview servers before joining. Long-press a message with an invite link and tap **Invite info**. |
 | CopyStatus | `dxckie.copystatus` | Long-press a user's custom status on their profile to select and copy the text. |
+| Show Images Link | `dxckie.image-link` | Keeps the link text visible when a message is just a linked image or gif. |
 | HideMessages | `dxckie.hide-messages` | Temporarily hide messages until you restart. |
 | Override User Avatars | `dxckie.override-user-avatars` | Set a custom profile picture for any Discord user. |
 | Override User Banners | `dxckie.override-user-banners` | Set a custom profile banner for any Discord user. |
