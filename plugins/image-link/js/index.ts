@@ -1,11 +1,10 @@
 // Show Images Link for Valenced: keeps the link text visible when a message is just a linked image.
 //
 // Discord builds each chat row from the message and passes it to the list's `modifyRow` prop. For a
-// message that is only a link to an image or gif, the row's parsed content is [empty text, link].
-// We put an invisible, non-empty text node in front of it, so the row no longer looks like a bare
-// link and the link text stays shown. The embed is untouched, so the image still renders.
+// message that is only a link to an image or gif, that parsed content comes out empty, so no link is
+// drawn. We rebuild the link node from the embed URL, and the image still renders as before.
 //
-// 0.3.0 is an experiment: it shows one alert after the first fixed row, with the content before
+// 0.3.1 is an experiment: it shows one alert after the first fixed row, with the content before
 // and after, so we can tell whether the fix took.
 
 type Cleanup = () => void
@@ -13,8 +12,6 @@ type Cleanup = () => void
 // Discord embed types that render as a bare image or gif.
 const IMAGE_EMBED_TYPES = new Set(['image', 'gifv'])
 
-// Zero width space. It counts as text but draws nothing.
-const MARKER = '\u200b'
 
 /** True when the message is a single URL that Discord turned into an image or gif embed. */
 function isLinkedImageOnly(message: any): boolean {
@@ -62,24 +59,25 @@ function startReport() {
 	setTimeout(() => {
 		try {
 			const alert = (valenced.react as any).ReactNative?.Alert
-			alert?.alert('Show Images Link 0.3.0', `fixed rows: ${fixedRows}\n${report.join('\n')}`)
+			alert?.alert('Show Images Link 0.3.1', `fixed rows: ${fixedRows}\n${report.join('\n')}`)
 		} catch {}
 	}, 3000)
 }
 
 // ---- end Experiment report ----
 
-/** Puts the marker in front of the parsed content of a link-only image row. Returns true if changed. */
+/** Gives a link-only image row the link it was built without. Returns true if changed. */
 function fixRow(row: any): boolean {
 	const msg = row?.message
 	if (!msg || !Array.isArray(msg.content)) return false
+	if (msg.content.some((n: any) => n?.type === 'link')) return false
+
 	const source = storeMessage(row)
 	if (!source || !isLinkedImageOnly(source)) return false
-	if (msg.content[0]?.content === MARKER) return false
+	const url: string = source.embeds[0].url
 
 	const before = text(msg.content)
-	const rest = msg.content.filter((n: any) => !(n?.type === 'text' && n.content === ''))
-	msg.content = [{ type: 'text', content: MARKER }, ...rest]
+	msg.content = [{ type: 'link', content: [{ type: 'text', content: url }], target: url }]
 
 	fixedRows++
 	if (report.length < 4) {
