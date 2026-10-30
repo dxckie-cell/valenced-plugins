@@ -46,7 +46,7 @@
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "RobotIcon",
       "channels": {
-        "latest": "1.1.4"
+        "latest": "1.1.5"
       },
       "versions": {
         "1.1.3": {
@@ -66,6 +66,19 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.clyde-editor@1.1.4.zip",
           "sha256": "694c190098d500dd5169f5682cf411a7e4b72f25ff1c318fdeb1b1de86986563",
           "size": 3431,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.1.5": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.clyde-editor@1.1.5.zip",
+          "sha256": "783a94d602934abe027eb3069b36663e026f5e51d847b56154717410d5e1b005",
+          "size": 3410,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
@@ -107,7 +120,7 @@
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "ClydeIcon",
       "channels": {
-        "latest": "1.1.1"
+        "latest": "1.1.2"
       },
       "versions": {
         "1.1.0": {
@@ -127,6 +140,19 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.discord-editor@1.1.1.zip",
           "sha256": "2a2132feecda53fe293d6d403554c944e2854fdd9d7ac6a5ded4d6c13d24aed0",
           "size": 3477,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.1.2": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.discord-editor@1.1.2.zip",
+          "sha256": "81b73904ea427bfd3a6c6d83cf71d1beba2d2bb1af319dabd143bf0eceb5841e",
+          "size": 3452,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
