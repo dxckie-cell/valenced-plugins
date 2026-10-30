@@ -77,12 +77,26 @@ function getBoundary() {
 	})
 }
 
-function NativeMessage({ message }: { message: any }) {
+let parts: { Chat: any; Record: any; Rows: any } | undefined
+let lastTry = 0
+
+/** Looks the renderer up once and keeps it; a miss is retried at most every few seconds. */
+function nativeParts() {
+	if (parts) return parts
+	if (Date.now() - lastTry < 5000) return
+	lastTry = Date.now()
 	const pick = (r: any) => (typeof r === 'function' ? r : r?.default)
 	const Chat = (lookupModule(withProps('DCDAutoModerationSystemMessageView', 'default'))?.[0] as any)?.default
 	const Record = pick(lookupModule(withName('MessageRecord'))?.[0])
 	const Rows = pick(lookupModule(withName('RowManager'))?.[0])
-	if (!Chat || !Record || !Rows) throw new Error('renderer not found')
+	if (Chat && Record && Rows) parts = { Chat, Record, Rows }
+	return parts
+}
+
+function NativeMessage({ message }: { message: any }) {
+	const found = nativeParts()
+	if (!found) throw new Error('renderer not found')
+	const { Chat, Record, Rows } = found
 	return <Chat rowGenerator={new Rows()} message={new Record(message)} />
 }
 

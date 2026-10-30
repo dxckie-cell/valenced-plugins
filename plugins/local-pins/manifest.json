@@ -5,7 +5,7 @@
 	"description": "Pin messages locally and browse them in a channel's Pins tab.",
 	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
 	"icon": "PinIcon",
-	"version": "1.1.4",
+	"version": "1.1.5",
 	"dependencies": {
 		"valenced.api": { "version": ">=1 <2" },
 		"discord": { "version": "*" }

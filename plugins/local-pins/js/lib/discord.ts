@@ -60,25 +60,27 @@ export function useLoadedPins(pins: { channelId: string; id: string }[]) {
 		let alive = true
 		;(async () => {
 			const stores = Stores as any
-			const out: LoadedPin[] = []
-			for (const pin of pins) {
-				let message = stores.MessageStore?.getMessage?.(pin.channelId, pin.id)
-				if (!message) {
-					try {
-						const id = BigInt(pin.id)
-						await findExport('fetchMessages')?.fetchMessages?.({
-							channelId: pin.channelId,
-							before: (id + 1n).toString(),
-							after: (id - 1n).toString(),
-							limit: 1,
-						})
-						message = stores.MessageStore?.getMessage?.(pin.channelId, pin.id)
-					} catch {
-						/* deleted or no access */
+			// all pins load in parallel, in pin order
+			const out: LoadedPin[] = await Promise.all(
+				pins.map(async pin => {
+					let message = stores.MessageStore?.getMessage?.(pin.channelId, pin.id)
+					if (!message) {
+						try {
+							const id = BigInt(pin.id)
+							await findExport('fetchMessages')?.fetchMessages?.({
+								channelId: pin.channelId,
+								before: (id + 1n).toString(),
+								after: (id - 1n).toString(),
+								limit: 1,
+							})
+							message = stores.MessageStore?.getMessage?.(pin.channelId, pin.id)
+						} catch {
+							/* deleted or no access */
+						}
 					}
-				}
-				out.push({ pin, message, channel: stores.ChannelStore?.getChannel?.(pin.channelId) })
-			}
+					return { pin, message, channel: stores.ChannelStore?.getChannel?.(pin.channelId) }
+				}),
+			)
 			if (alive) setData(out)
 		})().catch(() => alive && setData([]))
 		return () => {
