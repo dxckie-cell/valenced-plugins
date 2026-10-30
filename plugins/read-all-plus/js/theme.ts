@@ -1,25 +1,10 @@
 import { Tokens } from '@valenced/discord/common/tokens'
 import { Stores } from '@valenced/discord/flux'
 import { useEffect, useState } from 'react'
+import { StyleSheet } from 'react-native'
+import { nativeFooterRef } from './nativeRef'
 
 type Rgba = [number, number, number, number]
-type Role = 'backdrop' | 'tile' | 'circle'
-
-// How the native "+" tile looks in Discord 349 (sampled from a screenshot). Used to find the
-// theme color tokens it is made of, and as the fallback when no matching token can be found.
-const NATIVE: Record<Role, string> = {
-	backdrop: '#080613', // guild bar background
-	tile: '#1B1424',
-	circle: '#AC5BD3',
-}
-
-// How close (in RGB distance) a token must be to count as a match, and which names to prefer.
-const TOLERANCE = 8
-const PREFER: Record<Role, RegExp> = {
-	backdrop: /^(BG|BACKGROUND)_/,
-	tile: /^(BG|BACKGROUND)_/,
-	circle: /BRAND/,
-}
 
 function parse(color: unknown): Rgba | undefined {
 	if (typeof color !== 'string') return
@@ -43,19 +28,8 @@ const flatten = ([r, g, b, a]: Rgba, [br, bg, bb]: Rgba): Rgba => [
 	1,
 ]
 
-const distance = (x: Rgba, y: Rgba) => Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2])
-
 const hex = ([r, g, b]: Rgba) =>
 	`#${[r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('')}`
-
-const tokens = (): Record<string, any> => {
-	try {
-		const t: any = Tokens
-		return t?.colors ?? t?.default?.colors ?? {}
-	} catch {
-		return {}
-	}
-}
 
 const themeStore = (): any => {
 	try {
@@ -65,9 +39,80 @@ const themeStore = (): any => {
 	}
 }
 
-function resolveToken(token: unknown): string | undefined {
+// ---- Main source: the colors of Discord's own "+" tile, read from what is on screen ----------
+
+const HANDLE_KEYS = ['__internalInstanceHandle', '_internalInstanceHandle', '_internalFiberInstanceHandleDEV']
+
+function fiberOf(host: any): any {
+	for (const key of HANDLE_KEYS) {
+		try {
+			if (host?.[key]) return host[key]
+		} catch {}
+	}
+}
+
+// Colors can be strings or native color objects. Both are valid in a style, so both are kept.
+// Fully transparent ones are skipped, they are not the tile.
+function readColor(value: any): any {
+	if (value && typeof value === 'object' && typeof value.__getValue === 'function') {
+		try {
+			value = value.__getValue()
+		} catch {
+			return
+		}
+	}
+	if (typeof value === 'string') {
+		const parsed = parse(value)
+		return parsed && parsed[3] < 0.05 ? undefined : value
+	}
+	return value && typeof value === 'object' ? value : undefined
+}
+
+interface Sampled {
+	tile?: any
+	circle?: any
+}
+
+/** Walks the native footer's views: first background is the tile, first tint is the "+" shape. */
+function sampleNative(host: any): Sampled | undefined {
+	const root = fiberOf(host)
+	if (!root) return
+
+	const backgrounds: any[] = []
+	const tints: any[] = []
+	let visited = 0
+
+	const visit = (fiber: any, depth: number) => {
+		for (let f = fiber; f && visited < 400; f = f.sibling) {
+			visited++
+			if (typeof f.type === 'string') {
+				const props = f.memoizedProps ?? {}
+				const style: any = StyleSheet.flatten(props.style) ?? {}
+				const bg = readColor(style.backgroundColor)
+				if (bg !== undefined) backgrounds.push(bg)
+				const tint = readColor(props.tintColor ?? style.tintColor)
+				if (tint !== undefined) tints.push(tint)
+			}
+			if (f.child && depth < 60) visit(f.child, depth + 1)
+		}
+	}
+	visit(root.child, 0)
+
+	if (backgrounds[0] === undefined) return
+	return { tile: backgrounds[0], circle: tints[0] ?? backgrounds[1] }
+}
+
+// ---- Fallback: theme color tokens, used until (or unless) the tile can be read ----------------
+
+const TILE_TOKENS = ['BG_BASE_SECONDARY', 'BACKGROUND_SECONDARY', 'BG_SURFACE_RAISED', 'BACKGROUND_MOD_SUBTLE']
+const CIRCLE_TOKENS = ['TEXT_DEFAULT', 'INTERACTIVE_ICON_ACTIVE', 'TEXT_NORMAL', 'HEADER_PRIMARY']
+const BACKDROP_TOKENS = ['BG_BASE_TERTIARY', 'BACKGROUND_TERTIARY', 'BG_BASE_PRIMARY']
+
+function resolveToken(name: string): string | undefined {
 	try {
 		const t: any = Tokens
+		const token = (t?.colors ?? t?.default?.colors)?.[name]
+		if (token === undefined) return
 		const resolve = (t?.meta ?? t?.default?.meta)?.resolveSemanticColor
 		const value = resolve?.(themeStore()?.theme, token)
 		return typeof value === 'string' ? value : undefined
@@ -76,54 +121,28 @@ function resolveToken(token: unknown): string | undefined {
 	}
 }
 
-// Finds, for each part of the button, the theme token whose current color matches the native tile.
-let matched: Partial<Record<Role, string>> | undefined
-
-function calibrate(): Partial<Record<Role, string>> {
-	const all = tokens()
-	const found: Partial<Record<Role, string>> = {}
-
-	const backdrop = parse(NATIVE.backdrop)!
-	const current = Object.keys(all).flatMap(name => {
-		const value = parse(resolveToken(all[name]))
-		return value ? [{ name, color: flatten(value, backdrop) }] : []
-	})
-
-	for (const role of ['backdrop', 'tile', 'circle'] as Role[]) {
-		const target = parse(NATIVE[role])!
-		const close = current
-			.map(({ name, color }) => ({ name, d: distance(color, target) }))
-			.filter(s => s.d <= TOLERANCE)
-			.sort((a, b) => a.d - b.d)
-		const best = close.find(s => PREFER[role].test(s.name)) ?? close[0]
-		if (best) found[role] = best.name
+const firstToken = (names: string[], fallback: string) => {
+	for (const name of names) {
+		const value = resolveToken(name)
+		if (value) return value
 	}
-	return found
+	return fallback
 }
 
-function colorOf(role: Role): string {
-	const name = matched?.[role]
-	return (name && resolveToken(tokens()[name])) || NATIVE[role]
+function fallbackColors() {
+	return {
+		tile: firstToken(TILE_TOKENS, '#2b2d31'),
+		circle: firstToken(CIRCLE_TOKENS, '#dbdee1'),
+		backdrop: firstToken(BACKDROP_TOKENS, '#1e1f22'),
+	}
 }
 
-export function getThemeColors() {
-	matched ??= calibrate()
+const sameSample = (a?: Sampled, b?: Sampled) => a?.tile === b?.tile && a?.circle === b?.circle
 
-	const tile = colorOf('tile')
-	// The eye is cut out of the circle, so it takes the tile color. If the tile is translucent,
-	// flatten it over the bar background so the cut-out is not see-through.
-	const parsed = parse(tile)
-	const glyph =
-		parsed && parsed[3] < 1
-			? hex(flatten(parsed, parse(colorOf('backdrop')) ?? parse(NATIVE.backdrop)!))
-			: tile
-
-	return { tile, circle: colorOf('circle'), glyph }
-}
-
-// Same as getThemeColors, but re-renders the component when the theme changes.
+// Colors for the button. Re-read when the theme changes.
 export function useThemeColors() {
-	const [, bump] = useState(0)
+	const [sampled, setSampled] = useState<Sampled | undefined>()
+	const [version, bump] = useState(0)
 
 	useEffect(() => {
 		const store = themeStore()
@@ -133,5 +152,30 @@ export function useThemeColors() {
 		return () => store.removeChangeListener?.(listener)
 	}, [])
 
-	return getThemeColors()
+	// Read after render, and again shortly after, since the native tile may repaint a moment later.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `version` is the re-read trigger
+	useEffect(() => {
+		const read = () => {
+			let next: Sampled | undefined
+			try {
+				next = sampleNative(nativeFooterRef.current)
+			} catch {}
+			setSampled(prev => (sameSample(prev, next) ? prev : next))
+		}
+		read()
+		const timer = setTimeout(read, 300)
+		return () => clearTimeout(timer)
+	}, [version])
+
+	const fb = fallbackColors()
+	const tile = sampled?.tile ?? fb.tile
+	const circle = sampled?.circle ?? fb.circle
+
+	// The eye is cut out of the circle, so it takes the tile color. If the tile is translucent,
+	// flatten it over the bar background so the cut-out is not see-through.
+	const parsed = parse(tile)
+	const backdrop = parse(fb.backdrop)
+	const glyph = parsed && backdrop && parsed[3] < 1 ? hex(flatten(parsed, backdrop)) : tile
+
+	return { tile, circle, glyph }
 }

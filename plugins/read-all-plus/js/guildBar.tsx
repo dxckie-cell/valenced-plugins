@@ -8,6 +8,7 @@ import {
 import { after, before } from '@valenced/patcher'
 import * as React from 'react'
 import { View } from 'react-native'
+import { nativeFooterRef } from './nativeRef'
 import ReadButton, { FOOTER_EXTRA } from './readButton'
 
 // Refs returned by the guild bar hook. The list element that uses one of them is the guild bar list.
@@ -35,7 +36,9 @@ function patchFooter(patched: WeakSet<object>, target: any) {
 		const size = () => footerSize.call(props) + FOOTER_EXTRA
 		const render = () => (
 			<View style={{ alignSelf: 'stretch' }} collapsable={false}>
-				{renderFooter.call(props)}
+				<View ref={nativeFooterRef} style={{ alignSelf: 'stretch' }} collapsable={false}>
+					{renderFooter.call(props)}
+				</View>
 				<ReadButton />
 			</View>
 		)
