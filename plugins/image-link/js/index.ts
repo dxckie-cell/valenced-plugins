@@ -96,7 +96,7 @@ function startDebug(message: any) {
 	setTimeout(() => {
 		try {
 			const alert = (valenced.react as any).ReactNative?.Alert
-			alert?.alert('ImageLink debug 0.2.2', debugLines.join('\n') || '(nothing recorded)')
+			alert?.alert('ImageLink debug 0.2.5', debugLines.join('\n') || '(nothing recorded)')
 		} catch {}
 	}, 2500)
 }
@@ -164,25 +164,43 @@ function storeMessage(row: any): any {
 	}
 }
 
-const FIELD_HINT = /content|embed|attach|link|hide|media|image|parsed|text$|body|url/i
 let sawLinked = false
 let sawOther = false
 
-/** Records which fields row.message has, for one link-only row and one ordinary row. */
+/** Short, exception-safe description of a value. */
+function safeShape(v: any): string {
+	try {
+		if (typeof v === 'function') return 'fn'
+		if (v && typeof v === 'object') {
+			let json: string | undefined
+			try {
+				json = JSON.stringify(v)
+			} catch {}
+			if (json) return json.length > 260 ? `${json.slice(0, 260)}~(${json.length})` : json
+		}
+		return shape(v)
+	} catch (e: any) {
+		return `<err ${e?.message ?? e}>`
+	}
+}
+
+/** Records the content-related fields of row.message for one link-only row and one ordinary row. */
 function probeRow(row: any) {
 	const msg = row?.message
 	if (!msg || typeof msg !== 'object') return
 	const source = storeMessage(row)
-	const linked = !!source && isLinkedImageOnly(source)
-	if (linked && !sawLinked) {
-		sawLinked = true
-		recordLine(`LINKED row keys: ${Object.keys(row).join(',')}`, true)
-		recordLine(`LINKED msg keys: ${Object.keys(msg).join(',')}`, true)
-		for (const k of Object.keys(msg)) if (FIELD_HINT.test(k)) recordLine(`LINKED msg.${k} = ${shape(msg[k])}`, true)
-	} else if (!linked && source && !sawOther) {
-		sawOther = true
-		recordLine(`OTHER msg keys: ${Object.keys(msg).join(',')}`)
-		for (const k of Object.keys(msg)) if (FIELD_HINT.test(k)) recordLine(`OTHER msg.${k} = ${shape(msg[k])}`)
+	if (!source) return
+	const linked = isLinkedImageOnly(source)
+	if (linked ? sawLinked : sawOther) return
+	if (linked) sawLinked = true
+	else sawOther = true
+	const tag = linked ? 'LINKED' : 'OTHER'
+	recordLine(`${tag} source.content=${safeShape(source.content)} embeds=${safeShape(source.embeds?.map((e: any) => `${e.type}:${e.url}`))}`, true)
+	for (const k of ['content', 'embeds', 'codedLinks', 'attachments', 'renderContentOnly', 'showLinkDecorations', 'components', 'stickers']) {
+		recordLine(`${tag} msg.${k}=${safeShape(msg[k])}`, true)
+	}
+	for (const k of ['renderContentOnly', 'truncation', 'changeType']) {
+		recordLine(`${tag} row.${k}=${safeShape(row[k])}`, true)
 	}
 }
 
