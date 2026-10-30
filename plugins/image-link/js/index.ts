@@ -6,7 +6,10 @@
 // with an invisible character, so it no longer looks like "only a URL" and the link stays shown.
 // The embed is untouched, so the image still renders.
 //
-// 0.2.1 also carries a DEBUG probe: after the first link-only image message renders, it shows one
+// 0.2.2 also hooks the list's rowGenerator and modifyRow props, because rows are built from the
+// message ahead of rendering.
+//
+// The DEBUG probe (from 0.2.1): after the first link-only image message renders, it shows one
 // alert listing every component that received that message, so the real hide point can be found.
 
 type Cleanup = () => void
@@ -89,6 +92,12 @@ function recordDebug(kind: string, type: any, props: any) {
 	debugLines.push(line)
 }
 
+function recordLine(line: string) {
+	if (debugSeen.has(line) || debugLines.length >= 24) return
+	debugSeen.add(line)
+	debugLines.push(line)
+}
+
 function startDebug(message: any) {
 	if (debugStarted) return
 	debugStarted = true
@@ -96,12 +105,82 @@ function startDebug(message: any) {
 	setTimeout(() => {
 		try {
 			const alert = (valenced.react as any).ReactNative?.Alert
-			alert?.alert('ImageLink debug 0.2.1', debugLines.join('\n') || '(nothing recorded)')
+			alert?.alert('ImageLink debug 0.2.2', debugLines.join('\n') || '(nothing recorded)')
 		} catch {}
 	}, 2500)
 }
 
 // ---- end DEBUG probe ----
+
+// ---- Row hooks ----
+
+const ROW_KEYS = /^(content|hide|embed|type|only|text|link|media|show|parsed|message|id)/i
+
+function describe(v: any): string {
+	if (!v || typeof v !== 'object') return brief(v)
+	const keys = Object.keys(v)
+		.slice(0, 14)
+		.map((k) => (ROW_KEYS.test(k) ? `${k}=${brief(v[k])}` : k))
+	return `{${keys.join(',')}}`
+}
+
+/** Passes a link-only image message (or an object that holds one) on with the marked view. */
+function substitute(arg: any): any {
+	try {
+		if (arg && typeof arg === 'object') {
+			if (isLinkedImageOnly(arg)) return withVisibleLink(arg)
+			if (arg.message && isLinkedImageOnly(arg.message)) {
+				return Object.create(arg, {
+					message: { value: withVisibleLink(arg.message), enumerable: true, configurable: true, writable: true },
+				})
+			}
+		}
+	} catch {}
+	return arg
+}
+
+const linkRows = new WeakSet<object>()
+const wrappedRowGenerators = new WeakMap<object, any>()
+const wrappedModifiers = new WeakMap<object, any>()
+
+/** Wraps rowGenerator so rows for link-only image messages are built from the marked view. */
+function wrapRowGenerator(fn: any): any {
+	let wrapper = wrappedRowGenerators.get(fn)
+	if (!wrapper) {
+		wrapper = function (this: any, ...args: any[]) {
+			const next = args.map(substitute)
+			const changed = next.some((a, i) => a !== args[i])
+			const row = fn.apply(this, next)
+			if (changed) {
+				if (row && typeof row === 'object') linkRows.add(row)
+				recordLine(`rowGenerator(${args.map(describe).join(' | ')}) -> ${describe(row)}`)
+			}
+			return row
+		}
+		wrappedRowGenerators.set(fn, wrapper)
+	}
+	return wrapper
+}
+
+/** Wraps modifyRow only to report what it does to rows built for link-only image messages. */
+function wrapModifyRow(fn: any): any {
+	let wrapper = wrappedModifiers.get(fn)
+	if (!wrapper) {
+		wrapper = function (this: any, ...args: any[]) {
+			const out = fn.apply(this, args)
+			try {
+				if (args.some((a) => a && typeof a === 'object' && linkRows.has(a))) {
+					recordLine(`modifyRow(${args.map(describe).join(' | ')}) -> ${describe(out)}`)
+				}
+			} catch {}
+			return out
+		}
+		wrappedModifiers.set(fn, wrapper)
+	}
+	return wrapper
+}
+
+// ---- end Row hooks ----
 
 /** Swaps the message prop for link-only image messages on every JSX call. */
 function patchJsx(): Cleanup {
@@ -119,7 +198,10 @@ function patchJsx(): Cleanup {
 					startDebug(message)
 					recordDebug(kind, args[0], props)
 					const next = [...args]
-					next[1] = { ...props, message: withVisibleLink(message) }
+					const nextProps: any = { ...props, message: withVisibleLink(message) }
+					if (typeof props.rowGenerator === 'function') nextProps.rowGenerator = wrapRowGenerator(props.rowGenerator)
+					if (typeof props.modifyRow === 'function') nextProps.modifyRow = wrapModifyRow(props.modifyRow)
+					next[1] = nextProps
 					return next
 				}
 				if (touchesDebugMessage(props)) recordDebug(kind, args[0], props)
