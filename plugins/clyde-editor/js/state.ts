@@ -60,6 +60,7 @@ export function getBanner(userId?: string): string | undefined {
 	return userId === TARGET_ID ? read('banner') : undefined
 }
 
+// Only valid hex colors are used; anything else is ignored.
 const readColor = (key: 'nameColor' | 'badgeBgColor' | 'badgeTextColor') => {
 	const value = read(key)
 	return value && HEX.test(value) ? value : undefined

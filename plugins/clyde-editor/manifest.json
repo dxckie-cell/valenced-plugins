@@ -5,7 +5,7 @@
 	"description": "Change Clyde's name, picture, banner, name color and bot badge.",
 	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
 	"icon": "RobotIcon",
-	"version": "1.1.4",
+	"version": "1.1.5",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"

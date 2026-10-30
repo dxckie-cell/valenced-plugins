@@ -1,8 +1,8 @@
+import { getModuleWithImportedPath } from '@valenced/discord/utils/modules/finders'
 import { getModules } from '@valenced/modules/finders'
 import { withProps } from '@valenced/modules/finders/filters'
 import { before, instead } from '@valenced/patcher'
 import { processColor } from 'react-native'
-import { getModuleWithImportedPath } from '@valenced/discord/utils/modules/finders'
 import {
 	getAvatar,
 	getBadgeBgColor,
@@ -30,11 +30,11 @@ const injected = new Map<any, any>()
 // Users we renamed, with their original names.
 const renamed = new Map<any, { username: unknown; globalName: unknown }>()
 
-// A minimal profile for an account that has none in the store, so the profile
-// screen has something to draw a banner from.
 // True if the account has a banner to show.
 const wants = (id?: string) => id === TARGET_ID && Boolean(getBanner(id))
 
+// A minimal profile for an account that has none in the store, so the profile
+// screen has something to draw a banner from.
 function standInProfile(id: string) {
 	return {
 		userId: id,
@@ -123,20 +123,23 @@ function applyName(user: any) {
 	}
 }
 
+type Hook = (args: any[], original: Original) => any
+
+// Replaces `key` on `target`; a failure is logged and leaves everything else working.
+function patchKey(target: any, key: string, hook: Hook, cleanup: Register) {
+	try {
+		cleanup(instead(target, key, hook))
+	} catch (e) {
+		console.log(`[clyde-editor] could not patch ${key}`, e)
+	}
+}
+
 // Patches `key` on the exports of the module that has it, once Discord loads it.
-function patchModule(
-	key: string,
-	hook: (args: any[], original: Original) => any,
-	cleanup: Register,
-) {
+function patchModule(key: string, hook: Hook, cleanup: Register) {
 	cleanup(
-		getModules(withProps<Record<string, any>>(key), exports => {
-			try {
-				cleanup(instead(exports, key, hook))
-			} catch (e) {
-				console.log(`[clyde-editor] could not patch ${key}`, e)
-			}
-		}),
+		getModules(withProps<Record<string, any>>(key), exports =>
+			patchKey(exports, key, hook, cleanup),
+		),
 	)
 }
 
@@ -145,9 +148,9 @@ const idOf = (arg: any): string | undefined =>
 	typeof arg === 'string' ? arg : (arg?.id ?? arg?.userId)
 
 // The badge expects native color numbers, not hex strings.
-function toNative(hex: string): number | undefined {
+function toNative(hex?: string): number | undefined {
 	try {
-		const value = processColor(hex)
+		const value = hex ? processColor(hex) : undefined
 		return typeof value === 'number' ? value : undefined
 	} catch {
 		return undefined
@@ -168,78 +171,69 @@ function isTarget(args: any[]): boolean {
 	)
 }
 
+// Patches `key` on the module Discord imports from `path`, once it loads.
+function patchImported(path: string, key: string, hook: Hook, cleanup: Register) {
+	cleanup(
+		getModuleWithImportedPath<any>(path, exports => patchKey(exports, key, hook, cleanup)),
+	)
+}
+
 // Name color and the bot badge shown on the account's chat messages.
 function patchMessages(cleanup: Register) {
-	cleanup(
-		getModuleWithImportedPath<any>('modules/messages/useMessageAuthor.tsx', exports => {
-			try {
-				cleanup(
-					instead(exports, 'getMessageAuthor', (args: any[], original: Original) => {
-						const result = original(...args)
-						const color = getNameColor()
-						return color && result && isTarget(args)
-							? { ...result, colorString: color }
-							: result
-					}),
-				)
-			} catch (e) {
-				console.log('[clyde-editor] could not patch message authors', e)
-			}
-		}),
+	patchImported(
+		'modules/messages/useMessageAuthor.tsx',
+		'getMessageAuthor',
+		(args, original) => {
+			const result = original(...args)
+			const color = getNameColor()
+			return color && result && isTarget(args) ? { ...result, colorString: color } : result
+		},
+		cleanup,
 	)
 
-	cleanup(
-		getModuleWithImportedPath<any>(
-			'modules/messages/native/renderer/getTagProperties.tsx',
-			exports => {
-				try {
-					cleanup(
-						instead(exports, 'default', (args: any[], original: Original) => {
-							const result = original(...args)
-							if (!isTarget(args)) return result
+	patchImported(
+		'modules/messages/native/renderer/getTagProperties.tsx',
+		'default',
+		(args, original) => {
+			const result = original(...args)
+			if (!isTarget(args)) return result
 
-							const text = getBadgeText()
-							const bg = getBadgeBgColor()
-							const fg = getBadgeTextColor()
-							const verified = getVerified()
-							if (!text && !bg && !fg && !verified) return result
+			const text = getBadgeText()
+			const bg = toNative(getBadgeBgColor())
+			const fg = toNative(getBadgeTextColor())
+			const verified = getVerified()
+			if (!text && bg === undefined && fg === undefined && !verified) return result
 
-							return {
-								...result,
-								...(text && { tagText: text, tagAccessibilityLabel: text }),
-								...(bg && toNative(bg) !== undefined && { tagBackgroundColor: toNative(bg) }),
-								...(fg && toNative(fg) !== undefined && { tagTextColor: toNative(fg) }),
-								...(verified && { tagVerified: true }),
-							}
-						}),
-					)
-				} catch (e) {
-					console.log('[clyde-editor] could not patch the bot badge', e)
-				}
-			},
-		),
+			return {
+				...result,
+				...(text && { tagText: text, tagAccessibilityLabel: text }),
+				...(bg !== undefined && { tagBackgroundColor: bg }),
+				...(fg !== undefined && { tagTextColor: fg }),
+				...(verified && { tagVerified: true }),
+			}
+		},
+		cleanup,
 	)
 }
 
 export function applyPatches(getStore: GetStore, cleanup: Register) {
 	// The user store: renames the account and gives it a placeholder banner.
 	cleanup(
-		getStore('UserStore', store => {
-			try {
-				cleanup(
-					instead(store, 'getUser', (args: any[], original: Original) => {
-						const user = original(...args)
-						if (user && args[0] === TARGET_ID) {
-							applyName(user)
-							addPlaceholderBanner(user, TARGET_ID)
-						}
-						return user
-					}),
-				)
-			} catch (e) {
-				console.log('[clyde-editor] could not patch the user store', e)
-			}
-		}),
+		getStore('UserStore', store =>
+			patchKey(
+				store,
+				'getUser',
+				(args, original) => {
+					const user = original(...args)
+					if (user && args[0] === TARGET_ID) {
+						applyName(user)
+						addPlaceholderBanner(user, TARGET_ID)
+					}
+					return user
+				},
+				cleanup,
+			),
+		),
 	)
 
 	// The picture shown for the account.
@@ -287,19 +281,18 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	cleanup(
 		getStore('UserProfileStore', store => {
 			for (const key of ['getUserProfile', 'getGuildMemberProfile']) {
-				try {
-					cleanup(
-						instead(store, key, (args: any[], original: Original) => {
-							const profile = original(...args)
-							if (args[0] !== TARGET_ID || !wants(TARGET_ID)) return profile
-							if (!profile && key === 'getUserProfile') return standInProfile(TARGET_ID)
-							patchDisplayProfile(profile, TARGET_ID)
-							return addPlaceholderBanner(profile, TARGET_ID)
-						}),
-					)
-				} catch {
-					// Missing in this Discord version.
-				}
+				patchKey(
+					store,
+					key,
+					(args, original) => {
+						const profile = original(...args)
+						if (args[0] !== TARGET_ID || !wants(TARGET_ID)) return profile
+						if (!profile && key === 'getUserProfile') return standInProfile(TARGET_ID)
+						patchDisplayProfile(profile, TARGET_ID)
+						return addPlaceholderBanner(profile, TARGET_ID)
+					},
+					cleanup,
+				)
 			}
 		}),
 	)
