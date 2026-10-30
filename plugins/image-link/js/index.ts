@@ -6,30 +6,34 @@
 // We patch both so a `true` result becomes `false`, which leaves the link in place; the embed is
 // untouched, so the image still renders.
 //
-// 0.4.1 is an experiment: it shows one alert with what the two helpers returned.
+// 0.4.2 is an experiment: it shows one alert with what the two helpers returned.
 
 type Cleanup = () => void
 
 const TARGETS = ['checkForSimpleEmbedMessage', 'hasOnlySimpleEmbed']
 
 const stats: Record<string, { calls: number; trueResults: number; types: Set<string> }> = {}
-const notes: string[] = []
 
-const patched = new Set<string>()
+const patchedPairs = new WeakMap<object, Set<string>>()
 const unpatches: Cleanup[] = []
 const MAX_ID = 40000
 
-/** Patches the helpers if this module's exports hold them. */
+/** Patches every module that holds one of the helpers, not only the first: some just re-export. */
 function tryPatch(id: any, exports: any) {
 	if (!exports || (typeof exports !== 'object' && typeof exports !== 'function')) return
 	for (const root of [exports, exports.default]) {
 		if (!root || (typeof root !== 'object' && typeof root !== 'function')) continue
 		for (const name of TARGETS) {
-			if (patched.has(name) || typeof root[name] !== 'function') continue
-			patched.add(name)
-			stats[name] = { calls: 0, trueResults: 0, types: new Set() }
+			if (typeof root[name] !== 'function') continue
+			let done = patchedPairs.get(root)
+			if (!done) patchedPairs.set(root, (done = new Set()))
+			if (done.has(name)) continue
+			done.add(name)
+
+			const label = `${name}@${id}`
+			stats[label] = { calls: 0, trueResults: 0, types: new Set() }
 			const unpatch = valenced.patcher.after(root, name, (_args: any, result: any) => {
-				const s = stats[name]
+				const s = stats[label]
 				s.calls++
 				s.types.add(typeof result)
 				if (result === true) {
@@ -39,7 +43,6 @@ function tryPatch(id: any, exports: any) {
 				return undefined
 			})
 			if (typeof unpatch === 'function') unpatches.push(unpatch as Cleanup)
-			notes.push(`${name}: patched in module ${id}`)
 		}
 	}
 }
@@ -47,7 +50,7 @@ function tryPatch(id: any, exports: any) {
 /** Looks at every module that is already initialised. */
 function walk() {
 	const metro: any = (valenced as any).modules?.metro
-	for (let id = 0; id < MAX_ID && patched.size < TARGETS.length; id++) {
+	for (let id = 0; id < MAX_ID; id++) {
 		try {
 			if (!metro.isModuleInitialized(id)) continue
 			tryPatch(id, metro.getInitializedModuleExports(id))
@@ -56,13 +59,12 @@ function walk() {
 }
 
 function showReport() {
-	const lines = [...notes]
-	for (const name of TARGETS) if (!patched.has(name)) lines.push(`${name}: not found`)
-	for (const [name, s] of Object.entries(stats)) {
-		lines.push(`${name}: calls ${s.calls}, true ${s.trueResults}, types ${[...s.types].join('/') || '-'}`)
-	}
+	const lines = Object.entries(stats).map(
+		([label, s]) => `${label}: calls ${s.calls}, true ${s.trueResults}, types ${[...s.types].join('/') || '-'}`,
+	)
+	if (!lines.length) lines.push('helpers not found')
 	try {
-		;(valenced.react as any).ReactNative?.Alert?.alert('Show Images Link 0.4.1', lines.join('\n'))
+		;(valenced.react as any).ReactNative?.Alert?.alert('Show Images Link 0.4.2', lines.join('\n'))
 	} catch {}
 }
 
@@ -85,7 +87,7 @@ export default plugin({
 			// And a few retries, in case that hook is not what I think it is.
 			let tries = 0
 			const retry = setInterval(() => {
-				if (patched.size >= TARGETS.length || ++tries > 20) return clearInterval(retry)
+				if (++tries > 10) return clearInterval(retry)
 				walk()
 			}, 3000)
 			cleanup(() => clearInterval(retry))
