@@ -2,12 +2,12 @@
 //
 // Vencord's ImageLink patches a small util module (it holds { linkCount: 0, onlyLinks: false }) so
 // that "embed type is simple and embed is inline" is never true; Discord then never hides the link.
-// 0.3.5 only looks for that module in the running app: it lists the finder API and exports whose
+// 0.3.6 only looks for that module in the running app: it lists the finder API and exports whose
 // names look related, in one alert. Nothing changes on screen.
 
 type Cleanup = () => void
 
-const NAME_HINT = /simple|inline|onlyLink|linkCount|hideContent|shouldHide|embedOnly|hideLink/i
+const NAME_HINT = /embed.*(inline|simple|hide|only|content|media)|(hide|only|skip|suppress).*(embed|link|media)|linkCount|onlyLinks|simpleEmbed|isEmbedInline|hideContent/i
 
 function keysOf(v: any): string {
 	try {
@@ -39,6 +39,11 @@ function scanMetro(lines: string[]) {
 		}
 		if (!exports || (typeof exports !== 'object' && typeof exports !== 'function')) continue
 		initialised++
+		let count = 0
+		try {
+			count = Object.keys(exports).length
+		} catch {}
+		if (count > 80) continue
 
 		for (const root of [exports, exports.default]) {
 			if (!root || (typeof root !== 'object' && typeof root !== 'function')) continue
@@ -51,7 +56,7 @@ function scanMetro(lines: string[]) {
 				try {
 					name = typeof root[k] === 'function' ? root[k].name || '' : ''
 				} catch {}
-				if ((NAME_HINT.test(k) || NAME_HINT.test(name)) && found < 18) {
+				if ((NAME_HINT.test(k) || NAME_HINT.test(name)) && found < 24) {
 					found++
 					lines.push(`${id}: ${root === exports ? '' : 'default.'}${k}${name && name !== k ? `(${name})` : ''} [${ks.length}k]`)
 				}
@@ -80,7 +85,7 @@ function patch(): Cleanup {
 			report = `scan failed: ${e?.message ?? e}`
 		}
 		try {
-			;(valenced.react as any).ReactNative?.Alert?.alert('Show Images Link 0.3.5', report)
+			;(valenced.react as any).ReactNative?.Alert?.alert('Show Images Link 0.3.6', report)
 		} catch {}
 	}, 3000)
 	return () => clearTimeout(timer)
