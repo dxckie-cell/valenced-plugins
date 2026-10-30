@@ -4,7 +4,7 @@
 	"name": "Show Images Link",
 	"description": "Shows the link text when a message is just a linked image.",
 	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
-	"version": "0.5.0",
+	"version": "0.5.1",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"
