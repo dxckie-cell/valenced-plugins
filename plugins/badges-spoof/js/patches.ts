@@ -100,6 +100,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	}
 
 	let sheetTextSeen = false
+	let legacySeen = false
 	const swapSheetText = (children: unknown): unknown => {
 		if (!sheet || Date.now() - sheet.at > 30_000) return children
 
@@ -120,7 +121,15 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 		if (typeof children === 'string') return swap(children)
 		if (Array.isArray(children)) {
 			let changed = false
-			const next = children.map(child => {
+			const next = children.flatMap(child => {
+				if (typeof child === 'string' && child.startsWith(LEGACY_PREFIX)) {
+					changed = true
+					return [
+						React.createElement(Text, { key: 'legacy', style: LEGACY_STYLE }, 'Legacy Badge'),
+						'\n',
+						child.slice(LEGACY_PREFIX.length),
+					]
+				}
 				const value = swap(child)
 				if (value !== child) changed = true
 				return value
@@ -157,6 +166,16 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 		try {
 			const props = args[1]
 			if (!props || typeof props !== 'object') return args
+
+			// Shows where Discord draws the box text, so a miss can be found from the settings.
+			for (const key of Object.keys(props)) {
+				const value = props[key]
+				const text = typeof value === 'string' ? value : Array.isArray(value) ? value.find(v => typeof v === 'string' && v.startsWith('Legacy Badge')) : undefined
+				if (typeof text === 'string' && text.startsWith('Legacy Badge') && !legacySeen) {
+					legacySeen = true
+					status('legacy text', `legacy text: seen in ${typeName(args[0])}.${key} (${Array.isArray(value) ? 'array' : 'string'})`)
+				}
+			}
 
 			// The sheet of one of our badges: change the tagline word.
 			if (sheet && props.children !== undefined) {
