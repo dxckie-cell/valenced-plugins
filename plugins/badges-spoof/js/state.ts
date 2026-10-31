@@ -14,13 +14,21 @@ export interface BadgeDefinition {
 	// Copy Discord's own details for this badge (title, tagline, rarity, how it is unlocked) when
 	// they are seen on another profile, so tapping the badge shows the same sheet.
 	copyDetails: boolean
+	// What Discord's sheet says for this badge on someone else's profile, in place of "Unlocked".
+	phrase?: string
 }
 
 export const ID_PREFIX = 'badges-spoof-'
 
 const ICON_BASE = 'https://raw.githubusercontent.com/dxckie-cell/valenced-plugins/main/plugins/badges-spoof/icons'
 
-function define(key: string, name: string, icon: string, copyDetails = false): BadgeDefinition {
+function define(
+	key: string,
+	name: string,
+	icon: string,
+	copyDetails = false,
+	phrase?: string,
+): BadgeDefinition {
 	return {
 		key,
 		id: `${ID_PREFIX}${key}`,
@@ -28,15 +36,16 @@ function define(key: string, name: string, icon: string, copyDetails = false): B
 		icon,
 		url: `${ICON_BASE}/${key}.png`,
 		copyDetails,
+		phrase,
 	}
 }
 
 // In the order they are shown on the profile.
 export const BADGES: BadgeDefinition[] = [
-	define('early-supporter', 'Early Supporter', '7060786766c9c840eb3019e725d2b358', true),
+	define('early-supporter', 'Early Supporter', '7060786766c9c840eb3019e725d2b358', true, 'Very, very early'),
 	define('hypesquad-events', 'HypeSquad Events', 'bf01d1073931f921909045f3a39fd264'),
-	define('moderator-alumni', 'Moderator Programs Alumni', 'fee1624003e2fee35cb398e125dc479b', true),
-	define('partnered-server-owner', 'Partnered Server Owner', '3f9748e53446a137a052f3454e2de41e', true),
+	define('moderator-alumni', 'Moderator Programs Alumni', 'fee1624003e2fee35cb398e125dc479b', true, 'Lost to time'),
+	define('partnered-server-owner', 'Partnered Server Owner', '3f9748e53446a137a052f3454e2de41e', true, 'Very, very early'),
 	define('golden-bug-hunter', 'Discord Bug Hunter', '848f79194d4be5ff5f81505cbd0ce1e6'),
 	define('early-verified-bot-developer', 'Early Verified Bot Developer', '6df5892e0f35b051f8b61eace34f4967'),
 	define('discord-staff', 'Discord Staff', '5e74e9b61934fc1f67c65515d1f7e60d'),

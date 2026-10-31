@@ -4,7 +4,15 @@ import { before, instead } from '@valenced/patcher'
 import * as React from 'react'
 import { StyleSheet } from 'react-native'
 import { catalogEntry, findBadge, isOurId, isRecord, learn, withBadges, withCatalog } from './badges'
-import { getVersion, isHidden, setHidden, showsAll, status, subscribe } from './state'
+import {
+	type BadgeDefinition,
+	getVersion,
+	isHidden,
+	setHidden,
+	showsAll,
+	status,
+	subscribe,
+} from './state'
 
 type Cleanup = () => unknown
 type Register = (...fns: Cleanup[]) => void
@@ -80,6 +88,38 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	status('profile badge row', 'profile badge row: waiting for it to be drawn')
 	let rowSeen = false
 
+	// The badge whose sheet was asked for last. While it is one of ours, the tagline word that
+	// Discord fills in for your own badges ("Unlocked") is swapped for what it says on a profile
+	// that is not yours. Any badge looked up after it, ours or not, ends this.
+	let sheet: { badge: BadgeDefinition; at: number } | undefined
+	const openSheet = (badge: BadgeDefinition | undefined) => {
+		sheet = badge?.phrase ? { badge, at: Date.now() } : undefined
+	}
+
+	let sheetTextSeen = false
+	const swapSheetText = (children: unknown): unknown => {
+		if (!sheet || Date.now() - sheet.at > 30_000) return children
+
+		const phrase = sheet.badge.phrase!
+		const swap = (text: unknown) =>
+			typeof text === 'string' && /^(.*\s•\s)?Unlocked$/.test(text)
+				? text.replace(/Unlocked$/, phrase)
+				: text
+
+		if (typeof children === 'string') return swap(children)
+		if (Array.isArray(children)) {
+			let changed = false
+			const next = children.map(child => {
+				const value = swap(child)
+				if (value !== child) changed = true
+				return value
+			})
+			return changed ? next : children
+		}
+
+		return children
+	}
+
 	const typeName = (type: any): string =>
 		type?.displayName ?? type?.name ?? type?.render?.name ?? type?.type?.name ?? 'unknown'
 
@@ -106,6 +146,18 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 		try {
 			const props = args[1]
 			if (!props || typeof props !== 'object') return args
+
+			// The sheet of one of our badges: change the tagline word.
+			if (sheet && props.children !== undefined) {
+				const children = swapSheetText(props.children)
+				if (children !== props.children) {
+					if (!sheetTextSeen) {
+						sheetTextSeen = true
+						status('sheet text', `sheet text: tagline changed (${typeName(args[0])})`)
+					}
+					return [args[0], { ...props, children }, ...args.slice(2)]
+				}
+			}
 
 			// One of our badges being drawn: give it the sharp icon.
 			const badge = findBadge(props.id ?? props.badgeId)
@@ -200,6 +252,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				'getBadgeById',
 				function (this: any, args, original) {
 					const badge = findBadge(args[0])
+					openSheet(badge)
 					if (badge) return catalogEntry(badge)
 
 					// The sheet for a real badge: copy its details if it is one we want.
@@ -319,7 +372,12 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 					module,
 					key,
 					function (this: any, args, original) {
-						return isOurId(args[0]) ? Promise.resolve() : Reflect.apply(original, this, args)
+						if (isOurId(args[0])) {
+							openSheet(findBadge(args[0]))
+							return Promise.resolve()
+						}
+
+						return Reflect.apply(original, this, args)
 					},
 					cleanup,
 					'badge details',

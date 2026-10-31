@@ -60,6 +60,9 @@ export const asCatalogBadge = (badge: BadgeDefinition) => ({
 	current_tier: null,
 	next_tier: null,
 	...withoutUnlockText(getDetails(badge.key)),
+	// The box under the tagline. Discord's own text there says how it was unlocked, which is
+	// not wanted, so it says what kind of badge it is.
+	...(badge.copyDetails && { description: 'Legacy Badge' }),
 	requirements: [],
 	badge_id: badge.id,
 	owned: true,
