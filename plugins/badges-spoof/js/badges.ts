@@ -52,17 +52,23 @@ function withoutUnlockText(value: unknown, depth = 0): any {
 // A badge as it is in the "Customise your badges" list on the edit profile screen, and in the
 // sheet that opens when it is tapped. Where Discord's own details were copied from another
 // profile they are used as they are, with only the ownership, visibility and icon changed.
-export const asCatalogBadge = (badge: BadgeDefinition) => ({
+//
+// The sheet changes with ownership: a badge you own says "Unlocked", one you do not own shows
+// "Legacy Badge", how early it was and the "no longer available" note, like on someone else's
+// profile. So for the badges that copy details, the sheet is told they are not owned, while the
+// list keeps them owned so they still show.
+export const asCatalogBadge = (badge: BadgeDefinition, forSheet = false) => ({
 	name: badge.name,
 	info_label: badge.name,
-	description: badge.name,
+	// These badges have no text of their own: the unlock text is left out on purpose.
+	description: badge.copyDetails ? '' : badge.name,
 	tiers: [],
 	current_tier: null,
 	next_tier: null,
 	...withoutUnlockText(getDetails(badge.key)),
 	requirements: [],
 	badge_id: badge.id,
-	owned: true,
+	owned: !(forSheet && badge.copyDetails),
 	hidden: isHidden(badge.key),
 	simple_icon_raster_url: badge.url,
 	complex_icon_static_url: badge.url,
@@ -137,7 +143,7 @@ export function withBadges(original: unknown[]): unknown[] {
 export function withCatalog(original: unknown[], includeHidden: boolean): unknown[] {
 	return cached(original, includeHidden ? 'catalog-all' : 'catalog-shown', () => {
 		const native = original.filter(item => !(isRecord(item) && isOurId(item.badge_id)))
-		const ours = active(includeHidden).map(asCatalogBadge)
+		const ours = active(includeHidden).map(badge => asCatalogBadge(badge))
 
 		if (!ours.length) return native.length === original.length ? original : native
 		return [...native, ...ours]
@@ -152,7 +158,7 @@ export function catalogEntry(badge: BadgeDefinition) {
 	const hit = entries.get(badge.id)
 	if (hit?.version === version) return hit.entry
 
-	const entry = asCatalogBadge(badge)
+	const entry = asCatalogBadge(badge, true)
 	entries.set(badge.id, { version, entry })
 	return entry
 }
