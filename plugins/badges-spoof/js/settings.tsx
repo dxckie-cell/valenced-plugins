@@ -5,6 +5,14 @@ import { BADGES, getStatusLines, type Settings } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
 
+// A short look at a copied value, so the settings show what was copied.
+function preview(value: unknown): string {
+	if (typeof value === 'string') return JSON.stringify(value.length > 70 ? `${value.slice(0, 70)}...` : value)
+	if (Array.isArray(value)) return `[${value.length}] ${JSON.stringify(value).slice(0, 80)}`
+	if (value && typeof value === 'object') return JSON.stringify(value).slice(0, 90)
+	return String(value)
+}
+
 export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings }> = ({ api }) => {
 	// Reads the settings and redraws when they change.
 	const settings = (api.jsonStorage.use() ?? {}) as Partial<Settings>
@@ -31,6 +39,14 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					))}
 					<Design.TableRow label="To copy a badge's details, open a profile that has the real badge and tap it once." />
 				</Design.TableRowGroup>
+
+				{BADGES.filter(badge => settings.details?.[badge.key]).map(badge => (
+					<Design.TableRowGroup key={badge.key} title={`${badge.name}: copied fields`}>
+						{Object.entries(settings.details![badge.key]).map(([field, value]) => (
+							<Design.TableRow key={field} label={`${field}: ${preview(value)}`} />
+						))}
+					</Design.TableRowGroup>
+				))}
 
 				<Design.TableRowGroup title="Status">
 					{getStatusLines().map((line, index) => (
