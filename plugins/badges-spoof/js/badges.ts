@@ -33,43 +33,37 @@ const asBadge = (badge: BadgeDefinition) => ({
 	iconSrc: badge.url,
 })
 
-// Copied details without the "Unlocked by ..." line: any text that starts that way is dropped,
-// wherever it is in the copy. The list it may be built from is emptied where it is used.
-function withoutUnlockText(value: unknown, depth = 0): any {
-	if (Array.isArray(value)) {
-		return depth < 6 ? value.map(item => withoutUnlockText(item, depth + 1)) : value
-	}
-	if (!isRecord(value) || depth >= 6) return value
-
-	const result: Row = {}
-	for (const [key, item] of Object.entries(value)) {
-		if (typeof item === 'string' && /^\s*unlocked\b/i.test(item)) continue
-		result[key] = withoutUnlockText(item, depth + 1)
-	}
-	return result
-}
-
 // A badge as it is in the "Customise your badges" list on the edit profile screen, and in the
 // sheet that opens when it is tapped. Where Discord's own details were copied from another
 // profile they are used as they are, with only the ownership, visibility and icon changed.
-export const asCatalogBadge = (badge: BadgeDefinition) => ({
-	name: badge.name,
-	info_label: badge.name,
-	description: badge.name,
-	tiers: [],
-	current_tier: null,
-	next_tier: null,
-	...withoutUnlockText(getDetails(badge.key)),
-	// The box under the tagline. Discord's own text there says how it was unlocked, which is
-	// not wanted, so it says what kind of badge it is.
-	...(badge.copyDetails && { description: 'Legacy Badge' }),
-	requirements: [],
-	badge_id: badge.id,
-	owned: true,
-	hidden: isHidden(badge.key),
-	simple_icon_raster_url: badge.url,
-	complex_icon_static_url: badge.url,
-})
+export const asCatalogBadge = (badge: BadgeDefinition) => {
+	const copied = getDetails(badge.key)
+
+	return {
+		name: badge.name,
+		info_label: badge.name,
+		description: badge.name,
+		requirements: [],
+		tiers: [],
+		current_tier: null,
+		next_tier: null,
+		...copied,
+		// The box under the tagline: "Legacy Badge", then how it was unlocked, as Discord's own
+		// description says it. Discord shows "Legacy Badge" as a small label on someone else's
+		// profile, but not on yours, so it is the first line here.
+		...(badge.copyDetails && {
+			description:
+				typeof copied?.description === 'string' && copied.description
+					? `Legacy Badge\n${copied.description}`
+					: 'Legacy Badge',
+		}),
+		badge_id: badge.id,
+		owned: true,
+		hidden: isHidden(badge.key),
+		simple_icon_raster_url: badge.url,
+		complex_icon_static_url: badge.url,
+	}
+}
 
 // Badges whose details are already being saved, so each is only saved once.
 const saving = new Set<string>()
