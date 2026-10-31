@@ -21,7 +21,16 @@ type Original = (...args: any[]) => any
 type Hook = (this: any, args: any[], original: Original) => any
 
 const LEGACY_PREFIX = 'Legacy Badge\n'
-const LEGACY_STYLE = { fontSize: 14, color: '#9b94b0' }
+const LEGACY_STYLE = { fontSize: 14, lineHeight: 17, color: '#9b94b0' }
+const LEGACY_GAP_STYLE = { fontSize: 4, lineHeight: 4.5 }
+
+// "Legacy Badge", a small gap, then the rest of the text.
+const legacyParts = (rest: string) => [
+	React.createElement(Text, { key: 'legacy', style: LEGACY_STYLE }, 'Legacy Badge'),
+	'\n',
+	React.createElement(Text, { key: 'legacy-gap', style: LEGACY_GAP_STYLE }, ' \n'),
+	rest,
+]
 
 // Makes the badge row wrap onto more lines when there are more badges than fit.
 const WRAP_STYLE = { flexWrap: 'wrap', rowGap: 4, flexShrink: 1 }
@@ -112,11 +121,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 
 		// "Legacy Badge" on its own first line becomes the small dimmed label Discord uses.
 		if (typeof children === 'string' && children.startsWith(LEGACY_PREFIX)) {
-			return [
-				React.createElement(Text, { key: 'legacy', style: LEGACY_STYLE }, 'Legacy Badge'),
-				'\n',
-				children.slice(LEGACY_PREFIX.length),
-			]
+			return legacyParts(children.slice(LEGACY_PREFIX.length))
 		}
 		if (typeof children === 'string') return swap(children)
 		if (Array.isArray(children)) {
@@ -124,11 +129,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			const next = children.flatMap(child => {
 				if (typeof child === 'string' && child.startsWith(LEGACY_PREFIX)) {
 					changed = true
-					return [
-						React.createElement(Text, { key: 'legacy', style: LEGACY_STYLE }, 'Legacy Badge'),
-						'\n',
-						child.slice(LEGACY_PREFIX.length),
-					]
+					return legacyParts(child.slice(LEGACY_PREFIX.length))
 				}
 				const value = swap(child)
 				if (value !== child) changed = true
