@@ -11,28 +11,32 @@ export interface BadgeDefinition {
 	icon: string
 	// Sharp 256px icon hosted in this repository.
 	url: string
+	// Copy Discord's own details for this badge (title, tagline, rarity, how it is unlocked) when
+	// they are seen on another profile, so tapping the badge shows the same sheet.
+	copyDetails: boolean
 }
 
 export const ID_PREFIX = 'badges-spoof-'
 
 const ICON_BASE = 'https://raw.githubusercontent.com/dxckie-cell/valenced-plugins/main/plugins/badges-spoof/icons'
 
-function define(key: string, name: string, icon: string): BadgeDefinition {
+function define(key: string, name: string, icon: string, copyDetails = false): BadgeDefinition {
 	return {
 		key,
 		id: `${ID_PREFIX}${key}`,
 		name,
 		icon,
 		url: `${ICON_BASE}/${key}.png`,
+		copyDetails,
 	}
 }
 
 // In the order they are shown on the profile.
 export const BADGES: BadgeDefinition[] = [
-	define('early-supporter', 'Early Supporter', '7060786766c9c840eb3019e725d2b358'),
+	define('early-supporter', 'Early Supporter', '7060786766c9c840eb3019e725d2b358', true),
 	define('hypesquad-events', 'HypeSquad Events', 'bf01d1073931f921909045f3a39fd264'),
-	define('moderator-alumni', 'Moderator Programs Alumni', 'fee1624003e2fee35cb398e125dc479b'),
-	define('partnered-server-owner', 'Partnered Server Owner', '3f9748e53446a137a052f3454e2de41e'),
+	define('moderator-alumni', 'Moderator Programs Alumni', 'fee1624003e2fee35cb398e125dc479b', true),
+	define('partnered-server-owner', 'Partnered Server Owner', '3f9748e53446a137a052f3454e2de41e', true),
 	define('golden-bug-hunter', 'Discord Bug Hunter', '848f79194d4be5ff5f81505cbd0ce1e6'),
 	define('early-verified-bot-developer', 'Early Verified Bot Developer', '6df5892e0f35b051f8b61eace34f4967'),
 	define('discord-staff', 'Discord Staff', '5e74e9b61934fc1f67c65515d1f7e60d'),
@@ -43,9 +47,11 @@ export interface Settings {
 	hidden: Record<string, boolean>
 	// Show every badge instead of only the first six.
 	showAll: boolean
+	// Discord's own details for badges, copied from other profiles. Keyed like `hidden`.
+	details: Record<string, Record<string, unknown>>
 }
 
-export const DEFAULT_SETTINGS: Settings = { hidden: {}, showAll: true }
+export const DEFAULT_SETTINGS: Settings = { hidden: {}, showAll: true, details: {} }
 
 let storage: JsonStorage<Settings> | undefined
 
@@ -64,6 +70,17 @@ export function isHidden(key: string): boolean {
 }
 
 export const showsAll = () => read().showAll !== false
+
+export function getDetails(key: string): Record<string, unknown> | undefined {
+	const details = read().details
+	const value = details && typeof details === 'object' ? details[key] : undefined
+	return value && typeof value === 'object' ? value : undefined
+}
+
+export function setDetails(key: string, value: Record<string, unknown>) {
+	const details = { ...(read().details ?? {}), [key]: value }
+	storage?.set({ details })?.catch?.((e: unknown) => status('details', `could not save: ${(e as Error)?.message}`))
+}
 
 export function setHidden(key: string, value: boolean) {
 	const hidden = { ...(read().hidden ?? {}), [key]: value }

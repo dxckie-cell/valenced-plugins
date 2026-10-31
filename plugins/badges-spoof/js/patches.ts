@@ -3,7 +3,7 @@ import { withName, withProps } from '@valenced/modules/finders/filters'
 import { before, instead } from '@valenced/patcher'
 import * as React from 'react'
 import { StyleSheet } from 'react-native'
-import { catalogEntry, findBadge, isOurId, isRecord, withBadges, withCatalog } from './badges'
+import { catalogEntry, findBadge, isOurId, isRecord, learn, withBadges, withCatalog } from './badges'
 import { getVersion, isHidden, setHidden, showsAll, status, subscribe } from './state'
 
 type Cleanup = () => unknown
@@ -181,9 +181,15 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				function (this: any, args, original) {
 					const result = Reflect.apply(original, this, args)
 					const userId = args[0] ?? currentUserId()
-					return Array.isArray(result) && userId && userId === currentUserId()
-						? withCatalog(result, true)
-						: result
+					if (!Array.isArray(result) || !userId) return result
+
+					// Someone else's badges: copy the details of the ones we want.
+					if (userId !== currentUserId()) {
+						for (const entry of result) learn(entry)
+						return result
+					}
+
+					return withCatalog(result, true)
 				},
 				cleanup,
 				'badge list',
@@ -194,7 +200,12 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				'getBadgeById',
 				function (this: any, args, original) {
 					const badge = findBadge(args[0])
-					return badge ? catalogEntry(badge) : Reflect.apply(original, this, args)
+					if (badge) return catalogEntry(badge)
+
+					// The sheet for a real badge: copy its details if it is one we want.
+					const result = Reflect.apply(original, this, args)
+					learn(result)
+					return result
 				},
 				cleanup,
 				'badge list',

@@ -1,4 +1,13 @@
-import { BADGES, type BadgeDefinition, getVersion, ID_PREFIX, isHidden } from './state'
+import {
+	BADGES,
+	type BadgeDefinition,
+	getDetails,
+	getVersion,
+	ID_PREFIX,
+	isHidden,
+	setDetails,
+	status,
+} from './state'
 
 type Row = Record<string, any>
 
@@ -24,21 +33,61 @@ const asBadge = (badge: BadgeDefinition) => ({
 	iconSrc: badge.url,
 })
 
-// A badge as it is in the "Customise your badges" list on the edit profile screen.
+// A badge as it is in the "Customise your badges" list on the edit profile screen, and in the
+// sheet that opens when it is tapped. Where Discord's own details were copied from another
+// profile they are used as they are, with only the ownership, visibility and icon changed.
 export const asCatalogBadge = (badge: BadgeDefinition) => ({
-	badge_id: badge.id,
 	name: badge.name,
 	info_label: badge.name,
 	description: badge.name,
-	owned: true,
-	hidden: isHidden(badge.key),
-	simple_icon_raster_url: badge.url,
-	complex_icon_static_url: badge.url,
 	tiers: [],
 	current_tier: null,
 	next_tier: null,
 	requirements: [],
+	...getDetails(badge.key),
+	badge_id: badge.id,
+	owned: true,
+	hidden: isHidden(badge.key),
+	simple_icon_raster_url: badge.url,
+	complex_icon_static_url: badge.url,
 })
+
+// Badges whose details are already being saved, so each is only saved once.
+const saving = new Set<string>()
+
+/**
+ * Looks at a badge Discord loaded for someone else. If it is one of ours that copies details,
+ * and they were not copied yet, they are saved. The badge is recognised by its icon file name
+ * appearing anywhere in it, so this does not depend on Discord's field names.
+ */
+export function learn(entry: unknown) {
+	try {
+		if (!isRecord(entry) || isOurId(entry.badge_id)) return
+
+		const wanted = BADGES.filter(
+			badge => badge.copyDetails && !saving.has(badge.key) && !getDetails(badge.key),
+		)
+		if (!wanted.length) return
+
+		const text = JSON.stringify(entry)
+		if (!text || text.length > 50_000) return
+
+		for (const badge of wanted) {
+			if (!text.includes(badge.icon)) continue
+
+			saving.add(badge.key)
+			const copy = JSON.parse(text)
+
+			// Not while Discord is drawing: saving redraws the badge lists.
+			setTimeout(() => {
+				setDetails(badge.key, copy)
+				status(`details ${badge.key}`, `${badge.name}: details copied`)
+			}, 0)
+		}
+	} catch {
+		// Anything odd is skipped.
+	}
+}
 
 // Discord compares these lists by reference, so the same input gives the same output until a
 // setting changes. Returning a fresh list every time would make Discord re-render in a loop.

@@ -1,7 +1,7 @@
 import Page from '@valenced/components/Page'
 import { Design } from '@valenced/discord/design'
 import { ScrollView } from 'react-native'
-import { getStatusLines, type Settings } from './state'
+import { BADGES, getStatusLines, type Settings } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
 
@@ -19,6 +19,17 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						value={settings.showAll !== false}
 						onValueChange={(showAll: boolean) => api.jsonStorage.set({ showAll })}
 					/>
+				</Design.TableRowGroup>
+
+				<Design.TableRowGroup title="Badge details">
+					{BADGES.filter(badge => badge.copyDetails).map(badge => (
+						<Design.TableRow
+							key={badge.key}
+							label={badge.name}
+							subLabel={settings.details?.[badge.key] ? 'Copied' : 'Not copied yet'}
+						/>
+					))}
+					<Design.TableRow label="To copy a badge's details, open a profile that has the real badge and tap it once." />
 				</Design.TableRowGroup>
 
 				<Design.TableRowGroup title="Status">
