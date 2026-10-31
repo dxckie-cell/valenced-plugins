@@ -2,7 +2,7 @@ import { getModules } from '@valenced/modules/finders'
 import { withName, withProps } from '@valenced/modules/finders/filters'
 import { before, instead } from '@valenced/patcher'
 import * as React from 'react'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, Text } from 'react-native'
 import { catalogEntry, findBadge, isOurId, isRecord, learn, withBadges, withCatalog } from './badges'
 import {
 	type BadgeDefinition,
@@ -19,6 +19,9 @@ type Register = (...fns: Cleanup[]) => void
 type GetStore = (name: string, callback: (store: any) => void) => () => void
 type Original = (...args: any[]) => any
 type Hook = (this: any, args: any[], original: Original) => any
+
+const LEGACY_PREFIX = 'Legacy Badge\n'
+const LEGACY_STYLE = { fontSize: 16, opacity: 0.6 }
 
 // Makes the badge row wrap onto more lines when there are more badges than fit.
 const WRAP_STYLE = { flexWrap: 'wrap', rowGap: 4, flexShrink: 1 }
@@ -106,6 +109,14 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				? text.replace(/Unlocked$/, phrase)
 				: text
 
+		// "Legacy Badge" on its own first line becomes the small dimmed label Discord uses.
+		if (typeof children === 'string' && children.startsWith(LEGACY_PREFIX)) {
+			return [
+				React.createElement(Text, { key: 'legacy', style: LEGACY_STYLE }, 'Legacy Badge'),
+				'\n',
+				children.slice(LEGACY_PREFIX.length),
+			]
+		}
 		if (typeof children === 'string') return swap(children)
 		if (Array.isArray(children)) {
 			let changed = false
