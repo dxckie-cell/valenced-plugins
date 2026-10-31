@@ -33,6 +33,22 @@ const asBadge = (badge: BadgeDefinition) => ({
 	iconSrc: badge.url,
 })
 
+// Copied details without the "Unlocked by ..." line: any text that starts that way is dropped,
+// wherever it is in the copy. The list it may be built from is emptied where it is used.
+function withoutUnlockText(value: unknown, depth = 0): any {
+	if (Array.isArray(value)) {
+		return depth < 6 ? value.map(item => withoutUnlockText(item, depth + 1)) : value
+	}
+	if (!isRecord(value) || depth >= 6) return value
+
+	const result: Row = {}
+	for (const [key, item] of Object.entries(value)) {
+		if (typeof item === 'string' && /^\s*unlocked\b/i.test(item)) continue
+		result[key] = withoutUnlockText(item, depth + 1)
+	}
+	return result
+}
+
 // A badge as it is in the "Customise your badges" list on the edit profile screen, and in the
 // sheet that opens when it is tapped. Where Discord's own details were copied from another
 // profile they are used as they are, with only the ownership, visibility and icon changed.
@@ -43,8 +59,8 @@ export const asCatalogBadge = (badge: BadgeDefinition) => ({
 	tiers: [],
 	current_tier: null,
 	next_tier: null,
+	...withoutUnlockText(getDetails(badge.key)),
 	requirements: [],
-	...getDetails(badge.key),
 	badge_id: badge.id,
 	owned: true,
 	hidden: isHidden(badge.key),
