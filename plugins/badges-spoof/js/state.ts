@@ -11,6 +11,8 @@ export interface BadgeDefinition {
 	icon: string
 	// Sharp 256px icon hosted in this repository.
 	url: string
+	// Icon for the badge's sheet; the same as `url` unless it was resized to match Discord's.
+	sheetUrl: string
 	// Copy Discord's own details for this badge (title, tagline, rarity, how it is unlocked) when
 	// they are seen on another profile, so tapping the badge shows the same sheet.
 	copyDetails: boolean
@@ -35,6 +37,7 @@ function define(
 		name,
 		icon,
 		url: `${ICON_BASE}/${key}.png`,
+		sheetUrl: copyDetails ? `${ICON_BASE}/sheet/${key}.png` : `${ICON_BASE}/${key}.png`,
 		copyDetails,
 		phrase,
 	}

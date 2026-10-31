@@ -60,8 +60,10 @@ export const asCatalogBadge = (badge: BadgeDefinition) => {
 		badge_id: badge.id,
 		owned: true,
 		hidden: isHidden(badge.key),
-		simple_icon_raster_url: badge.url,
-		complex_icon_static_url: badge.url,
+		// The sheet draws the icon bigger than a tile. Badges that copy Discord's details have an
+		// icon sized to match Discord's own artwork there.
+		simple_icon_raster_url: badge.sheetUrl,
+		complex_icon_static_url: badge.sheetUrl,
 	}
 }
 
