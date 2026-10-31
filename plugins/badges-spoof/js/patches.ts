@@ -21,7 +21,7 @@ type Original = (...args: any[]) => any
 type Hook = (this: any, args: any[], original: Original) => any
 
 const LEGACY_PREFIX = 'Legacy Badge\n'
-const LEGACY_STYLE = { fontSize: 16, opacity: 0.6 }
+const LEGACY_STYLE = { fontSize: 14, color: '#9b94b0' }
 
 // Makes the badge row wrap onto more lines when there are more badges than fit.
 const WRAP_STYLE = { flexWrap: 'wrap', rowGap: 4, flexShrink: 1 }
