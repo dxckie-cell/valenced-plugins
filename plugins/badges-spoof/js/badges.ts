@@ -58,7 +58,16 @@ function rememberGrid(list: unknown[]) {
 
 // Some badges are replaced: Discord's own one is left out so there is only one of each. What it
 // is called is learnt from the badge list and kept for next time.
-const REPLACES = [
+interface ReplaceSource {
+	ours: string
+	name: string
+	levels: string[]
+	icons: string[]
+	others?: string[]
+	prefixes?: string[]
+}
+
+const REPLACE_SOURCES: ReplaceSource[] = [
 	{
 		ours: 'badges-spoof-account-age',
 		name: 'Account Age',
@@ -92,6 +101,25 @@ const REPLACES = [
 		],
 	},
 	{
+		ours: 'badges-spoof-nitro',
+		name: 'Nitro',
+		levels: ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Emerald', 'Ruby', 'Opal'],
+		// Also what the profile calls it, and the icon file of each level and of plain Nitro.
+		others: ['Discord Nitro'],
+		prefixes: ['Subscriber since'],
+		icons: [
+			'0386191373eb17c272df',
+			'9d4d362c62da3c985845',
+			'8725fe12ada9afa51c1a',
+			'746689c803e06be87705',
+			'f3521e2861ff44a0384d',
+			'f2b9b02fb22cc6459922',
+			'ecf86e18838013c9d95a',
+			'b4fc7a9c37ec2fae36e3',
+			'f61ddf640d11d9bdfaf9de265eb862edf28986b659e545f293b54adf229433af',
+		],
+	},
+	{
 		ours: 'badges-spoof-server-boosting',
 		name: 'Server Boosting',
 		levels: [] as string[],
@@ -107,7 +135,14 @@ const REPLACES = [
 			'd96ed283b74de75692487b7499fb8d09',
 		],
 	},
-].map(r => ({ ...r, names: new Set([r.name, ...r.levels]), keys: new Set<string>(r.icons) }))
+]
+
+const REPLACES = REPLACE_SOURCES.map(r => ({
+	...r,
+	prefixes: r.prefixes ?? [],
+	names: new Set([r.name, ...r.levels, ...(r.others ?? [])]),
+	keys: new Set<string>(r.icons),
+}))
 
 let replacedLoaded = false
 
@@ -157,6 +192,7 @@ const isReplaced = (item: unknown) => {
 		r =>
 			r.names.has(item.name) ||
 			r.names.has(item.description) ||
+			(typeof item.description === 'string' && r.prefixes.some(prefix => item.description.startsWith(prefix))) ||
 			Boolean(id && r.keys.has(id)) ||
 			icons.some(icon => r.keys.has(icon)),
 	)

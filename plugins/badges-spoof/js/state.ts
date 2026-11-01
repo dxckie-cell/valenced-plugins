@@ -64,6 +64,10 @@ export const BADGES: BadgeDefinition[] = [
 		tiered: true,
 		sheetUrl: `${ICON_BASE}/account-age.png`,
 	}),
+	define('nitro', 'Nitro', 'f61ddf640d11d9bdfaf9de265eb862edf28986b659e545f293b54adf229433af', undefined, {
+		tiered: true,
+		sheetUrl: `${ICON_BASE}/nitro.png`,
+	}),
 	define('server-boosting', 'Server Boosting', 'd96ed283b74de75692487b7499fb8d09', undefined, {
 		tiered: true,
 		sheetUrl: `${ICON_BASE}/boosting-tile.png`,
@@ -120,6 +124,7 @@ const tier = (key: string, name: string | undefined, milestone: string, threshol
 })
 
 const gift = (hash: string) => `${BADGE_CDN}/${hash}.png`
+const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
 const age = (k: string) => `${ICON_BASE}/tiers/age-${k}.png`
 const boost = (n: number) => `${ICON_BASE}/tiers/boost-${n}.png`
 
@@ -205,6 +210,26 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 		tier_obtained_at: Object.fromEntries(
 			['seed', 'sprout', 'sapling', 'bud', 'blossom', 'redwood', 'sequoia', 'bristlecone', 'stromatolite', 'primordial'].map(k => [k, '2026-04-02T12:00:00.000Z']),
 		),
+	},
+	nitro: {
+		name: 'Nitro',
+		info_label: 'Subscribed since 04/04/2020',
+		description: 'Subscribe to Nitro to unlock this badge.',
+		tiers: [
+			tier('bronze', 'Bronze', '1 month', 1, nitro('bronze')),
+			tier('silver', 'Silver', '3 months', 3, nitro('silver')),
+			tier('gold', 'Gold', '6 months', 6, nitro('gold')),
+			tier('platinum', 'Platinum', '12 months', 12, nitro('platinum')),
+			tier('diamond', 'Diamond', '24 months', 24, nitro('diamond')),
+			tier('emerald', 'Emerald', '36 months', 36, nitro('emerald')),
+			tier('ruby', 'Ruby', '60 months', 60, nitro('ruby')),
+			tier('opal', 'Opal', '72+ months', 72, nitro('opal'), `${ICON_BASE}/sheet/nitro.png`),
+		],
+		current_tier: 'opal',
+		next_tier: null,
+		progress: [1, 3, 6, 12, 24, 36, 60, 72].map(threshold => ({ current: 79, threshold, progress_helper_text: 'Subscribed since 04/04/2020' })),
+		obtained_at: '2026-04-04T12:00:00.000Z',
+		tier_obtained_at: Object.fromEntries(['bronze', 'silver', 'gold', 'platinum', 'diamond', 'emerald', 'ruby', 'opal'].map(k => [k, '2026-04-04T12:00:00.000Z'])),
 	},
 	'server-boosting': {
 		name: 'Server Boosting',
