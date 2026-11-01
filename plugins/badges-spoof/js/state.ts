@@ -37,7 +37,7 @@ function define(
 		name,
 		icon,
 		url: `${ICON_BASE}/${key}.png`,
-		sheetUrl: `${ICON_BASE}/sheet/${key}.png${key === 'server-boosting' ? '?v=3' : ''}`,
+		sheetUrl: `${ICON_BASE}/sheet/${key}.png`,
 		phrase,
 		...extra,
 	}
@@ -60,7 +60,10 @@ export const BADGES: BadgeDefinition[] = [
 		url: `${ICON_BASE}/gifting.png?v=3`,
 		sheetUrl: `${ICON_BASE}/gifting.png?v=3`,
 	}),
-	define('server-boosting', 'Server Boosting', 'd96ed283b74de75692487b7499fb8d09', undefined, { tiered: true }),
+	define('server-boosting', 'Server Boosting', 'd96ed283b74de75692487b7499fb8d09', undefined, {
+		tiered: true,
+		sheetUrl: `${ICON_BASE}/server-boosting.png`,
+	}),
 ]
 
 export interface Settings {
