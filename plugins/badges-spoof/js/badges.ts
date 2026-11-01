@@ -64,13 +64,34 @@ const REPLACES = [
 		name: 'Account Age',
 		// Every level, so whichever one the real badge is on is left out.
 		levels: ['Seed', 'Sprout', 'Sapling', 'Bud', 'Blossom', 'Redwood', 'Sequoia', 'Bristlecone', 'Stromatolite', 'Primordial'],
+		// The icon file of each level.
+		icons: [
+			'dda73966211a0c16533f8fcd9f1f27c27a628ef562927270e79df9b9c5e6cb12',
+			'74e1884f930b0d69986f92aeea77d3ff3d3d00c540f386b63e6ebb382d5e927d',
+			'217dab12dcb72d4c95f2863e9dddd5c42003345a001684ea55a736172f32eea1',
+			'26b89419a4f562ab31a1a72eac04833aa1026af937f1d53c088ec258df3db84b',
+			'1db184b6d10a61a37dc30efdc74d587560fac5291c8bb329977e93bb5a312602',
+			'6b0f2ed5be272942eeabea3a0289027d164c7b1ce6a76166d1c928a57db762c5',
+			'c095e3e73591843a22dc979d1fcfe3d6cf6841d1f51387d208d19f8bed01deb7',
+			'867feeff5acd481c80bae557c586718fb5390bbaaa1cbde55fae296a7884e799',
+			'a6f4c487be2aa012f41f1fba40e664f914ede9251f4b967d890ab5c065a29fb7',
+			'1d8caace0299b12bcc469c35ce927e838abd9c645a22fe7c556f4394e57fa79b',
+		],
 	},
 	{
 		ours: 'badges-spoof-gifting',
 		name: 'Gifting',
 		levels: ['Patron', 'Champion', 'Luminary', 'Icon', 'Hero', 'Legend'],
+		icons: [
+			'ac305d1b9481f312ce4419e7f8296558',
+			'8b7792c4f65953d3ff564f23429cb79e',
+			'3119f5504b2cd09576a323908c7c3517',
+			'64f2413c9b9803661322aaad25826b62',
+			'77d65b1f210014a11eb1582ee06ab684',
+			'7fe346cfc5da1340087d8759a9e7a395',
+		],
 	},
-].map(r => ({ ...r, names: new Set([r.name, ...r.levels]), keys: new Set<string>() }))
+].map(r => ({ ...r, names: new Set([r.name, ...r.levels]), keys: new Set<string>(r.icons) }))
 
 let replacedLoaded = false
 
@@ -105,17 +126,23 @@ function learnReplaced(item: Row) {
 	if (replace.keys.size !== before) setTimeout(saveReplaced, 0)
 }
 
+// The icon file names a catalog entry (and its levels) point to.
+const iconHashes = (item: Row) =>
+	[item, ...(Array.isArray(item.tiers) ? item.tiers : [])].flatMap(source =>
+		isRecord(source) ? [source.simple_icon_url, source.simple_icon_raster_url, source.complex_icon_static_url].map(hashOf) : [],
+	)
+
 const isReplaced = (item: unknown) => {
 	if (!isRecord(item) || isOurId(item.badge_id ?? item.id)) return false
 	loadReplaced()
 	const id = badgeIdOf(item)
-	const icon = typeof item.icon === 'string' ? item.icon : undefined
+	const icons = [item.icon, ...iconHashes(item)].filter((icon): icon is string => typeof icon === 'string')
 	return REPLACES.some(
 		r =>
 			r.names.has(item.name) ||
 			r.names.has(item.description) ||
 			Boolean(id && r.keys.has(id)) ||
-			Boolean(icon && r.keys.has(icon)),
+			icons.some(icon => r.keys.has(icon)),
 	)
 }
 
