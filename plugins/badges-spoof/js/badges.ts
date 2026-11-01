@@ -3,6 +3,7 @@ import {
 	type BadgeDefinition,
 	getDetails,
 	getOrder,
+	hidesReal,
 	getReplaced,
 	setReplaced,
 	setOrder,
@@ -297,7 +298,7 @@ function cached(original: unknown[], kind: string, build: () => unknown[]) {
 // The list of badges on a profile, with ours added. Run it on the current user's list only.
 export function withBadges(original: unknown[]): unknown[] {
 	return cached(original, 'badges', () => {
-		const native = original.filter(item => !(isRecord(item) && isOurId(item.id)) && !isReplaced(item))
+		const native = hidesReal() ? [] : original.filter(item => !(isRecord(item) && isOurId(item.id)) && !isReplaced(item))
 		const ours = active(false).map(asBadge)
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
@@ -318,7 +319,8 @@ export function withBadges(original: unknown[]): unknown[] {
 export function withCatalog(original: unknown[], includeHidden: boolean): unknown[] {
 	return cached(original, includeHidden ? 'catalog-all' : 'catalog-shown', () => {
 		for (const item of original) if (isRecord(item) && !isOurId(item.badge_id) && typeof item.name === 'string') learnReplaced(item)
-		const native = original.filter(item => !(isRecord(item) && isOurId(item.badge_id)) && !isReplaced(item))
+		// The edit list keeps the real badges so they can still be moved; the profile's own list drops them.
+		const native = !includeHidden && hidesReal() ? [] : original.filter(item => !(isRecord(item) && isOurId(item.badge_id)) && !isReplaced(item))
 		const ours = active(includeHidden).map(badge => asCatalogBadge(badge))
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native

@@ -84,9 +84,23 @@ export interface Settings {
 	// What the real Account Age badge goes by (ids, icon file names), learnt from the badge list, so
 	// it can be left out before that list has been opened again.
 	replaced: string[]
+	// Which Nitro level the Nitro badge shows: "none" or a level key from NITRO_LEVELS.
+	nitroLevel: string
+	// Show only the badges added here, not the ones Discord gives you.
+	hideReal: boolean
+	// The text and dates on the sheets, by field id (see TEXT_FIELDS).
+	texts: Record<string, string>
 }
 
-export const DEFAULT_SETTINGS: Settings = { hidden: {}, showAll: true, order: [], replaced: [] }
+export const DEFAULT_SETTINGS: Settings = {
+	hidden: {},
+	showAll: true,
+	order: [],
+	replaced: [],
+	nitroLevel: 'opal',
+	hideReal: false,
+	texts: {},
+}
 
 let storage: JsonStorage<Settings> | undefined
 
@@ -98,8 +112,60 @@ function read(): Partial<Settings> {
 	return (storage?.cache as Partial<Settings> | undefined) ?? {}
 }
 
+// The Nitro levels, lowest first. "none" turns the badge off.
+export const NITRO_LEVELS = [
+	{ key: 'none', label: 'None' },
+	{ key: 'starter', label: 'Nitro' },
+	{ key: 'bronze', label: 'Bronze' },
+	{ key: 'silver', label: 'Silver' },
+	{ key: 'gold', label: 'Gold' },
+	{ key: 'platinum', label: 'Platinum' },
+	{ key: 'diamond', label: 'Diamond' },
+	{ key: 'emerald', label: 'Emerald' },
+	{ key: 'ruby', label: 'Ruby' },
+	{ key: 'opal', label: 'Opal' },
+] as const
+
+export function getNitroLevel(): string {
+	const level = read().nitroLevel
+	return NITRO_LEVELS.some(item => item.key === level) ? (level as string) : 'opal'
+}
+
+export const hidesReal = () => read().hideReal === true
+
+// The numbers and dates on the sheets that can be changed in settings.
+export const TEXT_FIELDS = [
+	{ id: 'gifting.count', badge: 'gifting', label: 'Gifts given', placeholder: '44' },
+	{ id: 'gifting.date', badge: 'gifting', label: 'Gifting unlocked on', placeholder: '02/04/26' },
+	{ id: 'account-age.age', badge: 'account-age', label: 'Account age', placeholder: '10 years, 6 months' },
+	{ id: 'account-age.date', badge: 'account-age', label: 'Account Age unlocked on', placeholder: '02/04/26' },
+	{ id: 'nitro.since', badge: 'nitro', label: 'Nitro subscriber since', placeholder: '04/04/2020' },
+	{ id: 'nitro.date', badge: 'nitro', label: 'Nitro unlocked on', placeholder: '04/04/26' },
+	{ id: 'server-boosting.since', badge: 'server-boosting', label: 'Boosting since', placeholder: '04/04/2020' },
+	{ id: 'server-boosting.date', badge: 'server-boosting', label: 'Server Boosting unlocked on', placeholder: '04/04/22' },
+] as const
+
+const textOf = (id: string): string => {
+	const field = TEXT_FIELDS.find(item => item.id === id)
+	const value = read().texts?.[id]
+	return (typeof value === 'string' && value.trim()) || field?.placeholder || ''
+}
+
+// "02/04/26" or "02/04/2026" (day/month/year) as the date the sheets are given.
+function isoDate(text: string, fallback: string): string {
+	const match = /^\s*(\d{1,2})[/.-](\d{1,2})[/.-](\d{2}|\d{4})\s*$/.exec(text)
+	if (!match) return fallback
+	const [day, month, rawYear] = [Number(match[1]), Number(match[2]), Number(match[3])]
+	const year = rawYear < 100 ? 2000 + rawYear : rawYear
+	if (month < 1 || month > 12 || day < 1 || day > 31) return fallback
+	return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T12:00:00.000Z`
+}
+
+const datesFor = (keys: string[], iso: string) => Object.fromEntries(keys.map(key => [key, iso]))
+
 // Looked up at call time, so changes apply without reloading.
 export function isHidden(key: string): boolean {
+	if (key === 'nitro' && getNitroLevel() === 'none') return true
 	const hidden = read().hidden
 	return Boolean(hidden && typeof hidden === 'object' && hidden[key] === true)
 }
@@ -216,15 +282,15 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 		info_label: 'Subscriber since 04/04/2020',
 		description: 'Subscribe to Nitro to unlock this badge.',
 		tiers: [
-			tier('starter', 'Nitro Starter', '', 0, nitro('starter')),
-			tier('bronze', 'Nitro Bronze', '1 month', 1, nitro('bronze')),
-			tier('silver', 'Nitro Silver', '3 months', 3, nitro('silver')),
-			tier('gold', 'Nitro Gold', '6 months', 6, nitro('gold')),
-			tier('platinum', 'Nitro Platinum', '1 year', 12, nitro('platinum')),
-			tier('diamond', 'Nitro Diamond', '2 years', 24, nitro('diamond')),
-			tier('emerald', 'Nitro Emerald', '3 years', 36, nitro('emerald')),
-			tier('ruby', 'Nitro Ruby', '5 years', 60, nitro('ruby')),
-			tier('opal', 'Nitro Opal', '6+ years', 72, nitro('opal'), `${ICON_BASE}/sheet/nitro.png?v=2`),
+			tier('starter', 'Nitro Starter', '', 0, nitro('starter'), `${ICON_BASE}/sheet/nitro-starter.png?v=1`),
+			tier('bronze', 'Nitro Bronze', '1 month', 1, nitro('bronze'), `${ICON_BASE}/sheet/nitro-bronze.png?v=1`),
+			tier('silver', 'Nitro Silver', '3 months', 3, nitro('silver'), `${ICON_BASE}/sheet/nitro-silver.png?v=1`),
+			tier('gold', 'Nitro Gold', '6 months', 6, nitro('gold'), `${ICON_BASE}/sheet/nitro-gold.png?v=1`),
+			tier('platinum', 'Nitro Platinum', '1 year', 12, nitro('platinum'), `${ICON_BASE}/sheet/nitro-platinum.png?v=1`),
+			tier('diamond', 'Nitro Diamond', '2 years', 24, nitro('diamond'), `${ICON_BASE}/sheet/nitro-diamond.png?v=1`),
+			tier('emerald', 'Nitro Emerald', '3 years', 36, nitro('emerald'), `${ICON_BASE}/sheet/nitro-emerald.png?v=1`),
+			tier('ruby', 'Nitro Ruby', '5 years', 60, nitro('ruby'), `${ICON_BASE}/sheet/nitro-ruby.png?v=1`),
+			tier('opal', 'Nitro Opal', '6+ years', 72, nitro('opal'), `${ICON_BASE}/sheet/nitro-opal.png?v=1`),
 		],
 		current_tier: 'opal',
 		next_tier: null,
@@ -256,7 +322,80 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 }
 
 // Discord's sheet text for a badge, with the MYTHIC rarity every one of these has.
-export const getDetails = (key: string) => ({ rarity: 5, is_earnable: false, progress: null, ...BUILT_IN_DETAILS[key] })
+const NITRO_MONTHS: Record<string, number> = { starter: 0, bronze: 1, silver: 3, gold: 6, platinum: 12, diamond: 24, emerald: 36, ruby: 60, opal: 72 }
+const NITRO_ORDER = Object.keys(NITRO_MONTHS)
+
+// The sheet text for a badge, with the numbers and dates from settings filled in.
+function withSettings(key: string, base: Record<string, any> | undefined): Record<string, any> | undefined {
+	if (!base) return base
+
+	if (key === 'gifting') {
+		const count = textOf('gifting.count')
+		const iso = isoDate(textOf('gifting.date'), base.obtained_at)
+		const current = Number(count.replace(/[^0-9.]/g, '')) || 0
+		return {
+			...base,
+			info_label: `${count} gifts given`,
+			progress: base.progress.map((item: any) => ({ ...item, current, progress_helper_text: `${count} gifts given` })),
+			obtained_at: iso,
+			tier_obtained_at: datesFor(Object.keys(base.tier_obtained_at), iso),
+		}
+	}
+
+	if (key === 'account-age') {
+		const age = textOf('account-age.age')
+		const iso = isoDate(textOf('account-age.date'), base.obtained_at)
+		return {
+			...base,
+			info_label: age,
+			progress: base.progress.map((item: any) => ({ ...item, progress_helper_text: age })),
+			obtained_at: iso,
+			tier_obtained_at: datesFor(Object.keys(base.tier_obtained_at), iso),
+		}
+	}
+
+	if (key === 'server-boosting') {
+		const since = textOf('server-boosting.since')
+		const iso = isoDate(textOf('server-boosting.date'), base.obtained_at)
+		return {
+			...base,
+			info_label: `Boosting since ${since}`,
+			progress: base.progress.map((item: any) => ({ ...item, progress_helper_text: `Boosting since ${since}` })),
+			obtained_at: iso,
+			tier_obtained_at: datesFor(Object.keys(base.tier_obtained_at), iso),
+		}
+	}
+
+	if (key === 'nitro') {
+		const since = textOf('nitro.since')
+		const iso = isoDate(textOf('nitro.date'), base.obtained_at)
+		const level = getNitroLevel() === 'none' ? 'opal' : getNitroLevel()
+		const at = NITRO_ORDER.indexOf(level)
+		const reached = NITRO_ORDER.slice(0, at + 1)
+		return {
+			...base,
+			info_label: `Subscriber since ${since}`,
+			current_tier: level,
+			next_tier: NITRO_ORDER[at + 1] ?? null,
+			progress: base.progress.map((item: any) => ({
+				...item,
+				current: NITRO_MONTHS[level],
+				progress_helper_text: `Subscriber since ${since}`,
+			})),
+			obtained_at: iso,
+			tier_obtained_at: datesFor(reached, iso),
+		}
+	}
+
+	return base
+}
+
+export const getDetails = (key: string) => ({
+	rarity: 5,
+	is_earnable: false,
+	progress: null,
+	...withSettings(key, BUILT_IN_DETAILS[key]),
+})
 
 export function getOrder(): string[] {
 	const order = read().order
@@ -317,8 +456,23 @@ export function status(key: string, message: string) {
 export const getStatusLines = (): string[] => [...statusLines.values()]
 export const resetStatus = () => statusLines.clear()
 
+// The Nitro badge's icon follows the level chosen in settings.
+const nitroBadge = BADGES.find(badge => badge.key === 'nitro')
+if (nitroBadge) {
+	const icon = () => `${ICON_BASE}/nitro-${getNitroLevel() === 'none' ? 'opal' : getNitroLevel()}.png`
+	Object.defineProperties(nitroBadge, {
+		url: { get: icon, enumerable: true, configurable: true },
+		sheetUrl: { get: icon, enumerable: true, configurable: true },
+	})
+}
+
 // Sheet pictures drawn bigger than their box, by file: Nitro's wings are wider than the others.
-const SHEET_SCALES: Record<string, number> = { 'sheet/nitro.png': 1.4 }
+const SHEET_SCALES: Record<string, number> = {
+	'sheet/nitro-opal.png': 1.4,
+	'sheet/nitro-ruby.png': 1.3,
+	'sheet/nitro-emerald.png': 1.2,
+	'sheet/nitro-diamond.png': 1.1,
+}
 
 export const sheetScaleFor = (uri: string): number | undefined => {
 	const path = uri.split('?')[0]
