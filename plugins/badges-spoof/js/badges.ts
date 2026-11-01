@@ -19,6 +19,28 @@ export const isOurId = (id: unknown): id is string =>
 export const findBadge = (id: unknown): BadgeDefinition | undefined =>
 	isOurId(id) ? BADGES.find(badge => badge.id === id) : undefined
 
+// The real badges seen on your profile or in the edit list, so the settings can list them.
+const knownReal = new Map<string, string>()
+
+function remember(list: unknown[]) {
+	for (const item of list) {
+		if (!isRecord(item) || isOurId(item.id ?? item.badge_id) || item.owned === false) continue
+
+		const id = badgeIdOf(item)
+		const name = item.name ?? item.description
+		if (id && typeof name === 'string' && name) knownReal.set(id, name)
+	}
+}
+
+// Every badge you have, real and added, in the saved order. For the settings screen.
+export function orderedBadges(): { id: string; name: string }[] {
+	const all = [
+		...[...knownReal].map(([id, name]) => ({ id, name })),
+		...BADGES.map(badge => ({ id: badge.id, name: badge.name })),
+	]
+	return inSavedOrder(all, item => item.id)
+}
+
 // The id of a badge in any of the shapes Discord passes around.
 export const badgeIdOf = (item: unknown): string | undefined => {
 	const id = isRecord(item) ? (item.id ?? item.badgeId ?? item.badge_id) : item
@@ -95,6 +117,7 @@ function cached(original: unknown[], kind: string, build: () => unknown[]) {
 // The list of badges on a profile, with ours added. Run it on the current user's list only.
 export function withBadges(original: unknown[]): unknown[] {
 	return cached(original, 'badges', () => {
+		remember(original)
 		const native = original.filter(item => !(isRecord(item) && isOurId(item.id)))
 		const ours = active(false).map(asBadge)
 
@@ -106,6 +129,7 @@ export function withBadges(original: unknown[]): unknown[] {
 // The badge catalog. The edit profile screen needs the hidden ones too, to show them dimmed.
 export function withCatalog(original: unknown[], includeHidden: boolean): unknown[] {
 	return cached(original, includeHidden ? 'catalog-all' : 'catalog-shown', () => {
+		remember(original)
 		const native = original.filter(item => !(isRecord(item) && isOurId(item.badge_id)))
 		const ours = active(includeHidden).map(badge => asCatalogBadge(badge))
 
