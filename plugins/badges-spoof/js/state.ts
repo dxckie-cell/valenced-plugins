@@ -60,6 +60,7 @@ export const BADGES: BadgeDefinition[] = [
 		url: `${ICON_BASE}/gifting.png?v=3`,
 		sheetUrl: `${ICON_BASE}/gifting.png?v=3`,
 	}),
+	define('account-age', 'Account Age', '1d8caace0299b12bcc469c35ce927e838abd9c645a22fe7c556f4394e57fa79b', undefined, { tiered: true }),
 	define('server-boosting', 'Server Boosting', 'd96ed283b74de75692487b7499fb8d09', undefined, {
 		tiered: true,
 		sheetUrl: `${ICON_BASE}/boosting-tile.png`,
@@ -108,6 +109,7 @@ const tier = (key: string, name: string | undefined, milestone: string, threshol
 })
 
 const gift = (hash: string) => `${BADGE_CDN}/${hash}.png`
+const age = (k: string) => `${ICON_BASE}/tiers/age-${k}.png`
 const boost = (n: number) => `${ICON_BASE}/tiers/boost-${n}.png`
 
 const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; description: string } & Record<string, unknown>> = {
@@ -168,6 +170,30 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 		progress: [1, 2, 3, 6, 10, 20].map(threshold => ({ current: 44, threshold, progress_helper_text: '44 gifts given' })),
 		obtained_at: '2026-04-02T12:00:00.000Z',
 		tier_obtained_at: Object.fromEntries(['patron', 'champion', 'luminary', 'icon', 'hero', 'legend'].map(k => [k, '2026-04-02T12:00:00.000Z'])),
+	},
+	'account-age': {
+		name: 'Account Age',
+		info_label: '10 years, 7 months',
+		description: 'Keep an active Discord account to level up this badge. Time will do the rest.',
+		tiers: [
+			tier('seed', 'Seed', '1 year', 1, age('seed')),
+			tier('sprout', 'Sprout', '2 years', 2, age('sprout')),
+			tier('sapling', 'Sapling', '3 years', 3, age('sapling')),
+			tier('bud', 'Bud', '4 years', 4, age('bud')),
+			tier('blossom', 'Blossom', '5 years', 5, age('blossom')),
+			tier('redwood', 'Redwood', '6 years', 6, age('redwood')),
+			tier('sequoia', 'Sequoia', '7 years', 7, age('sequoia')),
+			tier('bristlecone', 'Bristlecone', '8 years', 8, age('bristlecone')),
+			tier('stromatolite', 'Stromatolite', '9 years', 9, age('stromatolite')),
+			tier('primordial', 'Primordial', '10+ years', 10, age('primordial'), `${ICON_BASE}/sheet/account-age.png?v=1`),
+		],
+		current_tier: 'primordial',
+		next_tier: null,
+		progress: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(threshold => ({ current: 10, threshold, progress_helper_text: '10 years, 7 months' })),
+		obtained_at: '2026-03-21T12:00:00.000Z',
+		tier_obtained_at: Object.fromEntries(
+			['seed', 'sprout', 'sapling', 'bud', 'blossom', 'redwood', 'sequoia', 'bristlecone', 'stromatolite', 'primordial'].map(k => [k, '2026-03-21T12:00:00.000Z']),
+		),
 	},
 	'server-boosting': {
 		name: 'Server Boosting',
