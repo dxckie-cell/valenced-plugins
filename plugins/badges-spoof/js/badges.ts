@@ -2,6 +2,7 @@ import {
 	BADGES,
 	type BadgeDefinition,
 	getDetails,
+	getOrder,
 	getVersion,
 	ID_PREFIX,
 	isHidden,
@@ -17,6 +18,27 @@ export const isOurId = (id: unknown): id is string =>
 
 export const findBadge = (id: unknown): BadgeDefinition | undefined =>
 	isOurId(id) ? BADGES.find(badge => badge.id === id) : undefined
+
+// The id of a badge in any of the shapes Discord passes around.
+export const badgeIdOf = (item: unknown): string | undefined => {
+	const id = isRecord(item) ? (item.id ?? item.badgeId ?? item.badge_id) : item
+	return typeof id === 'string' || typeof id === 'number' ? String(id) : undefined
+}
+
+// Puts the badges in the order saved on this device. Badges not in it (new ones) go last.
+function inSavedOrder<T>(list: T[], idOf: (item: T) => string | undefined): T[] {
+	const order = getOrder()
+	if (!order.length) return list
+
+	const rank = new Map(order.map((id, index) => [id, index]))
+	const rankOf = (item: T) => rank.get(idOf(item) ?? '') ?? Number.POSITIVE_INFINITY
+	const sorted = list
+		.map((item, index) => ({ item, index }))
+		.sort((a, b) => rankOf(a.item) - rankOf(b.item) || a.index - b.index)
+		.map(({ item }) => item)
+
+	return sorted.every((item, index) => item === list[index]) ? list : sorted
+}
 
 // The badges to add, with or without the ones the user hid.
 const active = (includeHidden: boolean) =>
@@ -76,8 +98,8 @@ export function withBadges(original: unknown[]): unknown[] {
 		const native = original.filter(item => !(isRecord(item) && isOurId(item.id)))
 		const ours = active(false).map(asBadge)
 
-		if (!ours.length) return native.length === original.length ? original : native
-		return [...native, ...ours]
+		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
+		return inSavedOrder(merged, badgeIdOf)
 	})
 }
 
@@ -87,8 +109,8 @@ export function withCatalog(original: unknown[], includeHidden: boolean): unknow
 		const native = original.filter(item => !(isRecord(item) && isOurId(item.badge_id)))
 		const ours = active(includeHidden).map(badge => asCatalogBadge(badge))
 
-		if (!ours.length) return native.length === original.length ? original : native
-		return [...native, ...ours]
+		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
+		return inSavedOrder(merged, item => badgeIdOf(isRecord(item) && item.badge_id !== undefined ? item.badge_id : item))
 	})
 }
 

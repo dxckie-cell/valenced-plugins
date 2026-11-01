@@ -3,12 +3,13 @@ import { withName, withProps } from '@valenced/modules/finders/filters'
 import { before, instead } from '@valenced/patcher'
 import * as React from 'react'
 import { StyleSheet, Text } from 'react-native'
-import { catalogEntry, findBadge, isOurId, isRecord, withBadges, withCatalog } from './badges'
+import { badgeIdOf, catalogEntry, findBadge, isOurId, isRecord, withBadges, withCatalog } from './badges'
 import {
 	type BadgeDefinition,
 	getVersion,
 	isHidden,
 	setHidden,
+	setOrder,
 	showsAll,
 	status,
 	subscribe,
@@ -45,7 +46,7 @@ function patchKey(target: any, key: string, hook: Hook, cleanup: Register, what:
 	}
 }
 
-const withoutOurs = (list: unknown) => (Array.isArray(list) ? list.filter(id => !isOurId(id)) : list)
+const withoutOurs = (list: unknown) => (Array.isArray(list) ? list.filter(item => !isOurId(badgeIdOf(item))) : list)
 
 export function applyPatches(getStore: GetStore, cleanup: Register) {
 	// Only the current user's badges are changed. Everyone else's profile stays as it is.
@@ -295,11 +296,20 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				'setPendingBadgeDisplayOrder',
 				function (this: any, args, original) {
 					const order = args[0]
-					if (!Array.isArray(order) || !order.some(isOurId)) {
-						return Reflect.apply(original, this, args)
+					if (!Array.isArray(order)) return Reflect.apply(original, this, args)
+
+					// The new order, real and added badges together, is kept on this device.
+					const ids = order.map(badgeIdOf).filter((id): id is string => Boolean(id))
+					if (ids.length > 1) {
+						setOrder(ids)
+						status('badge order', `badge order: saved ${ids.length} (${ids.slice(0, 3).join(', ')}...)`)
 					}
 
-					return Reflect.apply(original, this, [withoutOurs(order), ...args.slice(1)])
+					// Discord only gets the real badges, in the order they now have.
+					return Reflect.apply(original, this, [
+						ids.some(id => isOurId(id)) ? withoutOurs(order) : order,
+						...args.slice(1),
+					])
 				},
 				cleanup,
 				'hide and show',

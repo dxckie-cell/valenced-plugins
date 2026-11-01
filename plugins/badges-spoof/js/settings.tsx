@@ -19,6 +19,11 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						value={settings.showAll !== false}
 						onValueChange={(showAll: boolean) => api.jsonStorage.set({ showAll })}
 					/>
+					<Design.TableRow
+						label="Reset badge order"
+						subLabel="Go back to Discord's own order. Drag badges in Edit Profile to reorder them."
+						onPress={() => api.jsonStorage.set({ order: [] })}
+					/>
 				</Design.TableRowGroup>
 
 				<Design.TableRowGroup title="Status">

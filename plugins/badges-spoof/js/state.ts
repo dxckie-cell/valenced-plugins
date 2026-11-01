@@ -55,9 +55,11 @@ export interface Settings {
 	hidden: Record<string, boolean>
 	// Show every badge instead of only the first six.
 	showAll: boolean
+	// Your badge order, real and added badges together, by id. Kept on this device only.
+	order: string[]
 }
 
-export const DEFAULT_SETTINGS: Settings = { hidden: {}, showAll: true }
+export const DEFAULT_SETTINGS: Settings = { hidden: {}, showAll: true, order: [] }
 
 let storage: JsonStorage<Settings> | undefined
 
@@ -118,6 +120,15 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 
 // Discord's sheet text for a badge, with the MYTHIC rarity every one of these has.
 export const getDetails = (key: string) => ({ ...BUILT_IN_DETAILS[key], rarity: 5, is_earnable: false, progress: null })
+
+export function getOrder(): string[] {
+	const order = read().order
+	return Array.isArray(order) ? order.filter((id): id is string => typeof id === 'string') : []
+}
+
+export function setOrder(order: string[]) {
+	storage?.set({ order })?.catch?.((e: unknown) => status('order', `could not save: ${(e as Error)?.message}`))
+}
 
 export function setHidden(key: string, value: boolean) {
 	const hidden = { ...(read().hidden ?? {}), [key]: value }
