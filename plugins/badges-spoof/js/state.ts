@@ -58,7 +58,6 @@ export const BADGES: BadgeDefinition[] = [
 	define('gifting', 'Gifting', '7fe346cfc5da1340087d8759a9e7a395', undefined, {
 		tiered: true,
 		url: `${BADGE_CDN}/7fe346cfc5da1340087d8759a9e7a395.png`,
-		sheetUrl: `${BADGE_CDN}/7fe346cfc5da1340087d8759a9e7a395.png`,
 	}),
 	define('server-boosting', 'Server Boosting', 'd96ed283b74de75692487b7499fb8d09', undefined, { tiered: true }),
 ]
@@ -93,7 +92,7 @@ export function isHidden(key: string): boolean {
 export const showsAll = () => read().showAll !== false
 
 // Discord's own sheet text for each badge.
-const tier = (key: string, name: string, milestone: string, threshold: number, icon: string) => ({
+const tier = (key: string, name: string | undefined, milestone: string, threshold: number, icon: string) => ({
 	key,
 	name,
 	milestone_text: milestone,
@@ -162,28 +161,28 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 		next_tier: null,
 		progress: [{ current: 44, threshold: 20, progress_helper_text: '44 gifts given' }],
 		obtained_at: '2026-04-02T12:00:00.000Z',
-		tier_obtained_at: { legend: '2026-04-02T12:00:00.000Z' },
+		tier_obtained_at: Object.fromEntries(['patron', 'champion', 'luminary', 'icon', 'hero', 'legend'].map(k => [k, '2026-04-02T12:00:00.000Z'])),
 	},
 	'server-boosting': {
 		name: 'Server Boosting',
 		info_label: 'Boosting since 04/04/2020',
 		description: 'Boost 1 server to unlock this badge.',
 		tiers: [
-			tier('boost-1', '', '1 month', 1, boost(1)),
-			tier('boost-2', '', '2 months', 2, boost(2)),
-			tier('boost-3', '', '3 months', 3, boost(3)),
-			tier('boost-4', '', '6 months', 6, boost(4)),
-			tier('boost-5', '', '9 months', 9, boost(5)),
-			tier('boost-6', '', '12 months', 12, boost(6)),
-			tier('boost-7', '', '15 months', 15, boost(7)),
-			tier('boost-8', '', '18 months', 18, boost(8)),
-			tier('boost-9', '', '24+ months', 24, boost(9)),
+			tier('boost-1', undefined, '1 month', 1, boost(1)),
+			tier('boost-2', undefined, '2 months', 2, boost(2)),
+			tier('boost-3', undefined, '3 months', 3, boost(3)),
+			tier('boost-4', undefined, '6 months', 6, boost(4)),
+			tier('boost-5', undefined, '9 months', 9, boost(5)),
+			tier('boost-6', undefined, '12 months', 12, boost(6)),
+			tier('boost-7', undefined, '15 months', 15, boost(7)),
+			tier('boost-8', undefined, '18 months', 18, boost(8)),
+			tier('boost-9', undefined, '24+ months', 24, boost(9)),
 		],
 		current_tier: 'boost-9',
 		next_tier: null,
 		progress: [{ current: 79, threshold: 24, progress_helper_text: 'Boosting since 04/04/2020' }],
 		obtained_at: '2022-04-04T12:00:00.000Z',
-		tier_obtained_at: { 'boost-9': '2022-04-04T12:00:00.000Z' },
+		tier_obtained_at: Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => [`boost-${n}`, '2022-04-04T12:00:00.000Z'])),
 	},
 }
 
