@@ -51,7 +51,7 @@ export const asCatalogBadge = (badge: BadgeDefinition) => {
 		// The box under the tagline: "Legacy Badge", then how it was unlocked, as Discord's own
 		// description says it. Discord shows "Legacy Badge" as a small label on someone else's
 		// profile, but not on yours, so it is the first line here.
-		...(badge.copyDetails && {
+		...(badge.copyDetails && badge.phrase && {
 			description:
 				typeof copied?.description === 'string' && copied.description
 					? `Legacy Badge\n${copied.description}`

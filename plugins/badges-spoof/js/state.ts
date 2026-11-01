@@ -17,6 +17,8 @@ export interface BadgeDefinition {
 	// they are seen on another profile, so tapping the badge shows the same sheet.
 	copyDetails: boolean
 	// What Discord's sheet says for this badge on someone else's profile, in place of "Unlocked".
+	// Badges with one are legacy badges and get the "Legacy Badge" line; those without (Discord
+	// Staff) keep "Unlocked" and Discord's own text.
 	phrase?: string
 }
 
@@ -37,7 +39,7 @@ function define(
 		name,
 		icon,
 		url: `${ICON_BASE}/${key}.png`,
-		sheetUrl: copyDetails ? `${ICON_BASE}/sheet/${key}.png` : `${ICON_BASE}/${key}.png`,
+		sheetUrl: `${ICON_BASE}/sheet/${key}.png`,
 		copyDetails,
 		phrase,
 	}
@@ -46,12 +48,12 @@ function define(
 // In the order they are shown on the profile.
 export const BADGES: BadgeDefinition[] = [
 	define('early-supporter', 'Early Supporter', '7060786766c9c840eb3019e725d2b358', true, 'Very, very early'),
-	define('hypesquad-events', 'HypeSquad Events', 'bf01d1073931f921909045f3a39fd264'),
+	define('hypesquad-events', 'HypeSquad Events', 'bf01d1073931f921909045f3a39fd264', true, 'Very, very early'),
 	define('moderator-alumni', 'Moderator Programs Alumni', 'fee1624003e2fee35cb398e125dc479b', true, 'Lost to time'),
 	define('partnered-server-owner', 'Partnered Server Owner', '3f9748e53446a137a052f3454e2de41e', true, 'Very, very early'),
-	define('golden-bug-hunter', 'Discord Bug Hunter', '848f79194d4be5ff5f81505cbd0ce1e6'),
-	define('early-verified-bot-developer', 'Early Verified Bot Developer', '6df5892e0f35b051f8b61eace34f4967'),
-	define('discord-staff', 'Discord Staff', '5e74e9b61934fc1f67c65515d1f7e60d'),
+	define('golden-bug-hunter', 'Golden Bug Hunter', '848f79194d4be5ff5f81505cbd0ce1e6', true, 'Lost to time'),
+	define('early-verified-bot-developer', 'Early Verified Bot Developer', '6df5892e0f35b051f8b61eace34f4967', true, 'iykyk'),
+	define('discord-staff', 'Discord Staff', '5e74e9b61934fc1f67c65515d1f7e60d', true),
 ]
 
 export interface Settings {
