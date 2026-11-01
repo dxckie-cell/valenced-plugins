@@ -3,7 +3,7 @@ import { withName, withProps } from '@valenced/modules/finders/filters'
 import { before, instead } from '@valenced/patcher'
 import * as React from 'react'
 import { StyleSheet, Text } from 'react-native'
-import { badgeIdOf, catalogEntry, findBadge, isOurId, isRecord, withBadges, withCatalog } from './badges'
+import { badgeIdOf, catalogEntry, findBadge, isOurId, isRecord, moveBadge, withBadges, withCatalog } from './badges'
 import {
 	type BadgeDefinition,
 	getVersion,
@@ -159,6 +159,86 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				)
 			: false
 
+	// Long-press menu on the edit profile screen: "Go Left" and "Go Right" are added under
+	// "Hide Badge". They run Discord's own hide item, and the badge it asks to hide is moved
+	// instead (see setPendingBadgeVisibility below).
+	let menuUntil = 0
+	let pendingMove: { delta: -1 | 1; at: number } | undefined
+	let menuSeen = false
+	let menuMissSeen = false
+
+	const HIDE_ITEM = /^(un)?hide badge$/i
+	const textKeys = ['label', 'title', 'text', 'actionTitle', 'children'] as const
+	const handlerKeys = ['onPress', 'onSelect', 'onClick', 'action', 'onPressMenuItem'] as const
+
+	const textOf = (item: any): string | undefined => {
+		const source = React.isValidElement(item) ? (item as any).props : item
+		if (!source || typeof source !== 'object') return undefined
+		for (const key of textKeys) if (typeof source[key] === 'string') return source[key]
+		return undefined
+	}
+
+	const moveItem = (item: any, label: string, delta: -1 | 1, suffix: string) => {
+		const isElement = React.isValidElement(item)
+		const source = isElement ? (item as any).props : item
+		const changes: Record<string, unknown> = {}
+
+		for (const key of textKeys) if (typeof source[key] === 'string') changes[key] = label
+		for (const key of handlerKeys) {
+			const handler = source[key]
+			if (typeof handler === 'function') {
+				changes[key] = (...args: unknown[]) => {
+					pendingMove = { delta, at: Date.now() }
+					return handler(...args)
+				}
+			}
+		}
+		for (const key of ['id', 'key', 'actionKey']) {
+			if (typeof source[key] === 'string') changes[key] = `${source[key]}${suffix}`
+		}
+
+		return isElement
+			? React.cloneElement(item, { ...changes, key: `${(item as any).key ?? 'item'}${suffix}` })
+			: { ...item, ...changes }
+	}
+
+	const addMoveItems = (args: any[], props: any): any[] | undefined => {
+		for (const key of ['items', 'options', 'actions', 'children']) {
+			const list = props[key]
+			if (!Array.isArray(list) || list.length > 12) continue
+
+			const at = list.findIndex(item => HIDE_ITEM.test(textOf(item) ?? ''))
+			if (at < 0 || list.some(item => textOf(item) === 'Go Left')) continue
+
+			const item = list[at]
+			const next = [
+				...list.slice(0, at + 1),
+				moveItem(item, 'Go Left', -1, '-left'),
+				moveItem(item, 'Go Right', 1, '-right'),
+				...list.slice(at + 1),
+			]
+
+			if (!menuSeen) {
+				menuSeen = true
+				status('badge menu', `badge menu: Go Left / Go Right added (${typeName(args[0])}.${key})`)
+			}
+			return [args[0], { ...props, [key]: next }, ...args.slice(2)]
+		}
+
+		// The text is there but not in a list this code knows: report where, once.
+		if (!menuMissSeen) {
+			for (const key of Object.keys(props)) {
+				const value = props[key]
+				if (typeof value === 'string' && HIDE_ITEM.test(value)) {
+					menuMissSeen = true
+					status('badge menu', `badge menu: "Hide Badge" found in ${typeName(args[0])}.${key}, nothing added`)
+				}
+			}
+		}
+
+		return undefined
+	}
+
 	let wrapSeen = false
 	let iconSeen = false
 
@@ -166,6 +246,12 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 		try {
 			const props = args[1]
 			if (!props || typeof props !== 'object') return args
+
+			// Only while the edit profile badge screen is likely open.
+			if (Date.now() < menuUntil) {
+				const withMenu = addMoveItems(args, props)
+				if (withMenu) return withMenu
+			}
 
 			// The sheet of one of our badges: change the tagline word.
 			if (sheet && props.children !== undefined) {
@@ -252,7 +338,10 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 					if (!Array.isArray(result) || !userId) return result
 
 					// Only your own list is changed.
-					return userId === currentUserId() ? withCatalog(result, true) : result
+					if (userId !== currentUserId()) return result
+
+					menuUntil = Date.now() + 10 * 60_000
+					return withCatalog(result, true)
 				},
 				cleanup,
 				'badge list',
@@ -321,6 +410,21 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				function (this: any, args, original) {
 					const options = args[0]
 					if (!isRecord(options)) return Reflect.apply(original, this, args)
+
+					// "Go Left" / "Go Right" ran the hide item: move the badge instead of hiding it.
+					if (pendingMove && Date.now() - pendingMove.at < 1000) {
+						const { delta } = pendingMove
+						pendingMove = undefined
+
+						const id = badgeIdOf(options.badgeId)
+						status(
+							'badge menu move',
+							id && moveBadge(id, delta)
+								? `badge menu: moved ${id} ${delta < 0 ? 'left' : 'right'}`
+								: `badge menu: could not move ${id ?? 'a badge'} (at the end, or not in the list)`,
+						)
+						return
+					}
 
 					const badge = findBadge(options.badgeId)
 					if (badge) {

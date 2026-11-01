@@ -3,6 +3,7 @@ import {
 	type BadgeDefinition,
 	getDetails,
 	getOrder,
+	setOrder,
 	getVersion,
 	ID_PREFIX,
 	isHidden,
@@ -39,6 +40,18 @@ export function orderedBadges(): { id: string; name: string }[] {
 		...BADGES.map(badge => ({ id: badge.id, name: badge.name })),
 	]
 	return inSavedOrder(all, item => item.id)
+}
+
+// Moves a badge one place left (-1) or right (1) in the saved order. Returns false if it can't.
+export function moveBadge(id: string, delta: -1 | 1): boolean {
+	const ids = orderedBadges().map(badge => badge.id)
+	const from = ids.indexOf(id)
+	const to = from + delta
+	if (from < 0 || to < 0 || to >= ids.length) return false
+
+	;[ids[from], ids[to]] = [ids[to], ids[from]]
+	setOrder(ids)
+	return true
 }
 
 // The id of a badge in any of the shapes Discord passes around.
