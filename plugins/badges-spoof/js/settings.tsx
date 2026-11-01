@@ -3,7 +3,7 @@ import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
 import { Image, Pressable, ScrollView, Text, View } from 'react-native'
-import { BADGES, NITRO_LEVELS, TEXT_FIELDS, getStatusLines, type Settings } from './state'
+import { BADGES, NITRO_LEVELS, TEXT_FIELDS, getLevel, getStatusLines, levelChoices, type Settings } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
 
@@ -117,7 +117,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						return (
 							<Tile
 								key={badge.key}
-								label={badge.name}
+								label={badge.key === 'nitro' ? 'Nitro\u200b' : badge.name}
 								uri={badge.url}
 								colors={colors}
 								selected={isNitro ? level !== 'none' && hidden.nitro !== true : hidden[badge.key] !== true}
@@ -140,7 +140,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					{NITRO_LEVELS.map(item => (
 						<Tile
 							key={item.key}
-							label={item.label}
+							label={item.key === 'starter' ? 'Nitro\u200b' : item.label}
 							uri={item.key === 'none' ? undefined : `${iconBase}/nitro-${item.key}.png`}
 							colors={colors}
 							selected={level === item.key}
@@ -148,6 +148,26 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						/>
 					))}
 				</Grid>
+
+				{(['gifting', 'server-boosting'] as const).map(key => (
+					<View key={key}>
+						<Text style={{ color: colors.muted, fontSize: 12, fontWeight: '600', margin: 16, marginBottom: 8 }}>
+							{key === 'gifting' ? 'GIFTING LEVEL' : 'SERVER BOOSTING LEVEL'}
+						</Text>
+						<Grid>
+							{levelChoices(key).map(item => (
+								<Tile
+									key={item.key}
+									label={item.label}
+									uri={item.icon}
+									colors={colors}
+									selected={(settings.levels?.[key] && levelChoices(key).some(c => c.key === settings.levels?.[key]) ? settings.levels[key] : getLevel(key)) === item.key}
+									onPress={() => api.jsonStorage.set({ levels: { ...(settings.levels ?? {}), [key]: item.key } })}
+								/>
+							))}
+						</Grid>
+					</View>
+				))}
 
 				{fieldBadges.map(badge => (
 					<Design.TableRowGroup key={badge.key} title={`${badge.name} sheet`}>

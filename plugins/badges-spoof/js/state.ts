@@ -86,6 +86,8 @@ export interface Settings {
 	replaced: string[]
 	// Which Nitro level the Nitro badge shows: "none" or a level key from NITRO_LEVELS.
 	nitroLevel: string
+	// The level each tiered badge shows, by badge key (Gifting, Server Boosting): a tier key.
+	levels: Record<string, string>
 	// Show only the badges added here, not the ones Discord gives you.
 	hideReal: boolean
 	// The text and dates on the sheets, by field id (see TEXT_FIELDS).
@@ -98,6 +100,7 @@ export const DEFAULT_SETTINGS: Settings = {
 	order: [],
 	replaced: [],
 	nitroLevel: 'opal',
+	levels: {},
 	hideReal: false,
 	texts: {},
 }
@@ -321,9 +324,38 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 	},
 }
 
+// The levels of Gifting and Server Boosting, lowest first, for the level pickers in settings.
+export const levelChoices = (key: string): { key: string; label: string; icon: string; threshold: number }[] =>
+	((BUILT_IN_DETAILS[key]?.tiers as any[]) ?? []).map(item => ({
+		key: item.key,
+		label: item.name ?? item.milestone_text,
+		icon: item.simple_icon_url,
+		threshold: item.requirements[0].threshold,
+	}))
+
+export function getLevel(key: string): string {
+	const choices = levelChoices(key)
+	const chosen = read().levels?.[key]
+	return choices.some(item => item.key === chosen) ? (chosen as string) : choices[choices.length - 1]?.key
+}
+
 // Discord's sheet text for a badge, with the MYTHIC rarity every one of these has.
 const NITRO_MONTHS: Record<string, number> = { starter: 0, bronze: 1, silver: 3, gold: 6, platinum: 12, diamond: 24, emerald: 36, ruby: 60, opal: 72 }
 const NITRO_ORDER = Object.keys(NITRO_MONTHS)
+
+// Where a tiered badge stands at the level chosen in settings.
+function levelState(key: string, base: Record<string, any>) {
+	const keys: string[] = base.tiers.map((item: any) => item.key)
+	const level = getLevel(key)
+	const at = keys.indexOf(level)
+	return {
+		level,
+		next: keys[at + 1] ?? null,
+		reached: keys.slice(0, at + 1),
+		top: at === keys.length - 1,
+		threshold: base.tiers[at].requirements[0].threshold as number,
+	}
+}
 
 // The sheet text for a badge, with the numbers and dates from settings filled in.
 function withSettings(key: string, base: Record<string, any> | undefined): Record<string, any> | undefined {
@@ -332,13 +364,19 @@ function withSettings(key: string, base: Record<string, any> | undefined): Recor
 	if (key === 'gifting') {
 		const count = textOf('gifting.count')
 		const iso = isoDate(textOf('gifting.date'), base.obtained_at)
-		const current = Number(count.replace(/[^0-9.]/g, '')) || 0
+		const lv = levelState(key, base)
+		// Without a count of your own, the count is the one the level needs.
+		const own = (read().texts?.['gifting.count'] ?? '').trim()
+		const shown = own || (lv.top ? count : String(lv.threshold))
+		const current = Number(shown.replace(/[^0-9.]/g, '')) || 0
 		return {
 			...base,
-			info_label: `${count} gifts given`,
-			progress: base.progress.map((item: any) => ({ ...item, current, progress_helper_text: `${count} gifts given` })),
+			info_label: `${shown} gifts given`,
+			current_tier: lv.level,
+			next_tier: lv.next,
+			progress: base.progress.map((item: any) => ({ ...item, current, progress_helper_text: `${shown} gifts given` })),
 			obtained_at: iso,
-			tier_obtained_at: datesFor(Object.keys(base.tier_obtained_at), iso),
+			tier_obtained_at: datesFor(lv.reached, iso),
 		}
 	}
 
@@ -357,12 +395,15 @@ function withSettings(key: string, base: Record<string, any> | undefined): Recor
 	if (key === 'server-boosting') {
 		const since = textOf('server-boosting.since')
 		const iso = isoDate(textOf('server-boosting.date'), base.obtained_at)
+		const lv = levelState(key, base)
 		return {
 			...base,
 			info_label: `Boosting since ${since}`,
-			progress: base.progress.map((item: any) => ({ ...item, progress_helper_text: `Boosting since ${since}` })),
+			current_tier: lv.level,
+			next_tier: lv.next,
+			progress: base.progress.map((item: any) => ({ ...item, current: lv.threshold, progress_helper_text: `Boosting since ${since}` })),
 			obtained_at: iso,
-			tier_obtained_at: datesFor(Object.keys(base.tier_obtained_at), iso),
+			tier_obtained_at: datesFor(lv.reached, iso),
 		}
 	}
 
@@ -463,6 +504,23 @@ if (nitroBadge) {
 	Object.defineProperties(nitroBadge, {
 		url: { get: icon, enumerable: true, configurable: true },
 		sheetUrl: { get: icon, enumerable: true, configurable: true },
+	})
+}
+
+// Gifting and Server Boosting show the icon of the level chosen in settings.
+for (const key of ['gifting', 'server-boosting']) {
+	const badge = BADGES.find(item => item.key === key)
+	if (!badge) continue
+	const base = { url: badge.url, sheetUrl: badge.sheetUrl }
+	const pick = (field: 'url' | 'sheetUrl') => () => {
+		const choices = levelChoices(key)
+		const level = getLevel(key)
+		if (level === choices[choices.length - 1]?.key) return base[field]
+		return choices.find(item => item.key === level)?.icon ?? base[field]
+	}
+	Object.defineProperties(badge, {
+		url: { get: pick('url'), enumerable: true, configurable: true },
+		sheetUrl: { get: pick('sheetUrl'), enumerable: true, configurable: true },
 	})
 }
 
