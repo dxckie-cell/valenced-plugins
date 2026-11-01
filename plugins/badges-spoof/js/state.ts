@@ -58,6 +58,7 @@ export const BADGES: BadgeDefinition[] = [
 	define('gifting', 'Gifting', '7fe346cfc5da1340087d8759a9e7a395', undefined, {
 		tiered: true,
 		url: `${BADGE_CDN}/7fe346cfc5da1340087d8759a9e7a395.png`,
+		sheetUrl: `${BADGE_CDN}/7fe346cfc5da1340087d8759a9e7a395.png`,
 	}),
 	define('server-boosting', 'Server Boosting', 'd96ed283b74de75692487b7499fb8d09', undefined, { tiered: true }),
 ]
@@ -155,7 +156,7 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 			tier('luminary', 'Luminary', '3 gifts', 3, gift('3119f5504b2cd09576a323908c7c3517')),
 			tier('icon', 'Icon', '6 gifts', 6, gift('64f2413c9b9803661322aaad25826b62')),
 			tier('hero', 'Hero', '10 gifts', 10, gift('77d65b1f210014a11eb1582ee06ab684')),
-			tier('legend', 'Legend', '20+ gifts', 20, gift('7fe346cfc5da1340087d8759a9e7a395')),
+			tier('legend', 'Legend', '20+ gifts', 20, `${ICON_BASE}/sheet/gifting.png`),
 		],
 		current_tier: 'legend',
 		next_tier: null,
@@ -176,7 +177,7 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 			tier('boost-6', undefined, '12 months', 12, boost(6)),
 			tier('boost-7', undefined, '15 months', 15, boost(7)),
 			tier('boost-8', undefined, '18 months', 18, boost(8)),
-			tier('boost-9', undefined, '24+ months', 24, boost(9)),
+			tier('boost-9', undefined, '24+ months', 24, `${ICON_BASE}/sheet/server-boosting.png`),
 		],
 		current_tier: 'boost-9',
 		next_tier: null,
