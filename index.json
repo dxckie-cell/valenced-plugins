@@ -949,6 +949,29 @@
           }
         }
       }
+    },
+    "dxckie.username-spoof": {
+      "name": "Username Spoof",
+      "description": "Change your own username and display name, only on your device.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.username-spoof@1.0.0.zip",
+          "sha256": "bdffefea6f4e3617a34ce02b0642587029ad1ec10dd076dbfb1709f7f7d65cde",
+          "size": 1594,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
     }
   }
 }
