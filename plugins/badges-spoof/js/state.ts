@@ -316,3 +316,11 @@ export function status(key: string, message: string) {
 
 export const getStatusLines = (): string[] => [...statusLines.values()]
 export const resetStatus = () => statusLines.clear()
+
+// Sheet pictures drawn bigger than their box, by file: Nitro's wings are wider than the others.
+const SHEET_SCALES: Record<string, number> = { 'sheet/nitro.png': 1.4 }
+
+export const sheetScaleFor = (uri: string): number | undefined => {
+	const path = uri.split('?')[0]
+	return Object.entries(SHEET_SCALES).find(([file]) => path.endsWith(file))?.[1]
+}

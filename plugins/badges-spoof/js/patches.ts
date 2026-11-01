@@ -10,6 +10,7 @@ import {
 	isHidden,
 	setHidden,
 	setOrder,
+	sheetScaleFor,
 	showsAll,
 	status,
 	subscribe,
@@ -107,6 +108,13 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	let sheet: { badge: BadgeDefinition; at: number } | undefined
 	const openSheet = (badge: BadgeDefinition | undefined) => {
 		sheet = badge?.phrase || badge?.tiered ? { badge, at: Date.now() } : undefined
+	}
+
+	// The address of an image whatever shape its source is given in.
+	const uriOf = (source: unknown): string | undefined => {
+		if (typeof source === 'string') return source
+		if (Array.isArray(source)) return uriOf(source[0])
+		return isRecord(source) && typeof source.uri === 'string' ? source.uri : undefined
 	}
 
 	const swapSheetText = (children: unknown): unknown => {
@@ -322,6 +330,16 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				const children = swapSheetText(props.children)
 				if (children !== props.children) {
 					return [args[0], { ...props, children }, ...args.slice(2)]
+				}
+			}
+
+			// The big picture at the top of a sheet is drawn in a box that is too small for art as wide
+			// as Nitro's, so it is scaled up (drawing outside the box is fine).
+			if (sheet && Date.now() - sheet.at <= 30_000 && typeof args[0] !== 'string') {
+				const uri = uriOf(props.source ?? props.uri ?? props.src)
+				const scale = uri ? sheetScaleFor(uri) : undefined
+				if (scale && !props.__badgesSpoofScaled) {
+					return [args[0], { ...props, __badgesSpoofScaled: true, style: [props.style, { transform: [{ scale }] }] }, ...args.slice(2)]
 				}
 			}
 
