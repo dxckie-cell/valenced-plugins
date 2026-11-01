@@ -62,7 +62,7 @@ export const BADGES: BadgeDefinition[] = [
 	}),
 	define('server-boosting', 'Server Boosting', 'd96ed283b74de75692487b7499fb8d09', undefined, {
 		tiered: true,
-		sheetUrl: `${ICON_BASE}/server-boosting.png`,
+		sheetUrl: `${ICON_BASE}/sheet/server-boosting.png?v=3`,
 	}),
 ]
 
@@ -102,6 +102,7 @@ const tier = (key: string, name: string | undefined, milestone: string, threshol
 	name,
 	milestone_text: milestone,
 	requirements: [{ threshold }],
+	simple_icon_url: icon,
 	simple_icon_raster_url: icon,
 	complex_icon_static_url: big,
 })
@@ -160,7 +161,7 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 			tier('luminary', 'Luminary', '3 gifts', 3, gift('3119f5504b2cd09576a323908c7c3517')),
 			tier('icon', 'Icon', '6 gifts', 6, gift('64f2413c9b9803661322aaad25826b62')),
 			tier('hero', 'Hero', '10 gifts', 10, gift('77d65b1f210014a11eb1582ee06ab684')),
-			tier('legend', 'Legend', '20+ gifts', 20, gift('7fe346cfc5da1340087d8759a9e7a395'), `${ICON_BASE}/sheet/gifting.png?v=3`),
+			tier('legend', 'Legend', '20+ gifts', 20, gift('7fe346cfc5da1340087d8759a9e7a395'), `${ICON_BASE}/sheet/gifting.png?v=4`),
 		],
 		current_tier: 'legend',
 		next_tier: null,
