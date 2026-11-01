@@ -3,7 +3,7 @@ import { withName, withProps } from '@valenced/modules/finders/filters'
 import { before, instead } from '@valenced/patcher'
 import * as React from 'react'
 import { StyleSheet, Text } from 'react-native'
-import { catalogEntry, findBadge, isOurId, isRecord, learn, withBadges, withCatalog } from './badges'
+import { catalogEntry, findBadge, isOurId, isRecord, withBadges, withCatalog } from './badges'
 import {
 	type BadgeDefinition,
 	getVersion,
@@ -108,8 +108,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 		sheet = badge?.phrase ? { badge, at: Date.now() } : undefined
 	}
 
-	let sheetTextSeen = false
-	let legacySeen = false
 	const swapSheetText = (children: unknown): unknown => {
 		if (!sheet || Date.now() - sheet.at > 30_000) return children
 
@@ -168,24 +166,10 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			const props = args[1]
 			if (!props || typeof props !== 'object') return args
 
-			// Shows where Discord draws the box text, so a miss can be found from the settings.
-			for (const key of Object.keys(props)) {
-				const value = props[key]
-				const text = typeof value === 'string' ? value : Array.isArray(value) ? value.find(v => typeof v === 'string' && v.startsWith('Legacy Badge')) : undefined
-				if (typeof text === 'string' && text.startsWith('Legacy Badge') && !legacySeen) {
-					legacySeen = true
-					status('legacy text', `legacy text: seen in ${typeName(args[0])}.${key} (${Array.isArray(value) ? 'array' : 'string'})`)
-				}
-			}
-
 			// The sheet of one of our badges: change the tagline word.
 			if (sheet && props.children !== undefined) {
 				const children = swapSheetText(props.children)
 				if (children !== props.children) {
-					if (!sheetTextSeen) {
-						sheetTextSeen = true
-						status('sheet text', `sheet text: tagline changed (${typeName(args[0])})`)
-					}
 					return [args[0], { ...props, children }, ...args.slice(2)]
 				}
 			}
@@ -266,13 +250,8 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 					const userId = args[0] ?? currentUserId()
 					if (!Array.isArray(result) || !userId) return result
 
-					// Someone else's badges: copy the details of the ones we want.
-					if (userId !== currentUserId()) {
-						for (const entry of result) learn(entry)
-						return result
-					}
-
-					return withCatalog(result, true)
+					// Only your own list is changed.
+					return userId === currentUserId() ? withCatalog(result, true) : result
 				},
 				cleanup,
 				'badge list',
@@ -284,12 +263,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				function (this: any, args, original) {
 					const badge = findBadge(args[0])
 					openSheet(badge)
-					if (badge) return catalogEntry(badge)
-
-					// The sheet for a real badge: copy its details if it is one we want.
-					const result = Reflect.apply(original, this, args)
-					learn(result)
-					return result
+					return badge ? catalogEntry(badge) : Reflect.apply(original, this, args)
 				},
 				cleanup,
 				'badge list',

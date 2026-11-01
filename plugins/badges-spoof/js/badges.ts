@@ -1,13 +1,10 @@
 import {
 	BADGES,
 	type BadgeDefinition,
-	getCopiedDetails,
 	getDetails,
 	getVersion,
 	ID_PREFIX,
 	isHidden,
-	setDetails,
-	status,
 } from './state'
 
 type Row = Record<string, any>
@@ -35,73 +32,24 @@ const asBadge = (badge: BadgeDefinition) => ({
 })
 
 // A badge as it is in the "Customise your badges" list on the edit profile screen, and in the
-// sheet that opens when it is tapped. Where Discord's own details were copied from another
-// profile they are used as they are, with only the ownership, visibility and icon changed.
+// sheet that opens when it is tapped.
 export const asCatalogBadge = (badge: BadgeDefinition) => {
-	const copied = getDetails(badge.key)
+	const details = getDetails(badge.key)
 
 	return {
-		name: badge.name,
-		info_label: badge.name,
-		description: badge.name,
 		requirements: [],
 		tiers: [],
 		current_tier: null,
 		next_tier: null,
-		...copied,
-		// The box under the tagline: "Legacy Badge", then how it was unlocked, as Discord's own
-		// description says it. Discord shows "Legacy Badge" as a small label on someone else's
-		// profile, but not on yours, so it is the first line here.
-		...(badge.copyDetails && badge.phrase && {
-			description:
-				typeof copied?.description === 'string' && copied.description
-					? `Legacy Badge\n${copied.description}`
-					: 'Legacy Badge',
-		}),
+		...details,
+		// Legacy badges say so first, as Discord does on other profiles.
+		description: badge.phrase ? `Legacy Badge\n${details.description}` : details.description,
 		badge_id: badge.id,
 		owned: true,
 		hidden: isHidden(badge.key),
-		// The sheet draws the icon bigger than a tile. Badges that copy Discord's details have an
-		// icon sized to match Discord's own artwork there.
+		// The sheet draws the icon bigger than a tile, so it has its own size.
 		simple_icon_raster_url: badge.sheetUrl,
 		complex_icon_static_url: badge.sheetUrl,
-	}
-}
-
-// Badges whose details are already being saved, so each is only saved once.
-const saving = new Set<string>()
-
-/**
- * Looks at a badge Discord loaded for someone else. If it is one of ours that copies details,
- * and they were not copied yet, they are saved. The badge is recognised by its icon file name
- * appearing anywhere in it, so this does not depend on Discord's field names.
- */
-export function learn(entry: unknown) {
-	try {
-		if (!isRecord(entry) || isOurId(entry.badge_id)) return
-
-		const wanted = BADGES.filter(
-			badge => badge.copyDetails && !saving.has(badge.key) && !getCopiedDetails(badge.key),
-		)
-		if (!wanted.length) return
-
-		const text = JSON.stringify(entry)
-		if (!text || text.length > 50_000) return
-
-		for (const badge of wanted) {
-			if (!text.includes(badge.icon)) continue
-
-			saving.add(badge.key)
-			const copy = JSON.parse(text)
-
-			// Not while Discord is drawing: saving redraws the badge lists.
-			setTimeout(() => {
-				setDetails(badge.key, copy)
-				status(`details ${badge.key}`, `${badge.name}: details copied`)
-			}, 0)
-		}
-	} catch {
-		// Anything odd is skipped.
 	}
 }
 
