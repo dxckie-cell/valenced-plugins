@@ -93,13 +93,14 @@ export function isHidden(key: string): boolean {
 export const showsAll = () => read().showAll !== false
 
 // Discord's own sheet text for each badge.
-const tier = (key: string, name: string | undefined, milestone: string, threshold: number, icon: string) => ({
+// `big` is the larger art the sheet header shows when this is the current tier.
+const tier = (key: string, name: string | undefined, milestone: string, threshold: number, icon: string, big = icon) => ({
 	key,
 	name,
 	milestone_text: milestone,
 	requirements: [{ threshold }],
 	simple_icon_raster_url: icon,
-	complex_icon_static_url: icon,
+	complex_icon_static_url: big,
 })
 
 const gift = (hash: string) => `${BADGE_CDN}/${hash}.png`
@@ -156,11 +157,11 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 			tier('luminary', 'Luminary', '3 gifts', 3, gift('3119f5504b2cd09576a323908c7c3517')),
 			tier('icon', 'Icon', '6 gifts', 6, gift('64f2413c9b9803661322aaad25826b62')),
 			tier('hero', 'Hero', '10 gifts', 10, gift('77d65b1f210014a11eb1582ee06ab684')),
-			tier('legend', 'Legend', '20+ gifts', 20, `${ICON_BASE}/sheet/gifting.png`),
+			tier('legend', 'Legend', '20+ gifts', 20, gift('7fe346cfc5da1340087d8759a9e7a395'), `${ICON_BASE}/sheet/gifting.png`),
 		],
 		current_tier: 'legend',
 		next_tier: null,
-		progress: [{ current: 44, threshold: 20, progress_helper_text: '44 gifts given' }],
+		progress: [1, 2, 3, 6, 10, 20].map(threshold => ({ current: 44, threshold, progress_helper_text: '44 gifts given' })),
 		obtained_at: '2026-04-02T12:00:00.000Z',
 		tier_obtained_at: Object.fromEntries(['patron', 'champion', 'luminary', 'icon', 'hero', 'legend'].map(k => [k, '2026-04-02T12:00:00.000Z'])),
 	},
@@ -177,11 +178,11 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 			tier('boost-6', undefined, '12 months', 12, boost(6)),
 			tier('boost-7', undefined, '15 months', 15, boost(7)),
 			tier('boost-8', undefined, '18 months', 18, boost(8)),
-			tier('boost-9', undefined, '24+ months', 24, `${ICON_BASE}/sheet/server-boosting.png`),
+			tier('boost-9', undefined, '24+ months', 24, boost(9), `${ICON_BASE}/sheet/server-boosting.png`),
 		],
 		current_tier: 'boost-9',
 		next_tier: null,
-		progress: [{ current: 79, threshold: 24, progress_helper_text: 'Boosting since 04/04/2020' }],
+		progress: [1, 2, 3, 6, 9, 12, 15, 18, 24].map(threshold => ({ current: 79, threshold, progress_helper_text: 'Boosting since 04/04/2020' })),
 		obtained_at: '2022-04-04T12:00:00.000Z',
 		tier_obtained_at: Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => [`boost-${n}`, '2022-04-04T12:00:00.000Z'])),
 	},
