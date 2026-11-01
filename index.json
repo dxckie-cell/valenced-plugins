@@ -659,6 +659,30 @@
         }
       }
     },
+    "dxckie.bio-emoji-context": {
+      "name": "BioEmojiContext",
+      "description": "Tap a custom emoji in someone's profile bio to see its name and which server it's from.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "icon": "ReactionIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.bio-emoji-context@1.0.0.zip",
+          "sha256": "7f2dcb56a7adefc1ee5712d6d6caedfb20b43450113cde9e561b5223dbdda264",
+          "size": 2436,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
     "dxckie.clyde-editor": {
       "name": "Clyde Editor",
       "description": "Change Clyde's name, picture, banner, name color and bot badge.",
