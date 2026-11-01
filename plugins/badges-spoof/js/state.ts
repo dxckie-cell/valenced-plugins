@@ -60,7 +60,10 @@ export const BADGES: BadgeDefinition[] = [
 		url: `${ICON_BASE}/gifting.png?v=3`,
 		sheetUrl: `${ICON_BASE}/gifting.png?v=3`,
 	}),
-	define('account-age', 'Account Age', '1d8caace0299b12bcc469c35ce927e838abd9c645a22fe7c556f4394e57fa79b', undefined, { tiered: true }),
+	define('account-age', 'Account Age', '1d8caace0299b12bcc469c35ce927e838abd9c645a22fe7c556f4394e57fa79b', undefined, {
+		tiered: true,
+		sheetUrl: `${ICON_BASE}/account-age.png`,
+	}),
 	define('server-boosting', 'Server Boosting', 'd96ed283b74de75692487b7499fb8d09', undefined, {
 		tiered: true,
 		sheetUrl: `${ICON_BASE}/boosting-tile.png`,
