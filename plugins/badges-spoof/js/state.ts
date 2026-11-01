@@ -62,7 +62,7 @@ export const BADGES: BadgeDefinition[] = [
 	}),
 	define('server-boosting', 'Server Boosting', 'd96ed283b74de75692487b7499fb8d09', undefined, {
 		tiered: true,
-		sheetUrl: `${ICON_BASE}/sheet/server-boosting.png?v=3`,
+		sheetUrl: `${ICON_BASE}/boosting-tile.png`,
 	}),
 ]
 
