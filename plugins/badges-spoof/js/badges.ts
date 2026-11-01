@@ -20,31 +20,28 @@ export const isOurId = (id: unknown): id is string =>
 export const findBadge = (id: unknown): BadgeDefinition | undefined =>
 	isOurId(id) ? BADGES.find(badge => badge.id === id) : undefined
 
-// The real badges seen on your profile or in the edit list, so the settings can list them.
-const knownReal = new Map<string, string>()
+// The grid on the edit profile screen, in the order shown, and each real badge's name -> id so
+// the profile (which may call the same badge by another id) can follow the same order.
+let gridIds: string[] = []
+const nameToId = new Map<string, string>()
 
-function remember(list: unknown[]) {
+function rememberGrid(list: unknown[]) {
+	// Only the badges that are shown: the catalog also lists ones you don't have.
+	gridIds = list
+		.filter(item => !(isRecord(item) && item.owned === false))
+		.map(item => badgeIdOf(isRecord(item) && item.badge_id !== undefined ? item.badge_id : item))
+		.filter((id): id is string => Boolean(id))
+
 	for (const item of list) {
-		if (!isRecord(item) || isOurId(item.id ?? item.badge_id) || item.owned === false) continue
-
-		const id = badgeIdOf(item)
-		const name = item.name ?? item.description
-		if (id && typeof name === 'string' && name) knownReal.set(id, name)
+		if (!isRecord(item) || isOurId(item.badge_id) || typeof item.name !== 'string') continue
+		const id = badgeIdOf(item.badge_id)
+		if (id) nameToId.set(item.name, id)
 	}
 }
 
-// Every badge you have, real and added, in the saved order. For the settings screen.
-export function orderedBadges(): { id: string; name: string }[] {
-	const all = [
-		...[...knownReal].map(([id, name]) => ({ id, name })),
-		...BADGES.map(badge => ({ id: badge.id, name: badge.name })),
-	]
-	return inSavedOrder(all, item => item.id)
-}
-
-// Moves a badge one place left (-1) or right (1) in the saved order. Returns false if it can't.
+// Moves a badge one place left (-1) or right (1) in the grid. Returns false if it can't.
 export function moveBadge(id: string, delta: -1 | 1): boolean {
-	const ids = orderedBadges().map(badge => badge.id)
+	const ids = [...gridIds]
 	const from = ids.indexOf(id)
 	const to = from + delta
 	if (from < 0 || to < 0 || to >= ids.length) return false
@@ -130,24 +127,32 @@ function cached(original: unknown[], kind: string, build: () => unknown[]) {
 // The list of badges on a profile, with ours added. Run it on the current user's list only.
 export function withBadges(original: unknown[]): unknown[] {
 	return cached(original, 'badges', () => {
-		remember(original)
 		const native = original.filter(item => !(isRecord(item) && isOurId(item.id)))
 		const ours = active(false).map(asBadge)
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
-		return inSavedOrder(merged, badgeIdOf)
+		const known = new Set(getOrder())
+		return inSavedOrder(merged, item => {
+			const id = badgeIdOf(item)
+			if (id && known.has(id)) return id
+
+			// The same badge can have another id on the profile than in the edit list: go by name.
+			const name = isRecord(item) ? (item.description ?? item.name) : undefined
+			return (typeof name === 'string' && nameToId.get(name)) || id
+		})
 	})
 }
 
 // The badge catalog. The edit profile screen needs the hidden ones too, to show them dimmed.
 export function withCatalog(original: unknown[], includeHidden: boolean): unknown[] {
 	return cached(original, includeHidden ? 'catalog-all' : 'catalog-shown', () => {
-		remember(original)
 		const native = original.filter(item => !(isRecord(item) && isOurId(item.badge_id)))
 		const ours = active(includeHidden).map(badge => asCatalogBadge(badge))
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
-		return inSavedOrder(merged, item => badgeIdOf(isRecord(item) && item.badge_id !== undefined ? item.badge_id : item))
+		const sorted = inSavedOrder(merged, item => badgeIdOf(isRecord(item) && item.badge_id !== undefined ? item.badge_id : item))
+		if (includeHidden) rememberGrid(sorted)
+		return sorted
 	})
 }
 

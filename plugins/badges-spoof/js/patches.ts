@@ -171,6 +171,11 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	const textKeys = ['label', 'title', 'text', 'actionTitle', 'children'] as const
 	const handlerKeys = ['onPress', 'onSelect', 'onClick', 'action', 'onPressMenuItem'] as const
 
+	const hasHandler = (item: any): boolean => {
+		const source = React.isValidElement(item) ? (item as any).props : item
+		return Boolean(source) && typeof source === 'object' && handlerKeys.some(key => typeof source[key] === 'function')
+	}
+
 	const textOf = (item: any): string | undefined => {
 		const source = React.isValidElement(item) ? (item as any).props : item
 		if (!source || typeof source !== 'object') return undefined
@@ -193,6 +198,10 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				}
 			}
 		}
+		// Not the eye icon of the hide item.
+		for (const key of ['icon', 'trailing', 'trailingIcon', 'rightIcon', 'leading', 'leadingIcon']) {
+			if (source[key] !== undefined) changes[key] = undefined
+		}
 		for (const key of ['id', 'key', 'actionKey']) {
 			if (typeof source[key] === 'string') changes[key] = `${source[key]}${suffix}`
 		}
@@ -207,8 +216,8 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			const list = props[key]
 			if (!Array.isArray(list) || list.length > 12) continue
 
-			const at = list.findIndex(item => HIDE_ITEM.test(textOf(item) ?? ''))
-			if (at < 0 || list.some(item => textOf(item) === 'Go Left')) continue
+			const at = list.findIndex(item => hasHandler(item) && HIDE_ITEM.test(textOf(item) ?? ''))
+			if (at < 0 || list.some(item => hasHandler(item) && textOf(item) === 'Go Left')) continue
 
 			const item = list[at]
 			const next = [
@@ -220,7 +229,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 
 			if (!menuSeen) {
 				menuSeen = true
-				status('badge menu', `badge menu: Go Left / Go Right added (${typeName(args[0])}.${key})`)
+				status('badge menu', `badge menu: Go Left / Go Right added (${typeName(args[0])}.${key}; item keys: ${Object.keys(React.isValidElement(item) ? (item as any).props : item).join(',')})`)
 			}
 			return [args[0], { ...props, [key]: next }, ...args.slice(2)]
 		}
