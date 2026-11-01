@@ -117,6 +117,8 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			if (typeof text !== 'string') return text
 			// "Your Progress" / "<name>'s Progress" on a tiered badge's sheet.
 			if (tiered && /^(Your|.+['’]s) Progress$/.test(text)) return 'My Progress'
+			// Nitro's sheet has one title ("Nitro Opal"), without the small "Nitro" above it.
+			if (sheet?.badge.key === 'nitro' && text === 'Nitro') return ''
 			return phrase && /^(.*\s•\s)?Unlocked$/.test(text) ? text.replace(/Unlocked$/, phrase) : text
 		}
 
