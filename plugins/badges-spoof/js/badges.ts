@@ -24,6 +24,10 @@ export const findBadge = (id: unknown): BadgeDefinition | undefined =>
 // the profile (which may call the same badge by another id) can follow the same order.
 let gridIds: string[] = []
 const nameToId = new Map<string, string>()
+// The same for icon file names, for badges the profile words differently ("Subscriber since ...").
+const iconToId = new Map<string, string>()
+
+const hashOf = (url: unknown) => (typeof url === 'string' ? /([^/?#]+)\.[a-z]+(?:[?#]|$)/i.exec(url)?.[1] : undefined)
 
 function rememberGrid(list: unknown[]) {
 	// Only the badges that are shown: the catalog also lists ones you don't have.
@@ -35,7 +39,17 @@ function rememberGrid(list: unknown[]) {
 	for (const item of list) {
 		if (!isRecord(item) || isOurId(item.badge_id) || typeof item.name !== 'string') continue
 		const id = badgeIdOf(item.badge_id)
-		if (id) nameToId.set(item.name, id)
+		if (!id) continue
+		nameToId.set(item.name, id)
+
+		const sources = [item, ...(Array.isArray(item.tiers) ? item.tiers : [])]
+		for (const source of sources) {
+			if (!isRecord(source)) continue
+			for (const url of [source.simple_icon_url, source.simple_icon_raster_url, source.complex_icon_static_url]) {
+				const hash = hashOf(url)
+				if (hash) iconToId.set(hash, id)
+			}
+		}
 	}
 }
 
@@ -141,7 +155,8 @@ export function withBadges(original: unknown[]): unknown[] {
 
 			// The same badge can have another id on the profile than in the edit list: go by name.
 			const name = isRecord(item) ? (item.description ?? item.name) : undefined
-			return (typeof name === 'string' && nameToId.get(name)) || id
+			const icon = isRecord(item) && typeof item.icon === 'string' ? item.icon : undefined
+			return (typeof name === 'string' && nameToId.get(name)) || (icon && iconToId.get(icon)) || id
 		})
 	})
 }
