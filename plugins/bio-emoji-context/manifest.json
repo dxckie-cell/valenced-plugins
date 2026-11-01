@@ -1,0 +1,20 @@
+{
+	"format": 1,
+	"id": "dxckie.bio-emoji-context",
+	"name": "BioEmojiContext",
+	"description": "Tap a custom emoji in someone's profile bio to see its name and which server it's from.",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"icon": "ReactionIcon",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}
