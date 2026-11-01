@@ -1,6 +1,6 @@
 # dxckie-cell plugins for Valenced
 
-Twelve Valenced plugins in one repository.
+Thirteen Valenced plugins in one repository.
 
 ## Install
 
@@ -26,6 +26,7 @@ Then install the plugins you want and reload Valenced.
 | Local Pins | `dxckie.local-pins` | Pin messages locally and browse them in a channel's Pins tab. |
 | Read All Plus | `dxckie.read-all-plus` | Adds an eye button to the guild bar that marks unread servers and DMs as read, with per-server and per-DM exclusions. |
 | Badges Spoof | `dxckie.badges-spoof` | Adds Early Supporter, HypeSquad Events, Moderator Programs Alumni, Partnered Server Owner, Golden Bug Hunter, Early Verified Bot Developer and Discord Staff badges to your own profile, only on your device. Hide, show or move them (Go Left / Go Right) from the long-press menu in Edit Profile. |
+| Username Spoof | `dxckie.username-spoof` | Change your own username and display name, only on your device. Set the names in the plugin settings. |
 
 ## Development
 
