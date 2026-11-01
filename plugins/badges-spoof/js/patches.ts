@@ -106,17 +106,19 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	// that is not yours. Any badge looked up after it, ours or not, ends this.
 	let sheet: { badge: BadgeDefinition; at: number } | undefined
 	const openSheet = (badge: BadgeDefinition | undefined) => {
-		sheet = badge?.phrase ? { badge, at: Date.now() } : undefined
+		sheet = badge?.phrase || badge?.tiered ? { badge, at: Date.now() } : undefined
 	}
 
 	const swapSheetText = (children: unknown): unknown => {
 		if (!sheet || Date.now() - sheet.at > 30_000) return children
 
-		const phrase = sheet.badge.phrase!
-		const swap = (text: unknown) =>
-			typeof text === 'string' && /^(.*\s•\s)?Unlocked$/.test(text)
-				? text.replace(/Unlocked$/, phrase)
-				: text
+		const { phrase, tiered } = sheet.badge
+		const swap = (text: unknown) => {
+			if (typeof text !== 'string') return text
+			// "Your Progress" / "<name>'s Progress" on a tiered badge's sheet.
+			if (tiered && /^(Your|.+['’]s) Progress$/.test(text)) return 'My Progress'
+			return phrase && /^(.*\s•\s)?Unlocked$/.test(text) ? text.replace(/Unlocked$/, phrase) : text
+		}
 
 		// "Legacy Badge" on its own first line becomes the small dimmed label Discord uses.
 		if (typeof children === 'string' && children.startsWith(LEGACY_PREFIX)) {
