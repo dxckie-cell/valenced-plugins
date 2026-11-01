@@ -45,6 +45,7 @@ export const BADGES: BadgeDefinition[] = [
 	define('hypesquad-events', 'HypeSquad Events', 'bf01d1073931f921909045f3a39fd264', 'Very, very early'),
 	define('moderator-alumni', 'Moderator Programs Alumni', 'fee1624003e2fee35cb398e125dc479b', 'Lost to time'),
 	define('partnered-server-owner', 'Partnered Server Owner', '3f9748e53446a137a052f3454e2de41e', 'Very, very early'),
+	define('bug-hunter', 'Bug Hunter', '2717692c7dca7289b35297368a940dd0', 'Very, very early'),
 	define('golden-bug-hunter', 'Golden Bug Hunter', '848f79194d4be5ff5f81505cbd0ce1e6', 'Lost to time'),
 	define('early-verified-bot-developer', 'Early Verified Bot Developer', '6df5892e0f35b051f8b61eace34f4967', 'iykyk'),
 	define('discord-staff', 'Discord Staff', '5e74e9b61934fc1f67c65515d1f7e60d'),
@@ -100,6 +101,11 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 		name: 'Discord Partner',
 		info_label: 'Community leader',
 		description: 'Unlocked by being a member of the Discord Partner Programme.',
+	},
+	'bug-hunter': {
+		name: 'Bug Hunter',
+		info_label: 'Carefully observant',
+		description: 'Unlocked by being a valued Discord bug hunter.',
 	},
 	'golden-bug-hunter': {
 		name: 'Golden Bug Hunter',
