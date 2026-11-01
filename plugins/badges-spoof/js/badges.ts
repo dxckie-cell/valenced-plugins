@@ -103,7 +103,7 @@ const REPLACE_SOURCES: ReplaceSource[] = [
 	{
 		ours: 'badges-spoof-nitro',
 		name: 'Nitro',
-		levels: ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Emerald', 'Ruby', 'Opal'],
+		levels: ['Starter', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Emerald', 'Ruby', 'Opal', 'Nitro Starter', 'Nitro Bronze', 'Nitro Silver', 'Nitro Gold', 'Nitro Platinum', 'Nitro Diamond', 'Nitro Emerald', 'Nitro Ruby', 'Nitro Opal'],
 		// Also what the profile calls it, and the icon file of each level and of plain Nitro.
 		others: ['Discord Nitro'],
 		prefixes: ['Subscriber since'],
