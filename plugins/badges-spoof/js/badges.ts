@@ -91,6 +91,22 @@ const REPLACES = [
 			'7fe346cfc5da1340087d8759a9e7a395',
 		],
 	},
+	{
+		ours: 'badges-spoof-server-boosting',
+		name: 'Server Boosting',
+		levels: [] as string[],
+		icons: [
+			'ca18353be0e57a2b3b3132fa1c08d6b4',
+			'22f99ed6e34eaca48950254c70f8fe8d',
+			'4a2618502278029ce88adeea179ed435',
+			'fbafa6adb7c49a6a2c3822521ff2af2f',
+			'0599f90e32c15b532647163edd72f70a',
+			'e07c08cdc72bcc78b69c76d2c7ceb344',
+			'c7f26927db5e7806790f4e968038630a',
+			'c6d88d1d12afe03bdc4ebb747f8d196b',
+			'd96ed283b74de75692487b7499fb8d09',
+		],
+	},
 ].map(r => ({ ...r, names: new Set([r.name, ...r.levels]), keys: new Set<string>(r.icons) }))
 
 let replacedLoaded = false
