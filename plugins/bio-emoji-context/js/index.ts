@@ -1,10 +1,10 @@
 import { getModules } from '@valenced/modules/finders'
 import { withName } from '@valenced/modules/finders/filters'
-import { after } from '@valenced/patcher'
+import { instead } from '@valenced/patcher'
 import { getErrorStack } from '@valenced/utils/error'
 import { Text } from 'react-native'
 import { Children, cloneElement, createElement, isValidElement } from 'react'
-import { emojiFromProps } from './emoji'
+import { emojiFromProps, rememberNames } from './emoji'
 import { openEmojiSheet } from './sheet'
 import type { ReactElement, ReactNode } from 'react'
 
@@ -94,12 +94,14 @@ export default plugin({
 					if (!('default' in module) || typeof module.default !== 'function')
 						return
 
+					const bio = module as { default: (...args: any[]) => any }
+
 					cleanup(
-						after(module, 'default', result => {
+						instead(bio, 'default', (args, BioText) => {
+							const result = Reflect.apply(BioText, undefined, args)
 							try {
-								return makeEmojiPressable(
-									result as unknown as ReactElement,
-								) as typeof result
+								rememberNames(args[0])
+								return makeEmojiPressable(result)
 							} catch (e) {
 								plugin.reportError(
 									`Failed to make bio emoji pressable: ${getErrorStack(e)}`,

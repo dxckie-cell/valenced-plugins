@@ -1,8 +1,11 @@
 import { ActionSheetActionCreators } from '@valenced/discord/actions'
 import { Design } from '@valenced/discord/design'
 import { Image, View } from 'react-native'
+import { useEffect, useState } from 'react'
 import { getEmojiInfo } from './emoji'
+import { lookupEmojiSource } from './source'
 import type { EmojiRef } from './emoji'
+import type { EmojiSource } from './source'
 
 const { ActionSheet, Stack, Text } = Design
 
@@ -20,6 +23,21 @@ export function openEmojiSheet(emoji: EmojiRef) {
 
 function EmojiContextSheet({ emoji }: { emoji: EmojiRef }) {
 	const info = getEmojiInfo(emoji)
+
+	// Servers you're not in: Discord may still say where the emoji is from
+	const [source, setSource] = useState<EmojiSource | undefined>()
+	useEffect(() => {
+		if (info.guild) return
+		let cancelled = false
+		lookupEmojiSource(emoji.id).then(result => {
+			if (!cancelled) setSource(result)
+		})
+		return () => {
+			cancelled = true
+		}
+	}, [emoji.id, info.guild])
+
+	const guild = info.guild ?? source
 
 	return (
 		<ActionSheet>
@@ -42,15 +60,15 @@ function EmojiContextSheet({ emoji }: { emoji: EmojiRef }) {
 					</Stack>
 				</Stack>
 
-				{info.guild && (
+				{guild && (
 					<Stack spacing={8}>
 						<Text variant="text-sm/medium" color="text-muted">
 							This emoji is from
 						</Text>
 						<Stack direction="horizontal" spacing={12} align="center">
-							{info.guild.iconUrl ? (
+							{guild.iconUrl ? (
 								<Image
-									source={{ uri: info.guild.iconUrl }}
+									source={{ uri: guild.iconUrl }}
 									style={{ width: 40, height: 40, borderRadius: 12 }}
 								/>
 							) : (
@@ -64,16 +82,16 @@ function EmojiContextSheet({ emoji }: { emoji: EmojiRef }) {
 									}}
 								>
 									<Text variant="text-md/semibold" color="text-strong">
-										{info.guild.name.charAt(0)}
+										{guild.name.charAt(0)}
 									</Text>
 								</View>
 							)}
 							<Stack spacing={2} style={{ flexShrink: 1 }}>
 								<Text variant="text-md/semibold" color="text-strong">
-									{info.guild.name}
+									{guild.name}
 								</Text>
 								<Text variant="text-sm/medium" color="text-muted">
-									{info.guild.discoverable ? 'Public server' : 'Invite-only server'}
+									{guild.discoverable ? 'Public server' : 'Invite-only server'}
 								</Text>
 							</Stack>
 						</Stack>
