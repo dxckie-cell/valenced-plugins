@@ -3,7 +3,7 @@ import { withName, withProps } from '@valenced/modules/finders/filters'
 import { before, instead } from '@valenced/patcher'
 import * as React from 'react'
 import { StyleSheet, Text } from 'react-native'
-import { badgeIdOf, catalogEntry, findBadge, isOurId, isRecord, moveBadge, withBadges, withCatalog } from './badges'
+import { badgeIdOf, catalogEntry, findBadge, isInGrid, isOurId, isRecord, moveBadge, withBadges, withCatalog } from './badges'
 import {
 	type BadgeDefinition,
 	getVersion,
@@ -163,7 +163,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	// "Hide Badge". They run Discord's own hide item, and the badge it asks to hide is moved
 	// instead (see setPendingBadgeVisibility below).
 	let menuUntil = 0
-	let pendingMove: { delta: -1 | 1; at: number } | undefined
+	let pendingMove: { delta: -1 | 1; at: number; token: number } | undefined
 	let menuSeen = false
 	let menuMissSeen = false
 
@@ -183,24 +183,75 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 		return undefined
 	}
 
-	const moveItem = (item: any, label: string, delta: -1 | 1, suffix: string) => {
+	const ARROW_STYLE = { fontSize: 20, color: '#b5bac1' }
+	const arrow = (glyph: string, color?: string) =>
+		React.createElement(Text, { style: color ? [ARROW_STYLE, { color }] : ARROW_STYLE }, glyph)
+
+	// Takes the place of the hide item's eye icon, whichever way the menu was given it.
+	const arrowFor = (value: unknown, glyph: string): unknown => {
+		if (React.isValidElement(value)) return arrow(glyph)
+		if (typeof value === 'function' || (isRecord(value) && (value as any).$$typeof)) {
+			return (props: any) => arrow(glyph, props?.color)
+		}
+		return undefined
+	}
+
+	let lastMove = { id: '', at: 0 }
+	const doMove = (id: string, delta: -1 | 1) => {
+		const moved = moveBadge(id, delta)
+		lastMove = { id, at: Date.now() }
+		status(
+			'badge menu move',
+			moved
+				? `badge menu: moved ${id} ${delta < 0 ? 'left' : 'right'}`
+				: `badge menu: ${id} cannot go ${delta < 0 ? 'left' : 'right'} (end of the list, or not in it)`,
+		)
+	}
+
+	let pressToken = 0
+	const moveItem = (item: any, parent: any, label: string, delta: -1 | 1, suffix: string) => {
 		const isElement = React.isValidElement(item)
 		const source = isElement ? (item as any).props : item
 		const changes: Record<string, unknown> = {}
+		const glyph = delta < 0 ? '←' : '→'
+
+		// The badge this menu is for, if the menu says so itself.
+		const direct = (): string | undefined => {
+			for (const holder of [source, parent]) {
+				const id = badgeIdOf(holder?.badgeId ?? holder?.badge_id ?? holder?.badge?.badge_id ?? holder?.badge?.id)
+				if (id && isInGrid(id)) return id
+			}
+			return undefined
+		}
 
 		for (const key of textKeys) if (typeof source[key] === 'string') changes[key] = label
 		for (const key of handlerKeys) {
 			const handler = source[key]
-			if (typeof handler === 'function') {
-				changes[key] = (...args: unknown[]) => {
-					pendingMove = { delta, at: Date.now() }
-					return handler(...args)
+			if (typeof handler !== 'function') continue
+
+			changes[key] = (...args: unknown[]) => {
+				const known = direct()
+				if (known) {
+					doMove(known, delta)
+					return
 				}
+
+				// Otherwise run Discord's hide item and move whichever badge it asks to hide.
+				const token = ++pressToken
+				pendingMove = { delta, at: Date.now(), token }
+				setTimeout(() => {
+					if (pendingMove?.token !== token) return
+					pendingMove = undefined
+					status('badge menu move', `badge menu: ${label} pressed, but Discord did not ask to hide a badge`)
+				}, 1500)
+				return handler(...args)
 			}
 		}
-		// Not the eye icon of the hide item.
-		for (const key of ['icon', 'trailing', 'trailingIcon', 'rightIcon', 'leading', 'leadingIcon']) {
-			if (source[key] !== undefined) changes[key] = undefined
+
+		for (const key of Object.keys(source)) {
+			if (/icon|leading|trailing|accessory|image/i.test(key) && source[key] !== undefined) {
+				changes[key] = arrowFor(source[key], glyph)
+			}
 		}
 		for (const key of ['id', 'key', 'actionKey']) {
 			if (typeof source[key] === 'string') changes[key] = `${source[key]}${suffix}`
@@ -222,14 +273,14 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			const item = list[at]
 			const next = [
 				...list.slice(0, at + 1),
-				moveItem(item, 'Go Left', -1, '-left'),
-				moveItem(item, 'Go Right', 1, '-right'),
+				moveItem(item, props, 'Go Left', -1, '-left'),
+				moveItem(item, props, 'Go Right', 1, '-right'),
 				...list.slice(at + 1),
 			]
 
 			if (!menuSeen) {
 				menuSeen = true
-				status('badge menu', `badge menu: Go Left / Go Right added (${typeName(args[0])}.${key}; item keys: ${Object.keys(React.isValidElement(item) ? (item as any).props : item).join(',')})`)
+				status('badge menu', `badge menu: Go Left / Go Right added (${typeName(args[0])}.${key}; item: ${Object.entries(React.isValidElement(item) ? (item as any).props : item).map(([k, v]) => `${k}:${React.isValidElement(v) ? 'element' : typeof v}`).join(',')}; menu: ${Object.keys(props).join(',')})`)
 			}
 			return [args[0], { ...props, [key]: next }, ...args.slice(2)]
 		}
@@ -421,19 +472,16 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 					if (!isRecord(options)) return Reflect.apply(original, this, args)
 
 					// "Go Left" / "Go Right" ran the hide item: move the badge instead of hiding it.
-					if (pendingMove && Date.now() - pendingMove.at < 1000) {
+					const asked = badgeIdOf(options.badgeId)
+					if (pendingMove && Date.now() - pendingMove.at < 1500) {
 						const { delta } = pendingMove
 						pendingMove = undefined
-
-						const id = badgeIdOf(options.badgeId)
-						status(
-							'badge menu move',
-							id && moveBadge(id, delta)
-								? `badge menu: moved ${id} ${delta < 0 ? 'left' : 'right'}`
-								: `badge menu: could not move ${id ?? 'a badge'} (at the end, or not in the list)`,
-						)
+						if (asked) doMove(asked, delta)
 						return
 					}
+
+					// A repeat of the same request right after a move is not a hide.
+					if (asked && asked === lastMove.id && Date.now() - lastMove.at < 800) return
 
 					const badge = findBadge(options.badgeId)
 					if (badge) {

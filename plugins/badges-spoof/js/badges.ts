@@ -47,9 +47,12 @@ export function moveBadge(id: string, delta: -1 | 1): boolean {
 	if (from < 0 || to < 0 || to >= ids.length) return false
 
 	;[ids[from], ids[to]] = [ids[to], ids[from]]
+	gridIds = ids   // up to date at once, so a second move before Discord redraws is still right
 	setOrder(ids)
 	return true
 }
+
+export const isInGrid = (id: string) => gridIds.includes(id)
 
 // The id of a badge in any of the shapes Discord passes around.
 export const badgeIdOf = (item: unknown): string | undefined => {
