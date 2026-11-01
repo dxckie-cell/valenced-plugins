@@ -56,58 +56,75 @@ function rememberGrid(list: unknown[]) {
 }
 
 
-// Account Age is replaced: Discord's own one (the real Account Age) is left out so there is only
-// one. What it is called is learnt from the badge list and kept for next time.
-const REPLACED_NAME = 'Account Age'
-// Every level of it, so whichever one the real badge is on (1 to 10 years) is left out.
-const AGE_LEVELS = new Set(['Seed', 'Sprout', 'Sapling', 'Bud', 'Blossom', 'Redwood', 'Sequoia', 'Bristlecone', 'Stromatolite', 'Primordial'])
-const ours = 'badges-spoof-account-age'
-const replaced = new Set<string>()
-let replacedSaved = false
+// Some badges are replaced: Discord's own one is left out so there is only one of each. What it
+// is called is learnt from the badge list and kept for next time.
+const REPLACES = [
+	{
+		ours: 'badges-spoof-account-age',
+		name: 'Account Age',
+		// Every level, so whichever one the real badge is on is left out.
+		levels: ['Seed', 'Sprout', 'Sapling', 'Bud', 'Blossom', 'Redwood', 'Sequoia', 'Bristlecone', 'Stromatolite', 'Primordial'],
+	},
+	{
+		ours: 'badges-spoof-gifting',
+		name: 'Gifting',
+		levels: ['Patron', 'Champion', 'Luminary', 'Icon', 'Hero', 'Legend'],
+	},
+].map(r => ({ ...r, names: new Set([r.name, ...r.levels]), keys: new Set<string>() }))
 
-const replacedKeys = () => {
-	if (!replacedSaved) {
-		replacedSaved = true
-		for (const key of getReplaced()) replaced.add(key)
+let replacedLoaded = false
+
+// Saved as "<our id>|<key>".
+function loadReplaced() {
+	if (replacedLoaded) return
+	replacedLoaded = true
+	for (const saved of getReplaced()) {
+		const [ours, key] = saved.split('|')
+		REPLACES.find(r => r.ours === ours)?.keys.add(key)
 	}
-	return replaced
 }
 
+const saveReplaced = () => setReplaced(REPLACES.flatMap(r => [...r.keys].map(key => `${r.ours}|${key}`)))
+
 function learnReplaced(item: Row) {
-	const keys = replacedKeys()
-	const before = keys.size
+	loadReplaced()
+	const replace = REPLACES.find(r => r.name === item.name)
+	if (!replace) return
+
+	const before = replace.keys.size
 	const id = badgeIdOf(item.badge_id)
-	if (id) keys.add(id)
+	if (id) replace.keys.add(id)
 	for (const source of [item, ...(Array.isArray(item.tiers) ? item.tiers : [])]) {
 		if (!isRecord(source)) continue
 		for (const url of [source.simple_icon_url, source.simple_icon_raster_url, source.complex_icon_static_url]) {
 			const hash = hashOf(url)
-			if (hash) keys.add(hash)
+			if (hash) replace.keys.add(hash)
 		}
 	}
 	// Saved later, not while Discord is drawing.
-	if (keys.size !== before) setTimeout(() => setReplaced([...keys]), 0)
+	if (replace.keys.size !== before) setTimeout(saveReplaced, 0)
 }
 
-const isRealAge = (item: unknown) => {
+const isReplaced = (item: unknown) => {
 	if (!isRecord(item) || isOurId(item.badge_id ?? item.id)) return false
-	const keys = replacedKeys()
+	loadReplaced()
 	const id = badgeIdOf(item)
 	const icon = typeof item.icon === 'string' ? item.icon : undefined
-	return (
-		item.name === REPLACED_NAME ||
-		item.description === REPLACED_NAME ||
-		AGE_LEVELS.has(item.description) ||
-		AGE_LEVELS.has(item.name) ||
-		Boolean(id && keys.has(id)) ||
-		Boolean(icon && keys.has(icon))
+	return REPLACES.some(
+		r =>
+			r.names.has(item.name) ||
+			r.names.has(item.description) ||
+			Boolean(id && r.keys.has(id)) ||
+			Boolean(icon && r.keys.has(icon)),
 	)
 }
 
-// Our Account Age takes the place the real one had in your order, until you move it yourself.
+// Ours takes the place the real one had in your order, until you move it yourself.
 function inPlaceOfReal(id: string | undefined, known: Set<string>) {
-	if (id !== ours || known.has(ours)) return id
-	return getOrder().find(saved => replacedKeys().has(saved)) ?? id
+	const replace = REPLACES.find(r => r.ours === id)
+	if (!replace || known.has(id as string)) return id
+	loadReplaced()
+	return getOrder().find(saved => replace.keys.has(saved)) ?? id
 }
 
 // Moves a badge one place left (-1) or right (1) in the grid. Returns false if it can't.
@@ -201,7 +218,7 @@ function cached(original: unknown[], kind: string, build: () => unknown[]) {
 // The list of badges on a profile, with ours added. Run it on the current user's list only.
 export function withBadges(original: unknown[]): unknown[] {
 	return cached(original, 'badges', () => {
-		const native = original.filter(item => !(isRecord(item) && isOurId(item.id)) && !isRealAge(item))
+		const native = original.filter(item => !(isRecord(item) && isOurId(item.id)) && !isReplaced(item))
 		const ours = active(false).map(asBadge)
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
@@ -221,8 +238,8 @@ export function withBadges(original: unknown[]): unknown[] {
 // The badge catalog. The edit profile screen needs the hidden ones too, to show them dimmed.
 export function withCatalog(original: unknown[], includeHidden: boolean): unknown[] {
 	return cached(original, includeHidden ? 'catalog-all' : 'catalog-shown', () => {
-		for (const item of original) if (isRecord(item) && !isOurId(item.badge_id) && item.name === REPLACED_NAME) learnReplaced(item)
-		const native = original.filter(item => !(isRecord(item) && isOurId(item.badge_id)) && !isRealAge(item))
+		for (const item of original) if (isRecord(item) && !isOurId(item.badge_id) && typeof item.name === 'string') learnReplaced(item)
+		const native = original.filter(item => !(isRecord(item) && isOurId(item.badge_id)) && !isReplaced(item))
 		const ours = active(includeHidden).map(badge => asCatalogBadge(badge))
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
