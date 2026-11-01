@@ -77,9 +77,12 @@ export interface Settings {
 	showAll: boolean
 	// Your badge order, real and added badges together, by id. Kept on this device only.
 	order: string[]
+	// What the real Account Age badge goes by (ids, icon file names), learnt from the badge list, so
+	// it can be left out before that list has been opened again.
+	replaced: string[]
 }
 
-export const DEFAULT_SETTINGS: Settings = { hidden: {}, showAll: true, order: [] }
+export const DEFAULT_SETTINGS: Settings = { hidden: {}, showAll: true, order: [], replaced: [] }
 
 let storage: JsonStorage<Settings> | undefined
 
@@ -232,6 +235,15 @@ export const getDetails = (key: string) => ({ rarity: 5, is_earnable: false, pro
 export function getOrder(): string[] {
 	const order = read().order
 	return Array.isArray(order) ? order.filter((id): id is string => typeof id === 'string') : []
+}
+
+export function getReplaced(): string[] {
+	const replaced = read().replaced
+	return Array.isArray(replaced) ? replaced.filter((id): id is string => typeof id === 'string') : []
+}
+
+export function setReplaced(replaced: string[]) {
+	storage?.set({ replaced })?.catch?.((e: unknown) => status('settings', `could not save: ${(e as Error)?.message}`))
 }
 
 export function setOrder(order: string[]) {

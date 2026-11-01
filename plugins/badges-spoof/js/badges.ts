@@ -3,6 +3,8 @@ import {
 	type BadgeDefinition,
 	getDetails,
 	getOrder,
+	getReplaced,
+	setReplaced,
 	setOrder,
 	getVersion,
 	ID_PREFIX,
@@ -51,6 +53,57 @@ function rememberGrid(list: unknown[]) {
 			}
 		}
 	}
+}
+
+
+// Account Age is replaced: Discord's own one (the real Account Age) is left out so there is only
+// one. What it is called is learnt from the badge list and kept for next time.
+const REPLACED_NAME = 'Account Age'
+const ours = 'badges-spoof-account-age'
+const replaced = new Set<string>()
+let replacedSaved = false
+
+const replacedKeys = () => {
+	if (!replacedSaved) {
+		replacedSaved = true
+		for (const key of getReplaced()) replaced.add(key)
+	}
+	return replaced
+}
+
+function learnReplaced(item: Row) {
+	const keys = replacedKeys()
+	const before = keys.size
+	const id = badgeIdOf(item.badge_id)
+	if (id) keys.add(id)
+	for (const source of [item, ...(Array.isArray(item.tiers) ? item.tiers : [])]) {
+		if (!isRecord(source)) continue
+		for (const url of [source.simple_icon_url, source.simple_icon_raster_url, source.complex_icon_static_url]) {
+			const hash = hashOf(url)
+			if (hash) keys.add(hash)
+		}
+	}
+	// Saved later, not while Discord is drawing.
+	if (keys.size !== before) setTimeout(() => setReplaced([...keys]), 0)
+}
+
+const isRealAge = (item: unknown) => {
+	if (!isRecord(item) || isOurId(item.badge_id ?? item.id)) return false
+	const keys = replacedKeys()
+	const id = badgeIdOf(item)
+	const icon = typeof item.icon === 'string' ? item.icon : undefined
+	return (
+		item.name === REPLACED_NAME ||
+		item.description === REPLACED_NAME ||
+		Boolean(id && keys.has(id)) ||
+		Boolean(icon && keys.has(icon))
+	)
+}
+
+// Our Account Age takes the place the real one had in your order, until you move it yourself.
+function inPlaceOfReal(id: string | undefined, known: Set<string>) {
+	if (id !== ours || known.has(ours)) return id
+	return getOrder().find(saved => replacedKeys().has(saved)) ?? id
 }
 
 // Moves a badge one place left (-1) or right (1) in the grid. Returns false if it can't.
@@ -144,13 +197,13 @@ function cached(original: unknown[], kind: string, build: () => unknown[]) {
 // The list of badges on a profile, with ours added. Run it on the current user's list only.
 export function withBadges(original: unknown[]): unknown[] {
 	return cached(original, 'badges', () => {
-		const native = original.filter(item => !(isRecord(item) && isOurId(item.id)))
+		const native = original.filter(item => !(isRecord(item) && isOurId(item.id)) && !isRealAge(item))
 		const ours = active(false).map(asBadge)
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
 		const known = new Set(getOrder())
 		return inSavedOrder(merged, item => {
-			const id = badgeIdOf(item)
+			const id = inPlaceOfReal(badgeIdOf(item), known)
 			if (id && known.has(id)) return id
 
 			// The same badge can have another id on the profile than in the edit list: go by name.
@@ -164,11 +217,13 @@ export function withBadges(original: unknown[]): unknown[] {
 // The badge catalog. The edit profile screen needs the hidden ones too, to show them dimmed.
 export function withCatalog(original: unknown[], includeHidden: boolean): unknown[] {
 	return cached(original, includeHidden ? 'catalog-all' : 'catalog-shown', () => {
-		const native = original.filter(item => !(isRecord(item) && isOurId(item.badge_id)))
+		for (const item of original) if (isRecord(item) && !isOurId(item.badge_id) && item.name === REPLACED_NAME) learnReplaced(item)
+		const native = original.filter(item => !(isRecord(item) && isOurId(item.badge_id)) && !isRealAge(item))
 		const ours = active(includeHidden).map(badge => asCatalogBadge(badge))
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
-		const sorted = inSavedOrder(merged, item => badgeIdOf(isRecord(item) && item.badge_id !== undefined ? item.badge_id : item))
+		const known = new Set(getOrder())
+		const sorted = inSavedOrder(merged, item => inPlaceOfReal(badgeIdOf(isRecord(item) && item.badge_id !== undefined ? item.badge_id : item), known))
 		if (includeHidden) rememberGrid(sorted)
 		return sorted
 	})
