@@ -1142,6 +1142,33 @@
         }
       }
     },
+    "dxckie.spotify-preview": {
+      "name": "Spotify Preview",
+      "description": "Lets you preview (30s of audio) Spotify songs by pressing the links.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "contributors": [
+        "fres <843448897737064448> (https://github.com/fres621 \"GitHub\")"
+      ],
+      "icon": "SpotifyNeutralIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.spotify-preview@1.0.0.zip",
+          "sha256": "1130bd66a0f2182a89721bc732a67914c899a7ee2d0a12fff798cbc6765cdcc9",
+          "size": 2445,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
     "dxckie.username-spoof": {
       "name": "Username Spoof",
       "description": "Change your own username and display name, only on your device.",
