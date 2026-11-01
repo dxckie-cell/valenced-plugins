@@ -59,6 +59,8 @@ function rememberGrid(list: unknown[]) {
 // Account Age is replaced: Discord's own one (the real Account Age) is left out so there is only
 // one. What it is called is learnt from the badge list and kept for next time.
 const REPLACED_NAME = 'Account Age'
+// Every level of it, so whichever one the real badge is on (1 to 10 years) is left out.
+const AGE_LEVELS = new Set(['Seed', 'Sprout', 'Sapling', 'Bud', 'Blossom', 'Redwood', 'Sequoia', 'Bristlecone', 'Stromatolite', 'Primordial'])
 const ours = 'badges-spoof-account-age'
 const replaced = new Set<string>()
 let replacedSaved = false
@@ -95,6 +97,8 @@ const isRealAge = (item: unknown) => {
 	return (
 		item.name === REPLACED_NAME ||
 		item.description === REPLACED_NAME ||
+		AGE_LEVELS.has(item.description) ||
+		AGE_LEVELS.has(item.name) ||
 		Boolean(id && keys.has(id)) ||
 		Boolean(icon && keys.has(icon))
 	)
