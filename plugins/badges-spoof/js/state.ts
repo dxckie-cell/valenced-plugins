@@ -57,8 +57,8 @@ export const BADGES: BadgeDefinition[] = [
 	define('discord-staff', 'Discord Staff', '5e74e9b61934fc1f67c65515d1f7e60d'),
 	define('gifting', 'Gifting', '7fe346cfc5da1340087d8759a9e7a395', undefined, {
 		tiered: true,
-		url: `${BADGE_CDN}/7fe346cfc5da1340087d8759a9e7a395.png`,
-		sheetUrl: `${BADGE_CDN}/7fe346cfc5da1340087d8759a9e7a395.png`,
+		url: `${ICON_BASE}/gifting.png`,
+		sheetUrl: `${ICON_BASE}/gifting.png`,
 	}),
 	define('server-boosting', 'Server Boosting', 'd96ed283b74de75692487b7499fb8d09', undefined, { tiered: true }),
 ]
