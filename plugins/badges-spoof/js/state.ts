@@ -85,10 +85,59 @@ export function isHidden(key: string): boolean {
 
 export const showsAll = () => read().showAll !== false
 
-export function getDetails(key: string): Record<string, unknown> | undefined {
+// Discord's own sheet text for each badge, built in so nothing has to be copied first. Details
+// copied from a real profile replace these.
+const BUILT_IN_DETAILS: Record<string, Record<string, unknown>> = {
+	'early-supporter': {
+		name: 'Early Supporter',
+		info_label: 'A Nitro original',
+		description: 'Unlocked by subscribing to Nitro before 11 October 2018, 3:20:00 AM BST.',
+	},
+	'hypesquad-events': {
+		name: 'HypeSquad Events',
+		info_label: 'Boots on the ground',
+		description: 'Unlocked by helping Discord at IRL events.',
+	},
+	'moderator-alumni': {
+		name: 'Moderator Programme Alumni',
+		info_label: 'Officially certified',
+		description: 'Unlocked by completing the Discord Moderator Programme.',
+	},
+	'partnered-server-owner': {
+		name: 'Discord Partner',
+		info_label: 'Community leader',
+		description: 'Unlocked by being a member of the Discord Partner Programme.',
+	},
+	'golden-bug-hunter': {
+		name: 'Golden Bug Hunter',
+		info_label: 'A spoonful of knowledge',
+		description: 'Unlocked by being an acclaimed Discord bug hunter.',
+	},
+	'early-verified-bot-developer': {
+		name: 'Early Verified Bot Developer',
+		info_label: 'Built the foundation',
+		description: 'Unlocked by creating a verified bot before 19 August 2020.',
+	},
+	'discord-staff': {
+		name: 'Discord Staff',
+		info_label: 'Professional lurker',
+		description: 'Unlocked by being a Discord employee.',
+	},
+}
+
+// Only what was copied from a real profile.
+export function getCopiedDetails(key: string): Record<string, unknown> | undefined {
 	const details = read().details
 	const value = details && typeof details === 'object' ? details[key] : undefined
 	return value && typeof value === 'object' ? value : undefined
+}
+
+export function getDetails(key: string): Record<string, unknown> | undefined {
+	const copied = getCopiedDetails(key)
+	if (copied) return copied
+
+	const built = BUILT_IN_DETAILS[key]
+	return built && { ...built, rarity: 5, is_earnable: false, progress: null }
 }
 
 export function setDetails(key: string, value: Record<string, unknown>) {

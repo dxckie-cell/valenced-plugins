@@ -1,6 +1,7 @@
 import {
 	BADGES,
 	type BadgeDefinition,
+	getCopiedDetails,
 	getDetails,
 	getVersion,
 	ID_PREFIX,
@@ -80,7 +81,7 @@ export function learn(entry: unknown) {
 		if (!isRecord(entry) || isOurId(entry.badge_id)) return
 
 		const wanted = BADGES.filter(
-			badge => badge.copyDetails && !saving.has(badge.key) && !getDetails(badge.key),
+			badge => badge.copyDetails && !saving.has(badge.key) && !getCopiedDetails(badge.key),
 		)
 		if (!wanted.length) return
 

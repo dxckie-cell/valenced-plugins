@@ -34,10 +34,10 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						<Design.TableRow
 							key={badge.key}
 							label={badge.name}
-							subLabel={settings.details?.[badge.key] ? 'Copied' : 'Not copied yet'}
+							subLabel={settings.details?.[badge.key] ? 'Copied from a real profile' : 'Built in'}
 						/>
 					))}
-					<Design.TableRow label="To copy a badge's details, open a profile that has the real badge and tap it once." />
+					<Design.TableRow label="The text is built in. To use Discord's exact data instead, open a profile that has the real badge and tap it once." />
 				</Design.TableRowGroup>
 
 				{BADGES.filter(badge => settings.details?.[badge.key]).map(badge => (
