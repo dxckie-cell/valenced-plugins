@@ -480,6 +480,15 @@ export function learnTiers(key: string, tiers: unknown) {
 // Badges whose sheet picture is Discord's own (each Gifting level has its own chest).
 const REAL_HEADERS = new Set(['nitro', 'gifting'])
 
+// Discord's own small picture of a Gifting level, once its badge list has been learnt.
+export function realTierIcon(key: string, level: string): string | undefined {
+	if (key !== 'gifting') return undefined
+	const word = norm(level)
+	const found = realTiers.get(key)?.find((item: any) => word && (norm(item.key) === word || norm(item.name).endsWith(word)))
+	const url = found?.simple_icon_raster_url || found?.simple_icon_url
+	return typeof url === 'string' && url ? url : undefined
+}
+
 const norm = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
 
 // Adds the animated picture of Discord's own level to each of ours, matched by name, or by place when
@@ -507,6 +516,12 @@ function withRealArt(key: string, details: Record<string, any> | undefined) {
 			...rest,
 			// How rare Discord calls this level (Starter has none).
 			...(typeof found.rarity === 'number' ? { rarity: found.rarity } : {}),
+			...(key === 'gifting' && (found.simple_icon_raster_url || found.simple_icon_url)
+				? {
+						simple_icon_url: found.simple_icon_url ?? found.simple_icon_raster_url,
+						simple_icon_raster_url: found.simple_icon_raster_url ?? found.simple_icon_url,
+					}
+				: {}),
 			...(found.complex_icon_animated_url ? { complex_icon_animated_url: found.complex_icon_animated_url } : {}),
 			// Nitro's own picture is used outright; it is drawn at the right size without our scaling.
 			...(REAL_HEADERS.has(key) && found.complex_icon_static_url ? { complex_icon_static_url: found.complex_icon_static_url } : {}),
@@ -607,7 +622,7 @@ for (const key of ['gifting', 'server-boosting']) {
 		const choices = levelChoices(key)
 		const level = getLevel(key)
 		if (level === choices[choices.length - 1]?.key) return base[field]
-		const icon = choices.find(item => item.key === level)?.icon
+		const icon = realTierIcon(key, level) ?? choices.find(item => item.key === level)?.icon
 		if (!icon) return base[field]
 		// On the profile (url) Discord draws the picture at its own smaller size, so Boosting uses the
 		// original-size file there and the bigger one on the badge grid and sheets (sheetUrl).
