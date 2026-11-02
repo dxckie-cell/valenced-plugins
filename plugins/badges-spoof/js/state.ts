@@ -480,16 +480,37 @@ export function learnTiers(key: string, tiers: unknown) {
 // Badges whose sheet picture is Discord's own (each Gifting level has its own chest).
 const REAL_HEADERS = new Set(['nitro', 'gifting'])
 
-// Discord's own small picture of a Gifting level, once its badge list has been learnt.
+const norm = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
+
+// Discord's own level matching one of ours: by name, then milestone text or threshold, then by place
+// when both have as many levels.
+function findRealTier(real: any[], mine: any, count: number, index: number): any {
+	const word = norm(mine.key)
+	const threshold = mine.requirements?.[0]?.threshold
+	return (
+		real.find((item: any) => word && (norm(item.key) === word || norm(item.name).endsWith(word))) ??
+		real.find(
+			(item: any) =>
+				(mine.milestone_text && norm(item.milestone_text) === norm(mine.milestone_text)) ||
+				(typeof threshold === 'number' && threshold > 0 && item.requirements?.[0]?.threshold === threshold),
+		) ??
+		(real.length === count ? real[index] : undefined)
+	)
+}
+
+const ICON_KEYS = new Set(['gifting', 'server-boosting'])
+
+// Discord's own small picture of a Gifting or Server Boosting level, once its badge list has been learnt.
 export function realTierIcon(key: string, level: string): string | undefined {
-	if (key !== 'gifting') return undefined
-	const word = norm(level)
-	const found = realTiers.get(key)?.find((item: any) => word && (norm(item.key) === word || norm(item.name).endsWith(word)))
+	if (!ICON_KEYS.has(key)) return undefined
+	const real = realTiers.get(key)
+	const mine = (BUILT_IN_DETAILS[key]?.tiers as any[]) ?? []
+	const index = mine.findIndex((item: any) => item.key === level)
+	if (!real || index < 0) return undefined
+	const found = findRealTier(real, mine[index], mine.length, index)
 	const url = found?.simple_icon_raster_url || found?.simple_icon_url
 	return typeof url === 'string' && url ? url : undefined
 }
-
-const norm = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
 
 // Adds the animated picture of Discord's own level to each of ours, matched by name, or by place when
 // both have as many levels.
@@ -498,17 +519,7 @@ function withRealArt(key: string, details: Record<string, any> | undefined) {
 	if (!details?.tiers || !real) return details
 	let currentReal: any
 	const tiers = details.tiers.map((mine: any, index: number) => {
-		const word = norm(mine.key)
-		const threshold = mine.requirements?.[0]?.threshold
-		const found =
-			real.find((item: any) => word && (norm(item.key) === word || norm(item.name).endsWith(word))) ??
-			// By the milestone ("12 months") or the number it needs.
-			real.find(
-				(item: any) =>
-					(mine.milestone_text && norm(item.milestone_text) === norm(mine.milestone_text)) ||
-					(typeof threshold === 'number' && threshold > 0 && item.requirements?.[0]?.threshold === threshold),
-			) ??
-			(real.length === details.tiers.length ? real[index] : undefined)
+		const found = findRealTier(real, mine, details.tiers.length, index)
 		if (!found) return mine
 		if (mine.key === details.current_tier) currentReal = found
 		const { rarity: _ours, ...rest } = mine
@@ -516,7 +527,7 @@ function withRealArt(key: string, details: Record<string, any> | undefined) {
 			...rest,
 			// How rare Discord calls this level (Starter has none).
 			...(typeof found.rarity === 'number' ? { rarity: found.rarity } : {}),
-			...(key === 'gifting' && (found.simple_icon_raster_url || found.simple_icon_url)
+			...(ICON_KEYS.has(key) && (found.simple_icon_raster_url || found.simple_icon_url)
 				? {
 						simple_icon_url: found.simple_icon_url ?? found.simple_icon_raster_url,
 						simple_icon_raster_url: found.simple_icon_raster_url ?? found.simple_icon_url,
@@ -626,6 +637,7 @@ for (const key of ['gifting', 'server-boosting']) {
 		if (!icon) return base[field]
 		// On the profile (url) Discord draws the picture at its own smaller size, so Boosting uses the
 		// original-size file there and the bigger one on the badge grid and sheets (sheetUrl).
+		if (realTierIcon(key, level) === icon) return icon
 		return key === 'server-boosting' && field === 'url' ? icon.replace(/\.png/, '-row.png') : icon
 	}
 	Object.defineProperties(badge, {
