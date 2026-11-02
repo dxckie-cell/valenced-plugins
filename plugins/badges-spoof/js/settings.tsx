@@ -107,6 +107,12 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						onValueChange={(nativeNitro: boolean) => api.jsonStorage.set({ nativeNitro })}
 					/>
 					<Design.TableSwitchRow
+						label="Animate the Nitro sheet"
+						subLabel="Adds the flash Discord's Nitro sheet picture has to our own sheet."
+						value={settings.animateSheet !== false}
+						onValueChange={(animateSheet: boolean) => api.jsonStorage.set({ animateSheet })}
+					/>
+					<Design.TableSwitchRow
 						label="Show all badges"
 						subLabel="Show every badge instead of only the first six."
 						value={settings.showAll !== false}

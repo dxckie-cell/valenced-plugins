@@ -88,6 +88,8 @@ export interface Settings {
 	nitroLevel: string
 	// The level each tiered badge shows, by badge key (Gifting, Server Boosting): a tier key.
 	levels: Record<string, string>
+	// The flash over the Nitro sheet picture (on unless turned off).
+	animateSheet: boolean
 	// Let Discord draw its own (animated) Nitro badge for the chosen level instead of ours.
 	nativeNitro: boolean
 	// Show only the badges added here, not the ones Discord gives you.
@@ -104,6 +106,7 @@ export const DEFAULT_SETTINGS: Settings = {
 	nitroLevel: 'opal',
 	levels: {},
 	nativeNitro: false,
+	animateSheet: true,
 	hideReal: false,
 	texts: {},
 }
@@ -160,6 +163,8 @@ export function nativeNitroLabel(): string {
 	const since = textOf('nitro.since')
 	return `Subscriber since ${since}`
 }
+
+export const animatesSheet = () => read().animateSheet !== false
 
 export const hidesReal = () => read().hideReal === true
 

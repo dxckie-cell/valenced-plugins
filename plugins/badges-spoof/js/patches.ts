@@ -3,6 +3,7 @@ import { withName, withProps } from '@valenced/modules/finders/filters'
 import { before, instead } from '@valenced/patcher'
 import * as React from 'react'
 import { StyleSheet, Text } from 'react-native'
+import { ShimmerPicture } from './shimmer'
 import { badgeIdOf, catalogEntry, findBadge, isInGrid, isOurId, isRecord, moveBadge, withBadges, withCatalog } from './badges'
 import {
 	type BadgeDefinition,
@@ -12,6 +13,7 @@ import {
 	setHidden,
 	setOrder,
 	sheetScaleFor,
+	animatesSheet,
 	showsAll,
 	status,
 	subscribe,
@@ -361,6 +363,10 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			if (sheet && Date.now() - sheet.at <= 30_000 && typeof args[0] !== 'string') {
 				const uri = uriOf(props.source ?? props.uri ?? props.src)
 				const scale = uri ? sheetScaleFor(uri) : undefined
+				// Nitro's picture also gets the flash Discord's own one has.
+				if (uri && sheet.badge.key === 'nitro' && /\/sheet\/nitro-[a-z]+\.png/.test(uri) && !props.__badgesSpoofScaled && animatesSheet()) {
+					return [ShimmerPicture, { Original: args[0], imgProps: props, scale }, ...args.slice(2)]
+				}
 				if (scale && !props.__badgesSpoofScaled) {
 					return [args[0], { ...props, __badgesSpoofScaled: true, style: [props.style, { transform: [{ scale }] }] }, ...args.slice(2)]
 				}
