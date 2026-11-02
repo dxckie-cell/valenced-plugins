@@ -476,6 +476,9 @@ export function learnTiers(key: string, tiers: unknown) {
 	artVersion++
 }
 
+// Badges whose sheet picture is Discord's own (each Gifting level has its own chest).
+const REAL_HEADERS = new Set(['nitro', 'gifting'])
+
 const norm = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
 
 // Adds the animated picture of Discord's own level to each of ours, matched by name, or by place when
@@ -498,7 +501,7 @@ function withRealArt(key: string, details: Record<string, any> | undefined) {
 			...(typeof found.rarity === 'number' ? { rarity: found.rarity } : {}),
 			...(found.complex_icon_animated_url ? { complex_icon_animated_url: found.complex_icon_animated_url } : {}),
 			// Nitro's own picture is used outright; it is drawn at the right size without our scaling.
-			...(key === 'nitro' && found.complex_icon_static_url ? { complex_icon_static_url: found.complex_icon_static_url } : {}),
+			...(REAL_HEADERS.has(key) && found.complex_icon_static_url ? { complex_icon_static_url: found.complex_icon_static_url } : {}),
 		}
 	})
 	const current = tiers.find((item: any) => item.key === details.current_tier)
@@ -507,7 +510,7 @@ function withRealArt(key: string, details: Record<string, any> | undefined) {
 		tiers,
 		...(currentReal ? { rarity: typeof currentReal.rarity === 'number' ? currentReal.rarity : undefined } : {}),
 		...(current?.complex_icon_animated_url ? { complex_icon_animated_url: current.complex_icon_animated_url } : {}),
-		...(key === 'nitro' && current?.complex_icon_static_url ? { complex_icon_static_url: current.complex_icon_static_url } : {}),
+		...(REAL_HEADERS.has(key) && current?.complex_icon_static_url ? { complex_icon_static_url: current.complex_icon_static_url } : {}),
 	}
 }
 
