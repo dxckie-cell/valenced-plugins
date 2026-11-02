@@ -10,6 +10,8 @@ import {
 	getVersion,
 	ID_PREFIX,
 	isHidden,
+	nativeNitroId,
+	nativeNitroLabel,
 	usesNativeNitro,
 } from './state'
 
@@ -22,7 +24,12 @@ export const isOurId = (id: unknown): id is string =>
 	typeof id === 'string' && id.startsWith(ID_PREFIX)
 
 export const findBadge = (id: unknown): BadgeDefinition | undefined =>
-	isOurId(id) ? BADGES.find(badge => badge.id === id) : undefined
+	isOurId(id)
+		? BADGES.find(badge => badge.id === id)
+		: // Tapping our Nitro badge under Discord's own Nitro id opens our sheet.
+			usesNativeNitro() && id === nativeNitroId()
+			? BADGES.find(badge => badge.key === 'nitro')
+			: undefined
 
 // The grid on the edit profile screen, in the order shown, and each real badge's name -> id so
 // the profile (which may call the same badge by another id) can follow the same order.
@@ -308,13 +315,12 @@ function cached(original: unknown[], kind: string, build: () => unknown[]) {
 // The list of badges on a profile, with ours added. Run it on the current user's list only.
 export function withBadges(original: unknown[]): unknown[] {
 	return cached(original, 'badges', () => {
-		const native = hidesReal() ? [] : original.filter(item => !(isRecord(item) && isOurId(item.id)) && !isReplaced(item, usesNativeNitro()))
-		// If Discord didn't draw a Nitro badge after all, ours is added.
-		const ours = active(false, usesNativeNitro() && original.some(item => matchesReal(item, NITRO_ID))).map(asBadge)
+		const native = hidesReal() ? [] : original.filter(item => !(isRecord(item) && isOurId(item.id)) && !isReplaced(item))
+		const ours = active(false).map(asBadge)
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
 		const known = new Set(getOrder())
-		return inSavedOrder(merged, item => {
+		const ordered = inSavedOrder(merged, item => {
 			const id = inPlaceOfReal(badgeIdOf(item), known)
 			if (id && known.has(id)) return id
 
@@ -323,6 +329,14 @@ export function withBadges(original: unknown[]): unknown[] {
 			const icon = isRecord(item) && typeof item.icon === 'string' ? item.icon : undefined
 			return (typeof name === 'string' && nameToId.get(name)) || (icon && iconToId.get(icon)) || id
 		})
+
+		// Under the id of Discord's own Nitro badge, Discord draws ours the way it draws the real one.
+		if (!usesNativeNitro()) return ordered
+		return ordered.map(item =>
+			isRecord(item) && item.id === NITRO_ID
+				? { ...item, id: nativeNitroId(), description: nativeNitroLabel() }
+				: item,
+		)
 	})
 }
 

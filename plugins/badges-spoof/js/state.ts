@@ -137,15 +137,19 @@ export function getNitroLevel(): string {
 	return NITRO_LEVELS.some(item => item.key === level) ? (level as string) : 'opal'
 }
 
-// Discord's own Nitro badge, made to show the chosen level by changing when the profile says
-// Nitro started. Discord's badge animates; ours can't.
+// Give our Nitro badge the id of Discord's own Nitro badge, so Discord draws it (animated).
 export const usesNativeNitro = () => read().nativeNitro === true && getNitroLevel() !== 'none'
 
-export function nativeNitroFields(): Record<string, unknown> {
+// The id Discord gives a Nitro badge for the level. Discord draws a badge with one of these ids
+// its own way (animated) whatever picture it is given.
+export function nativeNitroId(): string {
 	const months = NITRO_MONTHS[getNitroLevel()] ?? 0
-	const since = new Date()
-	since.setMonth(since.getMonth() - months)
-	return { premiumType: 2, premium_type: 2, premiumSince: since, premium_since: since.toISOString() }
+	return months > 0 ? `premium_tenure_${months}_month_v2` : 'premium'
+}
+
+export function nativeNitroLabel(): string {
+	const since = textOf('nitro.since')
+	return `Subscriber since ${since}`
 }
 
 export const hidesReal = () => read().hideReal === true
