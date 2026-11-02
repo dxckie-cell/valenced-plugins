@@ -29,7 +29,7 @@ Then install the plugins you want and reload Valenced.
 | Username Spoof | `dxckie.username-spoof` | Change your own username and display name, only on your device. Set the names in the plugin settings. |
 | Account Date Spoof | `dxckie.account-date-spoof` | Change the Member Since date on your own profile, only on your device. Set the date as DD-MM-YYYY in the plugin settings. |
 | Spotify Preview | `dxckie.spotify-preview` | Tap a Spotify track, album, playlist or episode link to preview 30 seconds of it in a bottom sheet instead of leaving Discord. Port of fres's Vendetta plugin. |
-| BioEmojiContext | `dxckie.bio-emoji-context` | Tap a custom emoji in someone's profile bio to see its name and which server it's from. |
+| BioEmojiContext | `dxckie.bio-emoji-context` | Tap a custom emoji in someone's profile bio to open Discord's emoji sheet, like tapping one in chat. Plugins that add to that sheet, such as Expression Utils, show their buttons here too. |
 
 ## Development
 

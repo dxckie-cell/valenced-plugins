@@ -5,10 +5,17 @@ import { getErrorStack } from '@valenced/utils/error'
 import { Text } from 'react-native'
 import { Children, cloneElement, createElement, isValidElement } from 'react'
 import { emojiFromProps, rememberNames } from './emoji'
-import { openEmojiSheet } from './sheet'
+import { findEmojiSheet, openEmojiSheet } from './sheet'
 import type { ReactElement, ReactNode } from 'react'
+import type { EmojiRef } from './emoji'
 
 const MaxDepth = 14
+
+let report: (error: unknown) => void = () => {}
+
+function open(emoji: EmojiRef) {
+	if (!openEmojiSheet(emoji)) report("Discord's emoji sheet was not found")
+}
 
 /** Our press wrappers, never searched again */
 const ours = new WeakSet<object>()
@@ -40,7 +47,7 @@ function makeEmojiPressable(node: ReactNode, depth = 0): ReactNode {
 	if (emoji) {
 		const wrapper = createElement(
 			Text,
-			{ key: element.key, onPress: () => openEmojiSheet(emoji) },
+			{ key: element.key, onPress: () => open(emoji) },
 			element,
 		)
 		ours.add(wrapper)
@@ -86,7 +93,10 @@ export default plugin({
 			return
 		}
 
+		report = error => plugin.reportError(error)
+
 		cleanup(
+			findEmojiSheet(),
 			// The "About Me" text of a profile
 			getModules(
 				withName('BioText'),

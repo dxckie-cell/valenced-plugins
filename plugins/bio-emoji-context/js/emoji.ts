@@ -11,50 +11,30 @@ export interface EmojiRef {
 interface CustomEmoji {
 	id: string
 	name: string
-	guildId?: string
 	animated?: boolean
 }
-
-interface Guild {
-	id: string
-	name: string
-	icon?: string | null
-	features?: Iterable<string>
-}
-
-export interface EmojiInfo {
-	id: string
-	name: string
-	animated: boolean
-	imageUrl: string
-	guild?: {
-		id: string
-		name: string
-		iconUrl?: string
-		/** Discoverable servers can be found without an invite. */
-		discoverable: boolean
-	}
-}
-
-const Cdn = 'https://cdn.discordapp.com'
 
 // Custom emoji images are always served from /emojis/<snowflake>.<ext>
 const EmojiUrl = /\/emojis\/(\d{15,25})\.(\w+)/
 const Snowflake = /^\d{15,25}$/
-
-const SkippedKeys = new Set(['children', 'style', 'ref', 'key'])
 const MarkupEmoji = /<a?:(\w{2,32}):(\d{15,25})>/g
+const SkippedKeys = new Set(['children', 'style', 'ref', 'key'])
 const LabelKeys = ['emojiName', 'alt', 'accessibilityLabel', 'title', 'name']
 
 /** Names of emoji seen in bios, since servers you're not in don't give theirs */
 const names = new Map<string, string>()
 
 /** Remembers `<:name:id>` markup and emoji objects found anywhere in a bio's props. */
-export function rememberNames(value: unknown, depth = 0, seen = new WeakSet<object>()) {
+export function rememberNames(
+	value: unknown,
+	depth = 0,
+	seen = new WeakSet<object>(),
+) {
 	if (value == null || depth > 8) return
 
 	if (typeof value === 'string') {
-		for (const match of value.matchAll(MarkupEmoji)) names.set(match[2]!, match[1]!)
+		for (const match of value.matchAll(MarkupEmoji))
+			names.set(match[2]!, match[1]!)
 		return
 	}
 
@@ -149,40 +129,19 @@ function scan(value: unknown, depth: number): EmojiRef | undefined {
 	}
 }
 
-export function getEmojiInfo(ref: EmojiRef): EmojiInfo {
+/** The emoji's name and whether it's animated, from Discord if it knows the emoji. */
+export function resolveEmoji(ref: EmojiRef) {
 	const EmojiStore = Stores.EmojiStore as
 		| DiscordModules.Flux.Store<{
 				getCustomEmojiById?(id: string): CustomEmoji | undefined
 		  }>
 		| undefined
-	const GuildStore = Stores.GuildStore as
-		| DiscordModules.Flux.Store<{
-				getGuild?(id: string): Guild | undefined
-		  }>
-		| undefined
 
 	const known = EmojiStore?.getCustomEmojiById?.(ref.id)
-	const animated = known?.animated ?? ref.animated ?? false
 
-	const info: EmojiInfo = {
+	return {
 		id: ref.id,
 		name: known?.name ?? names.get(ref.id) ?? ref.name ?? 'emoji',
-		animated,
-		imageUrl: `${Cdn}/emojis/${ref.id}.${animated ? 'gif' : 'png'}?size=96&quality=lossless`,
+		animated: known?.animated ?? ref.animated ?? false,
 	}
-
-	const guild = known?.guildId ? GuildStore?.getGuild?.(known.guildId) : undefined
-	if (guild)
-		info.guild = {
-			id: guild.id,
-			name: guild.name,
-			iconUrl: guild.icon
-				? `${Cdn}/icons/${guild.id}/${guild.icon}.png?size=64`
-				: undefined,
-			discoverable: guild.features
-				? new Set(guild.features).has('DISCOVERABLE')
-				: false,
-		}
-
-	return info
 }
