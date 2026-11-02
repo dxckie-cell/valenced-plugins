@@ -606,7 +606,11 @@ for (const key of ['gifting', 'server-boosting']) {
 		const choices = levelChoices(key)
 		const level = getLevel(key)
 		if (level === choices[choices.length - 1]?.key) return base[field]
-		return choices.find(item => item.key === level)?.icon ?? base[field]
+		const icon = choices.find(item => item.key === level)?.icon
+		if (!icon) return base[field]
+		// On the profile (url) Discord draws the picture at its own smaller size, so Boosting uses the
+		// original-size file there and the bigger one on the badge grid and sheets (sheetUrl).
+		return key === 'server-boosting' && field === 'url' ? icon.replace(/\.png/, '-row.png') : icon
 	}
 	Object.defineProperties(badge, {
 		url: { get: pick('url'), enumerable: true, configurable: true },
