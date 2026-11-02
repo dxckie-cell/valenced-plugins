@@ -579,7 +579,7 @@ export const resetStatus = () => statusLines.clear()
 // The Nitro badge's icon follows the level chosen in settings.
 const nitroBadge = BADGES.find(badge => badge.key === 'nitro')
 if (nitroBadge) {
-	const icon = () => `${ICON_BASE}/nitro-${getNitroLevel() === 'none' ? 'opal' : getNitroLevel()}.png`
+	const icon = () => `${ICON_BASE}/nitro-${getNitroLevel() === 'none' ? 'opal' : getNitroLevel()}.png?v=2`
 	Object.defineProperties(nitroBadge, {
 		url: { get: icon, enumerable: true, configurable: true },
 		sheetUrl: { get: icon, enumerable: true, configurable: true },
