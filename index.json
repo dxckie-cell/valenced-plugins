@@ -752,11 +752,11 @@
     },
     "dxckie.bio-emoji-context": {
       "name": "BioEmojiContext",
-      "description": "Tap a custom emoji in someone's profile bio to see its name and which server it's from.",
+      "description": "Tap a custom emoji in someone's profile bio to open Discord's emoji sheet, like tapping one in chat.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "ReactionIcon",
       "channels": {
-        "latest": "1.1.0"
+        "latest": "1.2.0"
       },
       "versions": {
         "1.0.0": {
@@ -776,6 +776,19 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.bio-emoji-context@1.1.0.zip",
           "sha256": "4607ed82f69e96463c66711ae9aab8e7981a4f717365517a76cad6e229ab5782",
           "size": 3015,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.2.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.bio-emoji-context@1.2.0.zip",
+          "sha256": "ecc1465fbbd899d9bf626679b7a43d7cb6378616bafefe3685af2651aca45772",
+          "size": 2228,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
