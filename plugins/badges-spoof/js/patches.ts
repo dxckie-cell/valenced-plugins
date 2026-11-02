@@ -67,6 +67,27 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 		getStore('UserStore', store => {
 			userStore = store
 			status('current user', 'current user: found')
+			patchKey(
+				store,
+				'getCurrentUser',
+				function (this: any, args, original) {
+					const user = Reflect.apply(original, this, args)
+					if (user?.id) ownId = user.id
+					return asSubscriber(user)
+				},
+				cleanup,
+				'Nitro (current user)',
+			)
+			patchKey(
+				store,
+				'getUser',
+				function (this: any, args, original) {
+					const user = Reflect.apply(original, this, args)
+					return ownId && args[0] === ownId ? asSubscriber(user) : user
+				},
+				cleanup,
+				'Nitro (user)',
+			)
 		}),
 	)
 
@@ -435,31 +456,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 		}
 	}
 
-	cleanup(
-		getStore('UserStore', store => {
-			patchKey(
-				store,
-				'getCurrentUser',
-				function (this: any, args, original) {
-					const user = Reflect.apply(original, this, args)
-					if (user?.id) ownId = user.id
-					return asSubscriber(user)
-				},
-				cleanup,
-				'Nitro (current user)',
-			)
-			patchKey(
-				store,
-				'getUser',
-				function (this: any, args, original) {
-					const user = Reflect.apply(original, this, args)
-					return ownId && args[0] === ownId ? asSubscriber(user) : user
-				},
-				cleanup,
-				'Nitro (user)',
-			)
-		}),
-	)
 	cleanup(
 		getStore('UserProfileStore', store => {
 			patchKey(
