@@ -228,7 +228,7 @@ const tier = (key: string, name: string | undefined, milestone: string, threshol
 const gift = (hash: string) => `${BADGE_CDN}/${hash}.png`
 const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
 const age = (k: string) => `${ICON_BASE}/tiers/age-${k}.png`
-const boost = (n: number) => `${ICON_BASE}/tiers/boost-${n}.png`
+const boost = (n: number) => `${ICON_BASE}/tiers/boost-${n}.png${n < 9 ? '?v=2' : ''}`
 
 const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; description: string } & Record<string, unknown>> = {
 	'early-supporter': {
@@ -489,8 +489,15 @@ function withRealArt(key: string, details: Record<string, any> | undefined) {
 	let currentReal: any
 	const tiers = details.tiers.map((mine: any, index: number) => {
 		const word = norm(mine.key)
+		const threshold = mine.requirements?.[0]?.threshold
 		const found =
 			real.find((item: any) => word && (norm(item.key) === word || norm(item.name).endsWith(word))) ??
+			// By the milestone ("12 months") or the number it needs.
+			real.find(
+				(item: any) =>
+					(mine.milestone_text && norm(item.milestone_text) === norm(mine.milestone_text)) ||
+					(typeof threshold === 'number' && threshold > 0 && item.requirements?.[0]?.threshold === threshold),
+			) ??
 			(real.length === details.tiers.length ? real[index] : undefined)
 		if (!found) return mine
 		if (mine.key === details.current_tier) currentReal = found
