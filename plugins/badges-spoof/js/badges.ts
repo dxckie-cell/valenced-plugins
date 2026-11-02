@@ -126,6 +126,24 @@ const REPLACE_SOURCES: ReplaceSource[] = [
 		],
 	},
 	{
+		ours: 'badges-spoof-streaming',
+		name: 'Streaming',
+		levels: ['Newcomer', 'Fledgling', 'Breakout', 'Standout', 'Trendsetter', 'Headliner', 'Star', 'Sensation', 'Visionary', 'Phenomenon'],
+		icons: ['30670da18925260946379b7fe10def26', '046ddc05551d3b91d269460956d81188', 'dac8be3f227ad66655e402814c366f64', '852c0e2f5d2d73e75b1eabb286417acf', 'f5e5b1a2820da1981084e4b719be72e7', '0b06966b175dc72c9b5eaea61003d530', '3ba1b4e528fdebfe49cd7021550e9826', '063ec3175b47664507d30feaf83dfa99'],
+	},
+	{
+		ours: 'badges-spoof-game-time',
+		name: 'Game Time',
+		levels: ['Casual', 'Recreational', 'Dedicated', 'Committed', 'Serious', 'Devoted', 'Seasoned', 'Ironclad', 'Unshakeable', 'Eternal'],
+		icons: ['3efa50b9d9eff04c04a0bdd6e78b8dc0', '7f60a090de6cfe230bbc32c482fbaf2c', '054c89b927c8c8907ab652fb458fb97f', '452bbe19d924544ab70cfd8f3cc0e446', '269355d438e62bd1f45e127b34459caf', 'feb9939317a21090e6dcdf410e3c3000', 'db259eb9f31a389ff0aff009b704babb', '208e1bb66e311286cae364bc6f19277a', 'be98f2d9a07ba288bf271b0757fbce6a', '7c57adf7939dd1132e02cb273ac07b96'],
+	},
+	{
+		ours: 'badges-spoof-game-variety',
+		name: 'Game Variety',
+		levels: ['Sampler', 'Dabbler', 'Enthusiast', 'Ranger', 'Explorer', 'Adventurer', 'Voyager', 'Maverick', 'Polymath', 'Universalist'],
+		icons: ['f2e95dea497883ba979fbb7262df4fb1', '5df9e6c933a4255e2edd6030719da8c6', '1043a575492403efe4ec42efa451050c', '5816a47693a62f0529e53ed2fbc7f41c', 'ce9ae4ae128db559173a0a29c49becd2', 'b27e9974811d0c4e420724fc0e54b4b2', '68af20428336f8c018bab39206644d60', '33e5593de1a98a7b12aba93174357031'],
+	},
+	{
 		ours: 'badges-spoof-server-boosting',
 		name: 'Server Boosting',
 		levels: [] as string[],

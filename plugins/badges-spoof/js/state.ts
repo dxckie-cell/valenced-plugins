@@ -65,6 +65,21 @@ export const BADGES: BadgeDefinition[] = [
 		url: `${ICON_BASE}/account-age.png?v=2`,
 		sheetUrl: `${ICON_BASE}/account-age.png?v=2`,
 	}),
+	define('streaming', 'Streaming', '063ec3175b47664507d30feaf83dfa99', undefined, {
+		tiered: true,
+		url: `${ICON_BASE}/tiers/streaming-10.png?v=1`,
+		sheetUrl: `${ICON_BASE}/tiers/streaming-10.png?v=1`,
+	}),
+	define('game-time', 'Game Time', '7c57adf7939dd1132e02cb273ac07b96', undefined, {
+		tiered: true,
+		url: `${ICON_BASE}/tiers/game-time-10.png?v=1`,
+		sheetUrl: `${ICON_BASE}/tiers/game-time-10.png?v=1`,
+	}),
+	define('game-variety', 'Game Variety', '33e5593de1a98a7b12aba93174357031', undefined, {
+		tiered: true,
+		url: `${ICON_BASE}/tiers/game-variety-10.png?v=1`,
+		sheetUrl: `${ICON_BASE}/tiers/game-variety-10.png?v=1`,
+	}),
 	define('nitro', 'Nitro', 'f61ddf640d11d9bdfaf9de265eb862edf28986b659e545f293b54adf229433af', undefined, {
 		tiered: true,
 		sheetUrl: `${ICON_BASE}/nitro.png`,
@@ -175,6 +190,12 @@ export const TEXT_FIELDS = [
 	{ id: 'gifting.date', badge: 'gifting', label: 'Gifting unlocked on', placeholder: '02/04/26' },
 	{ id: 'account-age.age', badge: 'account-age', label: 'Account age', placeholder: '10 years, 6 months' },
 	{ id: 'account-age.date', badge: 'account-age', label: 'Account Age unlocked on', placeholder: '02/04/26' },
+	{ id: 'streaming.hours', badge: 'streaming', label: 'Hours streamed', placeholder: '5,000' },
+	{ id: 'streaming.date', badge: 'streaming', label: 'Streaming unlocked on', placeholder: '02/04/26' },
+	{ id: 'game-time.hours', badge: 'game-time', label: 'Hours of games played', placeholder: '5,000' },
+	{ id: 'game-time.date', badge: 'game-time', label: 'Game Time unlocked on', placeholder: '02/04/26' },
+	{ id: 'game-variety.games', badge: 'game-variety', label: 'Games played', placeholder: '100' },
+	{ id: 'game-variety.date', badge: 'game-variety', label: 'Game Variety unlocked on', placeholder: '02/04/26' },
 	{ id: 'nitro.since', badge: 'nitro', label: 'Nitro subscriber since', placeholder: '04/04/2020' },
 	{ id: 'nitro.date', badge: 'nitro', label: 'Nitro unlocked on', placeholder: '04/04/26' },
 	{ id: 'server-boosting.since', badge: 'server-boosting', label: 'Boosting since', placeholder: '04/04/2020' },
@@ -229,6 +250,7 @@ const tier = (key: string, name: string | undefined, milestone: string, threshol
 const gift = (hash: string, own?: string) => (own ? `${ICON_BASE}/tiers/gift-${own}.png?v=1` : `${BADGE_CDN}/${hash}.png`)
 const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
 const age = (k: string) => `${ICON_BASE}/tiers/age-${k}.png`
+const art = (k: string, n: number) => `${ICON_BASE}/tiers/${k}-${n}.png?v=1`
 const boost = (n: number) => `${ICON_BASE}/tiers/boost-${n}.png${n < 9 ? '?v=2' : ''}`
 
 const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; description: string } & Record<string, unknown>> = {
@@ -314,6 +336,72 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 			['seed', 'sprout', 'sapling', 'bud', 'blossom', 'redwood', 'sequoia', 'bristlecone', 'stromatolite', 'primordial'].map(k => [k, '2026-04-02T12:00:00.000Z']),
 		),
 	},
+	'streaming': {
+		name: 'Streaming',
+		info_label: '5,000 hours streamed to others',
+		description: 'Stream to others on Discord to level up this badge.',
+		tiers: [
+			tier('newcomer', 'Newcomer', '1 hour', 1, art('streaming', 1)),
+			tier('fledgling', 'Fledgling', '5 hours', 5, art('streaming', 2)),
+			tier('breakout', 'Breakout', '20 hours', 20, art('streaming', 3)),
+			tier('standout', 'Standout', '75 hours', 75, art('streaming', 4)),
+			tier('trendsetter', 'Trendsetter', '150 hours', 150, art('streaming', 5)),
+			tier('headliner', 'Headliner', '300 hours', 300, art('streaming', 6)),
+			tier('star', 'Star', '500 hours', 500, art('streaming', 7)),
+			tier('sensation', 'Sensation', '1,000 hours', 1000, art('streaming', 8)),
+			tier('visionary', 'Visionary', '2,000 hours', 2000, art('streaming', 9)),
+			tier('phenomenon', 'Phenomenon', '5,000+ hours', 5000, art('streaming', 10)),
+		],
+		current_tier: 'phenomenon',
+		next_tier: null,
+		progress: [1, 5, 20, 75, 150, 300, 500, 1000, 2000, 5000].map(threshold => ({ current: 5000, threshold, progress_helper_text: '5,000 hours streamed to others' })),
+		obtained_at: '2026-04-02T12:00:00.000Z',
+		tier_obtained_at: Object.fromEntries(['newcomer', 'fledgling', 'breakout', 'standout', 'trendsetter', 'headliner', 'star', 'sensation', 'visionary', 'phenomenon'].map(k => [k, '2026-04-02T12:00:00.000Z'])),
+	},
+	'game-time': {
+		name: 'Game Time',
+		info_label: '5,000 hours of games played',
+		description: 'Play games with Discord open to level up this badge.',
+		tiers: [
+			tier('casual', 'Casual', '1 hour', 1, art('game-time', 1)),
+			tier('recreational', 'Recreational', '5 hours', 5, art('game-time', 2)),
+			tier('dedicated', 'Dedicated', '20 hours', 20, art('game-time', 3)),
+			tier('committed', 'Committed', '75 hours', 75, art('game-time', 4)),
+			tier('serious', 'Serious', '150 hours', 150, art('game-time', 5)),
+			tier('devoted', 'Devoted', '300 hours', 300, art('game-time', 6)),
+			tier('seasoned', 'Seasoned', '500 hours', 500, art('game-time', 7)),
+			tier('ironclad', 'Ironclad', '1,000 hours', 1000, art('game-time', 8)),
+			tier('unshakeable', 'Unshakeable', '2,000 hours', 2000, art('game-time', 9)),
+			tier('eternal', 'Eternal', '5,000+ hours', 5000, art('game-time', 10)),
+		],
+		current_tier: 'eternal',
+		next_tier: null,
+		progress: [1, 5, 20, 75, 150, 300, 500, 1000, 2000, 5000].map(threshold => ({ current: 5000, threshold, progress_helper_text: '5,000 hours of games played' })),
+		obtained_at: '2026-04-02T12:00:00.000Z',
+		tier_obtained_at: Object.fromEntries(['casual', 'recreational', 'dedicated', 'committed', 'serious', 'devoted', 'seasoned', 'ironclad', 'unshakeable', 'eternal'].map(k => [k, '2026-04-02T12:00:00.000Z'])),
+	},
+	'game-variety': {
+		name: 'Game Variety',
+		info_label: '100 games played',
+		description: 'Play a variety of games to level up this badge.',
+		tiers: [
+			tier('sampler', 'Sampler', '2 games', 2, art('game-variety', 1)),
+			tier('dabbler', 'Dabbler', '5 games', 5, art('game-variety', 2)),
+			tier('enthusiast', 'Enthusiast', '10 games', 10, art('game-variety', 3)),
+			tier('ranger', 'Ranger', '15 games', 15, art('game-variety', 4)),
+			tier('explorer', 'Explorer', '20 games', 20, art('game-variety', 5)),
+			tier('adventurer', 'Adventurer', '30 games', 30, art('game-variety', 6)),
+			tier('voyager', 'Voyager', '40 games', 40, art('game-variety', 7)),
+			tier('maverick', 'Maverick', '60 games', 60, art('game-variety', 8)),
+			tier('polymath', 'Polymath', '80 games', 80, art('game-variety', 9)),
+			tier('universalist', 'Universalist', '100+ games', 100, art('game-variety', 10)),
+		],
+		current_tier: 'universalist',
+		next_tier: null,
+		progress: [2, 5, 10, 15, 20, 30, 40, 60, 80, 100].map(threshold => ({ current: 100, threshold, progress_helper_text: '100 games played' })),
+		obtained_at: '2026-04-02T12:00:00.000Z',
+		tier_obtained_at: Object.fromEntries(['sampler', 'dabbler', 'enthusiast', 'ranger', 'explorer', 'adventurer', 'voyager', 'maverick', 'polymath', 'universalist'].map(k => [k, '2026-04-02T12:00:00.000Z'])),
+	},
 	nitro: {
 		name: 'Nitro',
 		info_label: 'Subscriber since 04/04/2020',
@@ -357,6 +445,9 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 		tier_obtained_at: Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => [`boost-${n}`, '2022-04-04T12:00:00.000Z'])),
 	},
 }
+
+// Badges with a level picker in settings.
+export const LEVEL_KEYS = ['gifting', 'server-boosting', 'streaming', 'game-time', 'game-variety'] as const
 
 // The levels of Gifting and Server Boosting, lowest first, for the level pickers in settings.
 export const levelChoices = (key: string): { key: string; label: string; icon: string; threshold: number }[] =>
@@ -409,6 +500,26 @@ function withSettings(key: string, base: Record<string, any> | undefined): Recor
 			current_tier: lv.level,
 			next_tier: lv.next,
 			progress: base.progress.map((item: any) => ({ ...item, current, progress_helper_text: `${shown} gifts given` })),
+			obtained_at: iso,
+			tier_obtained_at: datesFor(lv.reached, iso),
+		}
+	}
+
+	if (key === 'streaming' || key === 'game-time' || key === 'game-variety') {
+		const field = key === 'game-variety' ? 'games' : 'hours'
+		const count = textOf(`${key}.${field}`)
+		const iso = isoDate(textOf(`${key}.date`), base.obtained_at)
+		const lv = levelState(key, base)
+		const own = (read().texts?.[`${key}.${field}`] ?? '').trim()
+		const shown = own || (lv.top ? count : lv.threshold.toLocaleString('en-US'))
+		const label = key === 'streaming' ? `${shown} hours streamed to others` : key === 'game-time' ? `${shown} hours of games played` : `${shown} games played`
+		const current = Number(shown.replace(/[^0-9.]/g, '')) || 0
+		return {
+			...base,
+			info_label: label,
+			current_tier: lv.level,
+			next_tier: lv.next,
+			progress: base.progress.map((item: any) => ({ ...item, current, progress_helper_text: label })),
 			obtained_at: iso,
 			tier_obtained_at: datesFor(lv.reached, iso),
 		}
@@ -478,7 +589,7 @@ export function learnTiers(key: string, tiers: unknown) {
 }
 
 // Badges whose sheet picture is Discord's own (each Gifting level has its own chest).
-const REAL_HEADERS = new Set(['nitro', 'gifting'])
+const REAL_HEADERS = new Set(['nitro', 'gifting', 'streaming', 'game-time', 'game-variety'])
 
 const norm = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
 
@@ -498,7 +609,7 @@ function findRealTier(real: any[], mine: any, count: number, index: number): any
 	)
 }
 
-const ICON_KEYS = new Set(['gifting', 'server-boosting'])
+const ICON_KEYS = new Set<string>(LEVEL_KEYS)
 
 // Discord's own small picture of a Gifting or Server Boosting level, once its badge list has been learnt.
 export function realTierIcon(key: string, level: string): string | undefined {
@@ -625,7 +736,7 @@ if (nitroBadge) {
 }
 
 // Gifting and Server Boosting show the icon of the level chosen in settings.
-for (const key of ['gifting', 'server-boosting']) {
+for (const key of LEVEL_KEYS) {
 	const badge = BADGES.find(item => item.key === key)
 	if (!badge) continue
 	const base = { url: badge.url, sheetUrl: badge.sheetUrl }

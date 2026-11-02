@@ -3,7 +3,7 @@ import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
 import { Image, Pressable, ScrollView, Text, View } from 'react-native'
-import { BADGES, NITRO_LEVELS, TEXT_FIELDS, getLevel, getStatusLines, levelChoices, type Settings } from './state'
+import { BADGES, LEVEL_KEYS, NITRO_LEVELS, TEXT_FIELDS, getLevel, getStatusLines, levelChoices, type Settings } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
 
@@ -161,10 +161,10 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					))}
 				</Grid>
 
-				{(['gifting', 'server-boosting'] as const).map(key => (
+				{LEVEL_KEYS.map(key => (
 					<View key={key}>
 						<Text style={{ color: colors.muted, fontSize: 12, fontWeight: '600', margin: 16, marginBottom: 8 }}>
-							{key === 'gifting' ? 'GIFTING LEVEL' : 'SERVER BOOSTING LEVEL'}
+							{`${BADGES.find(item => item.key === key)?.name ?? key} LEVEL`.toUpperCase()}
 						</Text>
 						<Grid>
 							{levelChoices(key).map(item => (
