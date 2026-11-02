@@ -226,7 +226,7 @@ const tier = (key: string, name: string | undefined, milestone: string, threshol
 })
 
 // Asks Discord's CDN for a bigger version (ignored if it does not resize).
-const gift = (hash: string) => `${BADGE_CDN}/${hash}.png?size=256`
+const gift = (hash: string, own?: string) => (own ? `${ICON_BASE}/tiers/gift-${own}.png?v=1` : `${BADGE_CDN}/${hash}.png`)
 const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
 const age = (k: string) => `${ICON_BASE}/tiers/age-${k}.png`
 const boost = (n: number) => `${ICON_BASE}/tiers/boost-${n}.png${n < 9 ? '?v=2' : ''}`
@@ -277,11 +277,11 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 		info_label: '44 gifts given',
 		description: 'Send 1 gift to unlock this badge.',
 		tiers: [
-			tier('patron', 'Patron', '1 gift', 1, gift('ac305d1b9481f312ce4419e7f8296558')),
-			tier('champion', 'Champion', '2 gifts', 2, gift('8b7792c4f65953d3ff564f23429cb79e')),
-			tier('luminary', 'Luminary', '3 gifts', 3, gift('3119f5504b2cd09576a323908c7c3517')),
-			tier('icon', 'Icon', '6 gifts', 6, gift('64f2413c9b9803661322aaad25826b62')),
-			tier('hero', 'Hero', '10 gifts', 10, gift('77d65b1f210014a11eb1582ee06ab684')),
+			tier('patron', 'Patron', '1 gift', 1, gift('ac305d1b9481f312ce4419e7f8296558', 'patron')),
+			tier('champion', 'Champion', '2 gifts', 2, gift('8b7792c4f65953d3ff564f23429cb79e', 'champion')),
+			tier('luminary', 'Luminary', '3 gifts', 3, gift('3119f5504b2cd09576a323908c7c3517', 'luminary')),
+			tier('icon', 'Icon', '6 gifts', 6, gift('64f2413c9b9803661322aaad25826b62', 'icon')),
+			tier('hero', 'Hero', '10 gifts', 10, gift('77d65b1f210014a11eb1582ee06ab684', 'hero')),
 			tier('legend', 'Legend', '20+ gifts', 20, gift('7fe346cfc5da1340087d8759a9e7a395'), `${ICON_BASE}/sheet/gifting.png?v=4`),
 		],
 		current_tier: 'legend',
