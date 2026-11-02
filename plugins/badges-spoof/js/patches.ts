@@ -354,7 +354,11 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			if (sheet && props.children !== undefined) {
 				const children = swapSheetText(props.children)
 				if (children !== props.children) {
-					return [args[0], { ...props, children }, ...args.slice(2)]
+					// The small "Nitro" line is taken out of the layout too, not only emptied, or its
+					// gap is left between the picture and the title.
+					const gone = sheet.badge.key === 'nitro' && props.children === 'Nitro'
+					const style = gone ? [props.style, { display: 'none', height: 0, margin: 0, padding: 0 }] : props.style
+					return [args[0], { ...props, children, ...(gone ? { style } : {}) }, ...args.slice(2)]
 				}
 			}
 
