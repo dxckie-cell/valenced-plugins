@@ -8,12 +8,14 @@ import {
 	type BadgeDefinition,
 	getVersion,
 	isHidden,
+	nativeNitroFields,
 	setHidden,
 	setOrder,
 	sheetScaleFor,
 	showsAll,
 	status,
 	subscribe,
+	usesNativeNitro,
 } from './state'
 
 type Cleanup = () => unknown
@@ -404,6 +406,72 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			for (const key of ['jsx', 'jsxs', 'jsxDEV']) {
 				if (typeof target?.[key] === 'function') safePatch(target, key)
 			}
+		}),
+	)
+
+	// With Discord's own Nitro badge on, Discord is told you are a Nitro subscriber, on your own user
+	// and profile only. The copies keep the original's prototype and are reused per level.
+	const nitroCopies = new WeakMap<object, { level: string; copy: any }>()
+	let ownId: string | undefined
+	const asSubscriber = (original: any) => {
+		if (!isRecord(original) || !usesNativeNitro()) return original
+		const fields = nativeNitroFields()
+		const level = String(fields.premium_since).slice(0, 10)
+		const cached = nitroCopies.get(original)
+		if (cached?.level === level) return cached.copy
+		try {
+			const copy = Object.create(Object.getPrototypeOf(original))
+			for (const key of Reflect.ownKeys(original)) {
+				const descriptor = Object.getOwnPropertyDescriptor(original, key)
+				if (descriptor) Object.defineProperty(copy, key, { ...descriptor, configurable: true, ...('value' in descriptor ? { writable: true } : {}) })
+			}
+			for (const [key, value] of Object.entries(fields)) {
+				Object.defineProperty(copy, key, { configurable: true, enumerable: true, writable: true, value })
+			}
+			nitroCopies.set(original, { level, copy })
+			return copy
+		} catch {
+			return original
+		}
+	}
+
+	cleanup(
+		getStore('UserStore', store => {
+			patchKey(
+				store,
+				'getCurrentUser',
+				function (this: any, args, original) {
+					const user = Reflect.apply(original, this, args)
+					if (user?.id) ownId = user.id
+					return asSubscriber(user)
+				},
+				cleanup,
+				'Nitro (current user)',
+			)
+			patchKey(
+				store,
+				'getUser',
+				function (this: any, args, original) {
+					const user = Reflect.apply(original, this, args)
+					return ownId && args[0] === ownId ? asSubscriber(user) : user
+				},
+				cleanup,
+				'Nitro (user)',
+			)
+		}),
+	)
+	cleanup(
+		getStore('UserProfileStore', store => {
+			patchKey(
+				store,
+				'getUserProfile',
+				function (this: any, args, original) {
+					const profile = Reflect.apply(original, this, args)
+					return ownId && args[0] === ownId ? asSubscriber(profile) : profile
+				},
+				cleanup,
+				'Nitro (profile)',
+			)
 		}),
 	)
 

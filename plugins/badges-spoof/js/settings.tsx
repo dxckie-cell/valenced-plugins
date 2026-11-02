@@ -102,7 +102,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					/>
 					<Design.TableSwitchRow
 						label="Use Discord's animated Nitro badge"
-						subLabel="Gives our Nitro badge the id of Discord's own Nitro badge, so Discord draws it with its animation. Turn off to use our still picture."
+						subLabel="Makes Discord treat you as a Nitro subscriber at the level picked below and draw its own animated Nitro badge, as CloudCord does. Turn off to use our still picture."
 						value={settings.nativeNitro === true}
 						onValueChange={(nativeNitro: boolean) => api.jsonStorage.set({ nativeNitro })}
 					/>

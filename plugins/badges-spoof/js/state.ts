@@ -147,6 +147,15 @@ export function nativeNitroId(): string {
 	return months > 0 ? `premium_tenure_${months}_month_v2` : 'premium'
 }
 
+// The profile fields that make Discord treat you as a Nitro subscriber since the level's start.
+export function nativeNitroFields(): Record<string, unknown> {
+	const months = NITRO_MONTHS[getNitroLevel()] ?? 0
+	const since = new Date()
+	since.setMonth(since.getMonth() - months)
+	since.setHours(12, 0, 0, 0)
+	return { premiumType: 2, premium_type: 2, premiumSince: since, premium_since: since.toISOString() }
+}
+
 export function nativeNitroLabel(): string {
 	const since = textOf('nitro.since')
 	return `Subscriber since ${since}`
