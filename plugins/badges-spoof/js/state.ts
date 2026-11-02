@@ -225,7 +225,8 @@ const tier = (key: string, name: string | undefined, milestone: string, threshol
 	complex_icon_static_url: big,
 })
 
-const gift = (hash: string) => `${BADGE_CDN}/${hash}.png`
+// Asks Discord's CDN for a bigger version (ignored if it does not resize).
+const gift = (hash: string) => `${BADGE_CDN}/${hash}.png?size=256`
 const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
 const age = (k: string) => `${ICON_BASE}/tiers/age-${k}.png`
 const boost = (n: number) => `${ICON_BASE}/tiers/boost-${n}.png${n < 9 ? '?v=2' : ''}`
