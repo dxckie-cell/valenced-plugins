@@ -470,7 +470,7 @@ export const getArtVersion = () => artVersion
 
 export function learnTiers(key: string, tiers: unknown) {
 	if (!Array.isArray(tiers) || !tiers.length || realTiers.get(key) === tiers) return
-	if (!tiers.some((item: any) => item && typeof item.complex_icon_animated_url === 'string')) return
+	if (!tiers.some((item: any) => item && (typeof item.complex_icon_animated_url === 'string' || typeof item.complex_icon_static_url === 'string'))) return
 	realTiers.set(key, tiers)
 	artVersion++
 }
@@ -482,15 +482,20 @@ const norm = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-
 function withRealArt(key: string, details: Record<string, any> | undefined) {
 	const real = realTiers.get(key)
 	if (!details?.tiers || !real) return details
+	let currentReal: any
 	const tiers = details.tiers.map((mine: any, index: number) => {
 		const word = norm(mine.key)
 		const found =
 			real.find((item: any) => word && (norm(item.key) === word || norm(item.name).endsWith(word))) ??
 			(real.length === details.tiers.length ? real[index] : undefined)
-		if (!found?.complex_icon_animated_url) return mine
+		if (!found) return mine
+		if (mine.key === details.current_tier) currentReal = found
+		const { rarity: _ours, ...rest } = mine
 		return {
-			...mine,
-			complex_icon_animated_url: found.complex_icon_animated_url,
+			...rest,
+			// How rare Discord calls this level (Starter has none).
+			...(typeof found.rarity === 'number' ? { rarity: found.rarity } : {}),
+			...(found.complex_icon_animated_url ? { complex_icon_animated_url: found.complex_icon_animated_url } : {}),
 			// Nitro's own picture is used outright; it is drawn at the right size without our scaling.
 			...(key === 'nitro' && found.complex_icon_static_url ? { complex_icon_static_url: found.complex_icon_static_url } : {}),
 		}
@@ -499,7 +504,9 @@ function withRealArt(key: string, details: Record<string, any> | undefined) {
 	return {
 		...details,
 		tiers,
+		...(currentReal ? { rarity: typeof currentReal.rarity === 'number' ? currentReal.rarity : undefined } : {}),
 		...(current?.complex_icon_animated_url ? { complex_icon_animated_url: current.complex_icon_animated_url } : {}),
+		...(key === 'nitro' && current?.complex_icon_static_url ? { complex_icon_static_url: current.complex_icon_static_url } : {}),
 	}
 }
 
