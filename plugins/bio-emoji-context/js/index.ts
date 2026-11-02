@@ -3,7 +3,15 @@ import { withName } from '@valenced/modules/finders/filters'
 import { instead } from '@valenced/patcher'
 import { getErrorStack } from '@valenced/utils/error'
 import { Text } from 'react-native'
-import { Children, cloneElement, createElement, isValidElement } from 'react'
+import {
+	Children,
+	cloneElement,
+	createContext,
+	createElement,
+	isValidElement,
+	useContext,
+	useState,
+} from 'react'
 import { emojiFromProps, rememberNames } from './emoji'
 import { findEmojiSheet, openEmojiSheet } from './sheet'
 import type { ReactElement, ReactNode } from 'react'
@@ -20,6 +28,53 @@ interface Saved {
 
 function open(emoji: EmojiRef) {
 	if (!openEmojiSheet(emoji)) report("Discord's emoji sheet isn't loaded yet")
+}
+
+// Tapping selectable text makes Android focus it and scroll the profile to it, which is
+// what Selectable Bios does to bios. So while an emoji is pressed, the bio's selection is
+// switched off, and back on once the finger lifts.
+const SetPressing = createContext<(pressing: boolean) => void>(() => {})
+
+function EmojiPress({
+	emoji,
+	children,
+}: {
+	emoji: EmojiRef
+	children?: ReactNode
+}) {
+	const setPressing = useContext(SetPressing)
+	return createElement(
+		Text,
+		{
+			onPressIn: () => setPressing(true),
+			onPressOut: () => setPressing(false),
+			onPress: () => open(emoji),
+		},
+		children,
+	)
+}
+
+/** The bio's root element, with its `selectable` prop held back while an emoji is pressed. */
+function BioRoot({ originalType, ...props }: Record<string, any>) {
+	const [pressing, setPressing] = useState(false)
+	return createElement(
+		SetPressing.Provider,
+		{ value: setPressing },
+		createElement(originalType, {
+			...props,
+			selectable: pressing ? false : props.selectable,
+		}),
+	)
+}
+
+function withPressSelection(root: ReactNode): ReactNode {
+	if (!isValidElement(root)) return root
+	const { type, props, key } = root as ReactElement<Record<string, any>>
+	return createElement(BioRoot, {
+		...props,
+		originalType: type,
+		key: key ?? undefined,
+	})
 }
 
 /** Our press wrappers, never searched again */
@@ -51,8 +106,8 @@ function makeEmojiPressable(node: ReactNode, depth = 0): ReactNode {
 	const emoji = emojiFromProps(element.props)
 	if (emoji) {
 		const wrapper = createElement(
-			Text,
-			{ key: element.key, onPress: () => open(emoji) },
+			EmojiPress,
+			{ key: element.key ?? undefined, emoji },
 			element,
 		)
 		ours.add(wrapper)
@@ -123,7 +178,7 @@ export default plugin<{ jsonStorage: Saved }>({
 							const result = Reflect.apply(BioText, undefined, args)
 							try {
 								rememberNames(args[0])
-								return makeEmojiPressable(result)
+								return withPressSelection(makeEmojiPressable(result))
 							} catch (e) {
 								plugin.reportError(
 									`Failed to make bio emoji pressable: ${getErrorStack(e)}`,
