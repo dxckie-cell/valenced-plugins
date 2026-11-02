@@ -88,6 +88,8 @@ export interface Settings {
 	nitroLevel: string
 	// The level each tiered badge shows, by badge key (Gifting, Server Boosting): a tier key.
 	levels: Record<string, string>
+	// Let Discord draw its own (animated) Nitro badge for the chosen level instead of ours.
+	nativeNitro: boolean
 	// Show only the badges added here, not the ones Discord gives you.
 	hideReal: boolean
 	// The text and dates on the sheets, by field id (see TEXT_FIELDS).
@@ -101,6 +103,7 @@ export const DEFAULT_SETTINGS: Settings = {
 	replaced: [],
 	nitroLevel: 'opal',
 	levels: {},
+	nativeNitro: false,
 	hideReal: false,
 	texts: {},
 }
@@ -132,6 +135,17 @@ export const NITRO_LEVELS = [
 export function getNitroLevel(): string {
 	const level = read().nitroLevel
 	return NITRO_LEVELS.some(item => item.key === level) ? (level as string) : 'opal'
+}
+
+// Discord's own Nitro badge, made to show the chosen level by changing when the profile says
+// Nitro started. Discord's badge animates; ours can't.
+export const usesNativeNitro = () => read().nativeNitro === true && getNitroLevel() !== 'none'
+
+export function nativeNitroFields(): Record<string, unknown> {
+	const months = NITRO_MONTHS[getNitroLevel()] ?? 0
+	const since = new Date()
+	since.setMonth(since.getMonth() - months)
+	return { premiumType: 2, premium_type: 2, premiumSince: since, premium_since: since.toISOString() }
 }
 
 export const hidesReal = () => read().hideReal === true

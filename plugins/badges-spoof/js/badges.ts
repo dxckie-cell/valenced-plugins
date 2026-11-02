@@ -10,6 +10,7 @@ import {
 	getVersion,
 	ID_PREFIX,
 	isHidden,
+	usesNativeNitro,
 } from './state'
 
 type Row = Record<string, any>
@@ -191,11 +192,12 @@ const isReplaced = (item: unknown) => {
 	const icons = [item.icon, ...iconHashes(item)].filter((icon): icon is string => typeof icon === 'string')
 	return REPLACES.some(
 		r =>
-			r.names.has(item.name) ||
+			!(r.ours === 'badges-spoof-nitro' && usesNativeNitro()) &&
+			(r.names.has(item.name) ||
 			r.names.has(item.description) ||
 			(typeof item.description === 'string' && r.prefixes.some(prefix => item.description.startsWith(prefix))) ||
 			Boolean(id && r.keys.has(id)) ||
-			icons.some(icon => r.keys.has(icon)),
+			icons.some(icon => r.keys.has(icon))),
 	)
 }
 
@@ -245,7 +247,7 @@ function inSavedOrder<T>(list: T[], idOf: (item: T) => string | undefined): T[] 
 
 // The badges to add, with or without the ones the user hid.
 const active = (includeHidden: boolean) =>
-	BADGES.filter(badge => includeHidden || !isHidden(badge.key))
+	BADGES.filter(badge => !(badge.key === 'nitro' && usesNativeNitro()) && (includeHidden || !isHidden(badge.key)))
 
 // A badge as it is in the profile's badge list. `icon` is Discord's own icon file name, so the
 // profile draws it the same way as a real badge.

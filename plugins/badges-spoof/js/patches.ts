@@ -10,7 +10,9 @@ import {
 	isHidden,
 	setHidden,
 	setOrder,
+	nativeNitroFields,
 	sheetScaleFor,
+	usesNativeNitro,
 	showsAll,
 	status,
 	subscribe,
@@ -82,6 +84,16 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 					function (this: any, args, original) {
 						// Re-renders the profile when a badge is hidden or shown.
 						React.useSyncExternalStore(subscribe, getVersion)
+
+						// Discord builds its own Nitro badge from these fields.
+						if (usesNativeNitro() && args[0]?.userId && args[0].userId === currentUserId()) {
+							const fields = nativeNitroFields()
+							const input = args[0]
+							args = [
+								{ ...input, ...fields, user: input.user ? { ...input.user, ...fields } : input.user, profile: input.profile ? { ...input.profile, ...fields } : input.profile },
+								...args.slice(1),
+							]
+						}
 
 						const result = Reflect.apply(original, this, args)
 						const userId = args[0]?.userId
