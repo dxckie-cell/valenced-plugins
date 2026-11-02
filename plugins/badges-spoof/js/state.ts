@@ -463,11 +463,51 @@ function withSettings(key: string, base: Record<string, any> | undefined): Recor
 	return base
 }
 
+// Discord's own levels of each badge (with their animated pictures), learnt from its badge list.
+const realTiers = new Map<string, any[]>()
+let artVersion = 0
+export const getArtVersion = () => artVersion
+
+export function learnTiers(key: string, tiers: unknown) {
+	if (!Array.isArray(tiers) || !tiers.length || realTiers.get(key) === tiers) return
+	if (!tiers.some((item: any) => item && typeof item.complex_icon_animated_url === 'string')) return
+	realTiers.set(key, tiers)
+	artVersion++
+}
+
+const norm = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
+
+// Adds the animated picture of Discord's own level to each of ours, matched by name, or by place when
+// both have as many levels.
+function withRealArt(key: string, details: Record<string, any> | undefined) {
+	const real = realTiers.get(key)
+	if (!details?.tiers || !real) return details
+	const tiers = details.tiers.map((mine: any, index: number) => {
+		const word = norm(mine.key)
+		const found =
+			real.find((item: any) => word && (norm(item.key) === word || norm(item.name).endsWith(word))) ??
+			(real.length === details.tiers.length ? real[index] : undefined)
+		if (!found?.complex_icon_animated_url) return mine
+		return {
+			...mine,
+			complex_icon_animated_url: found.complex_icon_animated_url,
+			// Nitro's own picture is used outright; it is drawn at the right size without our scaling.
+			...(key === 'nitro' && found.complex_icon_static_url ? { complex_icon_static_url: found.complex_icon_static_url } : {}),
+		}
+	})
+	const current = tiers.find((item: any) => item.key === details.current_tier)
+	return {
+		...details,
+		tiers,
+		...(current?.complex_icon_animated_url ? { complex_icon_animated_url: current.complex_icon_animated_url } : {}),
+	}
+}
+
 export const getDetails = (key: string) => ({
 	rarity: 5,
 	is_earnable: false,
 	progress: null,
-	...withSettings(key, BUILT_IN_DETAILS[key]),
+	...withRealArt(key, withSettings(key, BUILT_IN_DETAILS[key])),
 })
 
 export function getOrder(): string[] {

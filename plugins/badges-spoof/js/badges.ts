@@ -9,7 +9,9 @@ import {
 	setOrder,
 	getVersion,
 	ID_PREFIX,
+	getArtVersion,
 	isHidden,
+	learnTiers,
 	usesNativeNitro,
 } from './state'
 
@@ -331,6 +333,7 @@ export function withBadges(original: unknown[]): unknown[] {
 
 // The badge catalog. The edit profile screen needs the hidden ones too, to show them dimmed.
 export function withCatalog(original: unknown[], includeHidden: boolean): unknown[] {
+	learnFrom(original)
 	return cached(original, includeHidden ? 'catalog-all' : 'catalog-shown', () => {
 		for (const item of original) if (isRecord(item) && !isOurId(item.badge_id) && typeof item.name === 'string') learnReplaced(item)
 		// The edit list keeps the real badges so they can still be moved; the profile's own list drops them.
@@ -345,11 +348,21 @@ export function withCatalog(original: unknown[], includeHidden: boolean): unknow
 	})
 }
 
+// Keeps Discord's own levels of the badges ours replace, for their animated pictures.
+export function learnFrom(list: unknown[]) {
+	for (const item of list) {
+		if (!isRecord(item) || isOurId(item.badge_id) || !Array.isArray(item.tiers)) continue
+		for (const r of REPLACES) {
+			if (matchesReal(item, r.ours)) learnTiers(r.ours.replace(ID_PREFIX, ''), item.tiers)
+		}
+	}
+}
+
 // One catalog entry by id, the same object until a setting changes.
 const entries = new Map<string, { version: number; entry: ReturnType<typeof asCatalogBadge> }>()
 
 export function catalogEntry(badge: BadgeDefinition) {
-	const version = getVersion()
+	const version = getVersion() + getArtVersion() * 100_000
 	const hit = entries.get(badge.id)
 	if (hit?.version === version) return hit.entry
 

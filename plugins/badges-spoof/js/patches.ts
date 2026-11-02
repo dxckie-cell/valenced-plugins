@@ -4,7 +4,7 @@ import { before, instead } from '@valenced/patcher'
 import * as React from 'react'
 import { StyleSheet, Text } from 'react-native'
 import { ShimmerPicture } from './shimmer'
-import { badgeIdOf, catalogEntry, findBadge, isInGrid, isOurId, isRecord, moveBadge, withBadges, withCatalog } from './badges'
+import { badgeIdOf, catalogEntry, findBadge, isInGrid, learnFrom, isOurId, isRecord, moveBadge, withBadges, withCatalog } from './badges'
 import {
 	type BadgeDefinition,
 	getVersion,
@@ -505,7 +505,10 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				function (this: any, args, original) {
 					const badge = findBadge(args[0])
 					openSheet(badge)
-					return badge ? catalogEntry(badge) : Reflect.apply(original, this, args)
+					if (badge) return catalogEntry(badge)
+					const real = Reflect.apply(original, this, args)
+					if (isRecord(real)) learnFrom([real])
+					return real
 				},
 				cleanup,
 				'badge list',
