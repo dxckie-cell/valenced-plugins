@@ -13,8 +13,13 @@ const MaxDepth = 14
 
 let report: (error: unknown) => void = () => {}
 
+interface Saved {
+	/** Module id of Discord's emoji sheet, learned the first time it opens */
+	sheetModuleId?: number | null
+}
+
 function open(emoji: EmojiRef) {
-	if (!openEmojiSheet(emoji)) report("Discord's emoji sheet was not found")
+	if (!openEmojiSheet(emoji)) report("Discord's emoji sheet isn't loaded yet")
 }
 
 /** Our press wrappers, never searched again */
@@ -85,8 +90,9 @@ function makeEmojiPressable(node: ReactNode, depth = 0): ReactNode {
 	return result
 }
 
-export default plugin({
-	start({ cleanup, plugin }) {
+export default plugin<{ jsonStorage: Saved }>({
+	jsonStorage: { load: true, default: {} },
+	start({ cleanup, jsonStorage, plugin }) {
 		// A profile already on screen keeps the unpatched component until a restart
 		if (plugin.startedLate) {
 			plugin.requireReload()
@@ -96,7 +102,13 @@ export default plugin({
 		report = error => plugin.reportError(error)
 
 		cleanup(
-			findEmojiSheet(),
+			findEmojiSheet({
+				getId: () => {
+					const id = (jsonStorage.cache as Saved | undefined)?.sheetModuleId
+					return typeof id === 'number' ? id : undefined
+				},
+				setId: id => jsonStorage.set({ sheetModuleId: id }),
+			}),
 			// The "About Me" text of a profile
 			getModules(
 				withName('BioText'),
