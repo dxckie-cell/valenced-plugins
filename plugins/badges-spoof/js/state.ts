@@ -62,7 +62,8 @@ export const BADGES: BadgeDefinition[] = [
 	}),
 	define('account-age', 'Account Age', '1d8caace0299b12bcc469c35ce927e838abd9c645a22fe7c556f4394e57fa79b', undefined, {
 		tiered: true,
-		sheetUrl: `${ICON_BASE}/account-age.png`,
+		url: `${ICON_BASE}/account-age.png?v=2`,
+		sheetUrl: `${ICON_BASE}/account-age.png?v=2`,
 	}),
 	define('nitro', 'Nitro', 'f61ddf640d11d9bdfaf9de265eb862edf28986b659e545f293b54adf229433af', undefined, {
 		tiered: true,
@@ -579,7 +580,7 @@ export const resetStatus = () => statusLines.clear()
 // The Nitro badge's icon follows the level chosen in settings.
 const nitroBadge = BADGES.find(badge => badge.key === 'nitro')
 if (nitroBadge) {
-	const icon = () => `${ICON_BASE}/nitro-${getNitroLevel() === 'none' ? 'opal' : getNitroLevel()}.png?v=2`
+	const icon = () => `${ICON_BASE}/nitro-${getNitroLevel() === 'none' ? 'opal' : getNitroLevel()}.png?v=3`
 	Object.defineProperties(nitroBadge, {
 		url: { get: icon, enumerable: true, configurable: true },
 		sheetUrl: { get: icon, enumerable: true, configurable: true },
