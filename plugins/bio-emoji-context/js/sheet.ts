@@ -13,19 +13,12 @@ import { resolveEmoji } from './emoji'
 import type { ComponentType } from 'react'
 import type { EmojiRef } from './emoji'
 
-interface EmojiSheetProps {
-	emojiNode: {
-		id: string
-		alt: string
-		src: string
-		animated?: boolean
-	}
-}
-
-type EmojiSheet = ComponentType<EmojiSheetProps>
+type EmojiSheet = ComponentType<{
+	emojiNode: { id: string; alt: string; src: string; animated?: boolean }
+}>
 
 /** Where the sheet's module id is remembered between app starts */
-export interface SheetStorage {
+interface SheetStorage {
 	getId(): number | undefined
 	setId(id: number | null): void
 }
@@ -45,22 +38,16 @@ function found(sheet: EmojiSheet, id: number) {
 /**
  * Discord's own emoji sheet, the one tapping an emoji in chat opens.
  * Plugins that add to it, like Expression Utils, show up here too.
- *
- * Discord only loads it the first time an emoji is tapped in chat, so its module id is
- * remembered, and loaded on demand in later app starts.
  */
 export function findEmojiSheet(sheetStorage: SheetStorage) {
 	storage = sheetStorage
 
 	const unsubscribes = [
-		getModuleWithImportedPath<{ default: EmojiSheet }>(
-			Path,
-			(module, id) => found(module.default, id),
+		getModuleWithImportedPath<{ default: EmojiSheet }>(Path, (module, id) =>
+			found(module.default, id),
 		),
 		// In case the path changes
-		getModules(withName<EmojiSheet>('MessageEmojiActionSheet'), (sheet, id) =>
-			found(sheet, id),
-		),
+		getModules(withName<EmojiSheet>('MessageEmojiActionSheet'), found),
 	]
 
 	return () => {
@@ -76,14 +63,13 @@ function lookup() {
 		found(result[0].default, result[1])
 }
 
+/** Discord only loads the sheet once an emoji is tapped in chat, so later app starts load it by its remembered id. */
 function load() {
 	if (Sheet) return true
 
 	lookup()
-	if (Sheet) return true
-
 	const id = storage?.getId()
-	if (id === undefined) return false
+	if (Sheet || id === undefined) return !!Sheet
 
 	if (!metro.isModuleInitialized(id)) {
 		try {
@@ -92,19 +78,18 @@ function load() {
 	}
 
 	lookup()
-	// Discord updated and its modules moved, so it's learned again from chat
+	// Discord updated and its modules moved, so the id is learned again from chat
 	if (!Sheet) storage?.setId(null)
 
 	return !!Sheet
 }
 
-/** Returns false when Discord's sheet isn't loaded yet. */
 export function openEmojiSheet(ref: EmojiRef) {
 	if (!load()) {
 		ToastActionCreators.open(SheetKey, {
 			text: 'Open an emoji in chat once, then try again.',
 		})
-		return false
+		return
 	}
 
 	const { id, name, animated } = resolveEmoji(ref)
@@ -123,6 +108,4 @@ export function openEmojiSheet(ref: EmojiRef) {
 		// Keeps the profile open underneath instead of replacing it
 		'stack',
 	)
-
-	return true
 }

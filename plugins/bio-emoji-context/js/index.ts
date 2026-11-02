@@ -19,15 +19,9 @@ import type { EmojiRef } from './emoji'
 
 const MaxDepth = 14
 
-let report: (error: unknown) => void = () => {}
-
 interface Saved {
 	/** Module id of Discord's emoji sheet, learned the first time it opens */
 	sheetModuleId?: number | null
-}
-
-function open(emoji: EmojiRef) {
-	if (!openEmojiSheet(emoji)) report("Discord's emoji sheet isn't loaded yet")
 }
 
 // Tapping selectable text makes Android focus it and scroll the profile to it, which is
@@ -48,7 +42,7 @@ function EmojiPress({
 		{
 			onPressIn: () => setPressing(true),
 			onPressOut: () => setPressing(false),
-			onPress: () => open(emoji),
+			onPress: () => openEmojiSheet(emoji),
 		},
 		children,
 	)
@@ -153,8 +147,6 @@ export default plugin<{ jsonStorage: Saved }>({
 			plugin.requireReload()
 			return
 		}
-
-		report = error => plugin.reportError(error)
 
 		cleanup(
 			findEmojiSheet({

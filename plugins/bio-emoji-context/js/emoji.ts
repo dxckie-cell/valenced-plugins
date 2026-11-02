@@ -9,7 +9,6 @@ export interface EmojiRef {
 }
 
 interface CustomEmoji {
-	id: string
 	name: string
 	animated?: boolean
 }
@@ -17,6 +16,7 @@ interface CustomEmoji {
 // Custom emoji images are always served from /emojis/<snowflake>.<ext>
 const EmojiUrl = /\/emojis\/(\d{15,25})\.(\w+)/
 const Snowflake = /^\d{15,25}$/
+const Name = /^\w{2,32}$/
 const MarkupEmoji = /<a?:(\w{2,32}):(\d{15,25})>/g
 const SkippedKeys = new Set(['children', 'style', 'ref', 'key'])
 const LabelKeys = ['emojiName', 'alt', 'accessibilityLabel', 'title', 'name']
@@ -54,7 +54,7 @@ export function rememberNames(
 		typeof id === 'string' &&
 		Snowflake.test(id) &&
 		typeof object.name === 'string' &&
-		/^\w{2,32}$/.test(object.name) &&
+		Name.test(object.name) &&
 		(object.emojiId || object.type === 'customEmoji' || object.type === 'emoji')
 	)
 		names.set(id, object.name)
@@ -66,9 +66,8 @@ export function rememberNames(
 function labelOf(props: Record<string, any>): string | undefined {
 	for (const key of LabelKeys) {
 		const value = props[key]
-		if (typeof value !== 'string') continue
-		const name = value.replace(/^:|:$/g, '')
-		if (/^\w{2,32}$/.test(name)) return name
+		const name = typeof value === 'string' ? value.replace(/^:|:$/g, '') : ''
+		if (Name.test(name)) return name
 	}
 }
 
