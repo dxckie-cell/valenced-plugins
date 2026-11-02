@@ -85,17 +85,28 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 						// Re-renders the profile when a badge is hidden or shown.
 						React.useSyncExternalStore(subscribe, getVersion)
 
-						// Discord builds its own Nitro badge from these fields.
-						if (usesNativeNitro() && args[0]?.userId && args[0].userId === currentUserId()) {
+						// Discord builds its own Nitro badge from these fields. Objects are copied with their
+						// prototype, so a User keeps its methods; if Discord still throws, it gets the originals.
+						const original0 = args
+						const input = args[0]
+						let result: any
+						if (usesNativeNitro() && input?.userId && input.userId === currentUserId()) {
 							const fields = nativeNitroFields()
-							const input = args[0]
-							args = [
-								{ ...input, ...fields, user: input.user ? { ...input.user, ...fields } : input.user, profile: input.profile ? { ...input.profile, ...fields } : input.profile },
-								...args.slice(1),
-							]
+							const copy = (value: any) =>
+								value && typeof value === 'object' ? Object.assign(Object.create(Object.getPrototypeOf(value)), value, fields) : value
+							try {
+								const top = copy(input)
+								if (input.user) top.user = copy(input.user)
+								if (input.profile) top.profile = copy(input.profile)
+								args = [top, ...args.slice(1)]
+								result = Reflect.apply(original, this, args)
+							} catch {
+								args = original0
+								result = Reflect.apply(original, this, args)
+							}
+						} else {
+							result = Reflect.apply(original, this, args)
 						}
-
-						const result = Reflect.apply(original, this, args)
 						const userId = args[0]?.userId
 						return Array.isArray(result) && userId && userId === currentUserId()
 							? withBadges(result)
