@@ -185,20 +185,27 @@ const iconHashes = (item: Row) =>
 		isRecord(source) ? [source.simple_icon_url, source.simple_icon_raster_url, source.complex_icon_static_url].map(hashOf) : [],
 	)
 
-const isReplaced = (item: unknown) => {
+const matchesReal = (item: unknown, only?: string) => {
 	if (!isRecord(item) || isOurId(item.badge_id ?? item.id)) return false
 	loadReplaced()
 	const id = badgeIdOf(item)
 	const icons = [item.icon, ...iconHashes(item)].filter((icon): icon is string => typeof icon === 'string')
 	return REPLACES.some(
 		r =>
-			!(r.ours === 'badges-spoof-nitro' && usesNativeNitro()) &&
+			(!only || r.ours === only) &&
 			(r.names.has(item.name) ||
-			r.names.has(item.description) ||
-			(typeof item.description === 'string' && r.prefixes.some(prefix => item.description.startsWith(prefix))) ||
-			Boolean(id && r.keys.has(id)) ||
-			icons.some(icon => r.keys.has(icon))),
+				r.names.has(item.description) ||
+				(typeof item.description === 'string' && r.prefixes.some(prefix => item.description.startsWith(prefix))) ||
+				Boolean(id && r.keys.has(id)) ||
+				icons.some(icon => r.keys.has(icon))),
 	)
+}
+
+const NITRO_ID = 'badges-spoof-nitro'
+const isReplaced = (item: unknown) => {
+	if (!usesNativeNitro()) return matchesReal(item)
+	// With Discord's own Nitro badge in use, only the other real badges are replaced.
+	return REPLACES.some(r => r.ours !== NITRO_ID) && matchesReal(item) && !matchesReal(item, NITRO_ID)
 }
 
 // Ours takes the place the real one had in your order, until you move it yourself.
@@ -246,8 +253,9 @@ function inSavedOrder<T>(list: T[], idOf: (item: T) => string | undefined): T[] 
 }
 
 // The badges to add, with or without the ones the user hid.
-const active = (includeHidden: boolean) =>
-	BADGES.filter(badge => !(badge.key === 'nitro' && usesNativeNitro()) && (includeHidden || !isHidden(badge.key)))
+// `nativeNitroShown`: Discord drew its own Nitro badge, so ours is left out.
+const active = (includeHidden: boolean, nativeNitroShown = usesNativeNitro()) =>
+	BADGES.filter(badge => !(badge.key === 'nitro' && nativeNitroShown) && (includeHidden || !isHidden(badge.key)))
 
 // A badge as it is in the profile's badge list. `icon` is Discord's own icon file name, so the
 // profile draws it the same way as a real badge.
@@ -301,7 +309,8 @@ function cached(original: unknown[], kind: string, build: () => unknown[]) {
 export function withBadges(original: unknown[]): unknown[] {
 	return cached(original, 'badges', () => {
 		const native = hidesReal() ? [] : original.filter(item => !(isRecord(item) && isOurId(item.id)) && !isReplaced(item))
-		const ours = active(false).map(asBadge)
+		// If Discord didn't draw a Nitro badge after all, ours is added.
+		const ours = active(false, usesNativeNitro() && original.some(item => matchesReal(item, NITRO_ID))).map(asBadge)
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
 		const known = new Set(getOrder())
