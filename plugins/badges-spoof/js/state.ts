@@ -476,8 +476,8 @@ export function learnTiers(key: string, tiers: unknown) {
 	artVersion++
 }
 
-// Badges whose sheet picture is Discord's own (each Gifting level has its own chest).
-const REAL_HEADERS = new Set(['nitro', 'gifting'])
+// Badges whose sheet picture is Discord's own (each Gifting level has its own chest, each Boosting level its own picture).
+const REAL_HEADERS = new Set(['nitro', 'gifting', 'server-boosting'])
 
 const norm = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
 
