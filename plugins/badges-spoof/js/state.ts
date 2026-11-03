@@ -60,8 +60,8 @@ export const BADGES: BadgeDefinition[] = [
 	define('discord-staff', 'Discord Staff', '5e74e9b61934fc1f67c65515d1f7e60d'),
 	define('gifting', 'Gifting', '7fe346cfc5da1340087d8759a9e7a395', undefined, {
 		tiered: true,
-		url: `${ICON_BASE}/tiers/gift-legend.png?v=2`,
-		sheetUrl: `${ICON_BASE}/tiers/gift-legend.png?v=2`,
+		url: `${ICON_BASE}/tiers/gift-legend.png?v=3`,
+		sheetUrl: `${ICON_BASE}/tiers/gift-legend.png?v=3`,
 	}),
 	define('account-age', 'Account Age', '1d8caace0299b12bcc469c35ce927e838abd9c645a22fe7c556f4394e57fa79b', undefined, {
 		tiered: true,
@@ -251,7 +251,7 @@ const tier = (key: string, name: string | undefined, milestone: string, threshol
 })
 
 // Asks Discord's CDN for a bigger version (ignored if it does not resize).
-const gift = (hash: string, own?: string) => (own ? `${ICON_BASE}/tiers/gift-${own}.png?v=2` : `${BADGE_CDN}/${hash}.png`)
+const gift = (hash: string, own?: string) => (own ? `${ICON_BASE}/tiers/gift-${own}.png?v=3` : `${BADGE_CDN}/${hash}.png`)
 const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
 const age = (k: string) => `${ICON_BASE}/tiers/age-${k}-hd.png?v=1`
 const art = (k: string, n: number) => `${ICON_BASE}/tiers/${k}-${n}.png?v=1`
