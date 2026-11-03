@@ -1,6 +1,6 @@
 # dxckie-cell plugins for Valenced
 
-Seventeen Valenced plugins in one repository.
+Eighteen Valenced plugins in one repository.
 
 ## Install
 
@@ -31,6 +31,7 @@ Then install the plugins you want and reload Valenced.
 | Spotify Preview | `dxckie.spotify-preview` | Tap a Spotify track, album, playlist or episode link to preview 30 seconds of it in a bottom sheet instead of leaving Discord. Port of fres's Vendetta plugin. |
 | BioEmojiContext | `dxckie.bio-emoji-context` | Tap a custom emoji in someone's profile bio to open Discord's emoji sheet, like tapping one in chat. Plugins that add to that sheet, such as Expression Utils, show their buttons here too. |
 | No Compression | `dxckie.no-compression` | Stops Discord from compressing images and files when you upload them. Port of MSMA's Vendetta plugin. |
+| Picture Links+ | `dxckie.picture-links` | Tap profile pictures, profile banners, and server icons and banners to view them full size. Long-press a profile picture to open its server avatar. Port of dxckie-cell's Vendetta plugin Picture Links+, based on Picture Links by redstonekasi and Rico040 (CC0). |
 
 ## Development
 

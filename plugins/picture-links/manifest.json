@@ -1,0 +1,24 @@
+{
+	"format": 1,
+	"id": "dxckie.picture-links",
+	"name": "Picture Links+",
+	"description": "Tap profile pictures, profile banners, and server icons and banners to view them full size.",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"contributors": [
+		"redstonekasi <265064055490871297> (https://github.com/redstonekasi \"GitHub\")",
+		"Rico040 (https://github.com/Rico040 \"GitHub\")"
+	],
+	"icon": "LinkIcon",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}
