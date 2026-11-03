@@ -12,6 +12,8 @@ import {
 	getArtVersion,
 	isHidden,
 	learnTiers,
+	status,
+	getStatusLines,
 	usesNativeNitro,
 } from './state'
 
@@ -372,6 +374,12 @@ export function learnFrom(list: unknown[]) {
 		if (!isRecord(item) || isOurId(item.badge_id) || !Array.isArray(item.tiers)) continue
 		for (const r of REPLACES) {
 			if (matchesReal(item, r.ours)) learnTiers(r.ours.replace(ID_PREFIX, ''), item.tiers)
+		}
+		// Discord may call the Boosting badge something else; go by the word.
+		if (/boost/i.test(String(item.name ?? '')) && !/nitro/i.test(String(item.name ?? ''))) {
+			learnTiers('server-boosting', item.tiers)
+			const seen = `Discord's Boosting entry: "${item.name}", ${item.tiers.length} levels`
+			if (!getStatusLines().includes(seen)) status('boost-seen', seen)
 		}
 	}
 }

@@ -583,7 +583,7 @@ export const getArtVersion = () => artVersion
 
 export function learnTiers(key: string, tiers: unknown) {
 	if (!Array.isArray(tiers) || !tiers.length || realTiers.get(key) === tiers) return
-	if (!tiers.some((item: any) => item && (typeof item.complex_icon_animated_url === 'string' || typeof item.complex_icon_static_url === 'string'))) return
+	if (!tiers.some((item: any) => item && (typeof item.complex_icon_animated_url === 'string' || typeof item.complex_icon_static_url === 'string' || typeof item.rarity === 'number'))) return
 	realTiers.set(key, tiers)
 	artVersion++
 }
