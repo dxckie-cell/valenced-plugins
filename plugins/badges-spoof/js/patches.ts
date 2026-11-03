@@ -14,7 +14,7 @@ import {
 	setOrder,
 	sheetScaleFor,
 	TILE_MARK,
-	TILE_SCALE,
+	tileScale,
 	animatesSheet,
 	showsAll,
 	status,
@@ -389,7 +389,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 					const next: Record<string, unknown> = {
 						...props,
 						__badgesSpoofScaled: true,
-						style: [props.style, { transform: [{ scale: TILE_SCALE }] }],
+						style: [props.style, { transform: [{ scale: tileScale() }] }],
 					}
 					if (props.source !== undefined) next.source = source
 					else if (typeof props.uri === 'string') next.uri = clean

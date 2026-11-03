@@ -199,6 +199,7 @@ export const TEXT_FIELDS = [
 	{ id: 'nitro.since', badge: 'nitro', label: 'Nitro subscriber since', placeholder: '04/04/2020' },
 	{ id: 'nitro.date', badge: 'nitro', label: 'Nitro unlocked on', placeholder: '04/04/26' },
 	{ id: 'server-boosting.since', badge: 'server-boosting', label: 'Boosting since', placeholder: '04/04/2020' },
+	{ id: 'server-boosting.scale', badge: 'server-boosting', label: 'Grid picture size (1 = as Discord sends it)', placeholder: '1.3' },
 	{ id: 'server-boosting.date', badge: 'server-boosting', label: 'Server Boosting unlocked on', placeholder: '04/04/22' },
 ] as const
 
@@ -448,7 +449,11 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 
 // Added to a picture's address when it is drawn on the badge grid, which draws it TILE_SCALE bigger.
 export const TILE_MARK = '#bigtile'
-export const TILE_SCALE = 1.2
+// How much bigger the Boosting grid picture is drawn; editable in settings to match the real one.
+export const tileScale = (): number => {
+	const value = Number(textOf('server-boosting.scale').replace(',', '.'))
+	return value >= 0.5 && value <= 3 ? value : 1.3
+}
 
 // Badges with a level picker in settings.
 export const LEVEL_KEYS = ['gifting', 'server-boosting', 'streaming', 'game-time', 'game-variety'] as const
@@ -760,8 +765,9 @@ for (const key of LEVEL_KEYS) {
 		// On the Boosting badge grid Discord draws its big, sharp picture (the sheet header's); the small
 		// icon, scaled up, comes out blurry. The top level already matches, so it keeps the small icon.
 		const isTop = level === choices[choices.length - 1]?.key
-		const real = realTierIcon(key, level, key === 'server-boosting' && field === 'sheetUrl' && !isTop)
-		if (real) return real
+		const tile = key === 'server-boosting' && field === 'sheetUrl' && !isTop
+		const real = realTierIcon(key, level, tile)
+		if (real) return tile ? `${real}${TILE_MARK}` : real
 		if (level === choices[choices.length - 1]?.key) return base[field]
 		const icon = choices.find(item => item.key === level)?.icon
 		if (!icon) return base[field]
