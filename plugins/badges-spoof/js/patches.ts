@@ -382,7 +382,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 
 			// A picture marked for the badge grid: drawn bigger, without the marker in its address.
 			if (typeof args[0] !== 'string' && !props.__badgesSpoofScaled) {
-				const marked = uriOf(props.source ?? props.uri ?? props.src)
+				const marked = uriOf(props.source)
 				const mark = marked?.endsWith(TILE_MARK) ? TILE_MARK : marked?.endsWith(SMALL_MARK) ? SMALL_MARK : undefined
 				if (marked && mark) {
 					const clean = marked.slice(0, -mark.length)
