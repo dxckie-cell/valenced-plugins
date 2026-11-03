@@ -3,7 +3,7 @@ import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
 import { Image, Pressable, ScrollView, Text, View } from 'react-native'
-import { BADGES, LEVEL_KEYS, NITRO_LEVELS, TEXT_FIELDS, getLevel, getStatusLines, levelChoices, type Settings } from './state'
+import { BADGES, LEVEL_KEYS, SMALL_MARK, SMALL_SCALE, NITRO_LEVELS, TEXT_FIELDS, getLevel, getStatusLines, levelChoices, type Settings } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
 
@@ -60,7 +60,11 @@ function Tile({
 		>
 			<View style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
 				{uri ? (
-					<Image source={{ uri }} style={{ width: 40, height: 40 }} resizeMode="contain" />
+					<Image
+						source={{ uri: uri.replace(SMALL_MARK, '') }}
+						style={uri.endsWith(SMALL_MARK) ? { width: 40 * SMALL_SCALE, height: 40 * SMALL_SCALE } : { width: 40, height: 40 }}
+						resizeMode="contain"
+					/>
 				) : (
 					<Text style={{ color: colors.muted, fontSize: 22 }}>∅</Text>
 				)}
