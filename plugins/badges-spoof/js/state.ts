@@ -757,9 +757,10 @@ for (const key of LEVEL_KEYS) {
 		const choices = levelChoices(key)
 		const level = getLevel(key)
 		const real = realTierIcon(key, level)
-		// Discord draws the Boosting picture bigger on the badge grid than its small icon; the marker
+		// Discord draws the Boosting picture bigger on the badge grid than its small icon (the top level
+		// already matches); the marker
 		// tells the patch to scale it (see TILE_MARK).
-		if (real) return key === 'server-boosting' && field === 'sheetUrl' ? `${real}${TILE_MARK}` : real
+		if (real) return key === 'server-boosting' && field === 'sheetUrl' && level !== choices[choices.length - 1]?.key ? `${real}${TILE_MARK}` : real
 		if (level === choices[choices.length - 1]?.key) return base[field]
 		const icon = choices.find(item => item.key === level)?.icon
 		if (!icon) return base[field]
