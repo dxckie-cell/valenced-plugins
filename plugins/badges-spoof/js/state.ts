@@ -252,7 +252,7 @@ const gift = (hash: string, own?: string) => (own ? `${ICON_BASE}/tiers/gift-${o
 const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
 const age = (k: string) => `${ICON_BASE}/tiers/age-${k}.png`
 const art = (k: string, n: number) => `${ICON_BASE}/tiers/${k}-${n}.png?v=1`
-const boost = (n: number) => `${ICON_BASE}/tiers/boost-${n}.png${n < 9 ? '?v=2' : ''}`
+const boost = (n: number) => (n < 9 ? `${ICON_BASE}/tiers/boost-s${n}.png?v=1` : `${ICON_BASE}/tiers/boost-${n}.png`)
 
 const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; description: string } & Record<string, unknown>> = {
 	'early-supporter': {
@@ -619,11 +619,11 @@ function findRealTier(real: any[], mine: any, count: number, index: number): any
 }
 
 // Discord's small pictures are low resolution, so the activity badges keep their own sharp ones.
-const ICON_KEYS = new Set<string>(['gifting', 'server-boosting'])
+const ICON_KEYS = new Set<string>(['gifting'])
 
 // Discord's own small picture of a Gifting or Server Boosting level, once its badge list has been learnt.
 export function realTierIcon(key: string, level: string, big = false): string | undefined {
-	if (!ICON_KEYS.has(key)) return undefined
+	if (!ICON_KEYS.has(key) && key !== 'server-boosting') return undefined
 	const real = realTiers.get(key)
 	const mine = (BUILT_IN_DETAILS[key]?.tiers as any[]) ?? []
 	const index = mine.findIndex((item: any) => item.key === level)
@@ -762,12 +762,11 @@ for (const key of LEVEL_KEYS) {
 	const pick = (field: 'url' | 'sheetUrl') => () => {
 		const choices = levelChoices(key)
 		const level = getLevel(key)
-		// On the Boosting badge grid Discord draws its big, sharp picture (the sheet header's); the small
-		// icon, scaled up, comes out blurry. The top level already matches, so it keeps the small icon.
+		// Boosting levels below the top use sharp copies of Discord's own art (drawn at the real sizes);
+		// the top level keeps Discord's own picture.
 		const isTop = level === choices[choices.length - 1]?.key
-		const tile = key === 'server-boosting' && field === 'sheetUrl' && !isTop
-		const real = realTierIcon(key, level, tile)
-		if (real) return tile ? `${real}${TILE_MARK}` : real
+		const real = key === 'server-boosting' && !isTop ? undefined : realTierIcon(key, level)
+		if (real) return real
 		if (level === choices[choices.length - 1]?.key) return base[field]
 		const icon = choices.find(item => item.key === level)?.icon
 		if (!icon) return base[field]
