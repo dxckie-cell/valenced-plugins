@@ -49,6 +49,9 @@ function define(
 // The Gifting pictures, loaded from the Discord badge asset site the plugin author pointed to.
 const giftArt = (level: string) => `https://cdn-discordbadges.pages.dev/assets/gifting/gifting_${level}.png`
 
+export const SMALL_MARK = '#smallicon'
+export const SMALL_SCALE = 0.78
+
 const BADGE_CDN = 'https://cdn.discordapp.com/badge-icons'
 
 // In the order they are shown on the profile.
@@ -254,7 +257,9 @@ const tier = (key: string, name: string | undefined, milestone: string, threshol
 })
 
 // Asks Discord's CDN for a bigger version (ignored if it does not resize).
-const gift = (hash: string, own?: string) => (own ? giftArt(own) : `${BADGE_CDN}/${hash}.png`)
+// The pictures fill their whole canvas, so where Discord draws them as level icons (sheet, picker) they
+// are marked to be drawn smaller (see SMALL_MARK); the badge itself on the grid and profile is not.
+const gift = (hash: string, own?: string) => (own ? `${giftArt(own)}${SMALL_MARK}` : `${BADGE_CDN}/${hash}.png`)
 const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
 const age = (k: string) => `${ICON_BASE}/tiers/age-${k}-hd.png?v=1`
 const art = (k: string, n: number) => `${ICON_BASE}/tiers/${k}-${n}.png?v=1`
@@ -774,7 +779,7 @@ for (const key of LEVEL_KEYS) {
 		const real = key === 'server-boosting' && !isTop ? undefined : realTierIcon(key, level)
 		if (real) return real
 		if (level === choices[choices.length - 1]?.key) return base[field]
-		const icon = choices.find(item => item.key === level)?.icon
+		const icon = choices.find(item => item.key === level)?.icon?.replace(SMALL_MARK, '')
 		if (!icon) return base[field]
 		// On the profile (url) Discord draws the picture at its own smaller size, so Boosting uses the
 		// original-size file there and the bigger one on the badge grid and sheets (sheetUrl).
