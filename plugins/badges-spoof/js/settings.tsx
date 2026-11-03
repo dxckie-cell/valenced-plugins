@@ -171,7 +171,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 								<Tile
 									key={item.key}
 									label={item.label}
-									uri={item.icon}
+									uri={key === 'gifting' && iconBase ? `${iconBase}/picker/gift-${item.key}.png` : item.icon}
 									colors={colors}
 									selected={(settings.levels?.[key] && levelChoices(key).some(c => c.key === settings.levels?.[key]) ? settings.levels[key] : getLevel(key)) === item.key}
 									onPress={() => api.jsonStorage.set({ levels: { ...(settings.levels ?? {}), [key]: item.key } })}
