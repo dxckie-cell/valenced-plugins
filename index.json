@@ -1645,6 +1645,33 @@
         }
       }
     },
+    "dxckie.no-compression": {
+      "name": "No Compression",
+      "description": "Prevents Discord from compressing files when uploading.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "contributors": [
+        "MSMA <307215253811363843> (https://github.com/Martinz64 \"GitHub\")"
+      ],
+      "icon": "FileIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.no-compression@1.0.0.zip",
+          "sha256": "710717ec679825533508d123f467dbd65111053fc4263532ff078f60f5e6e9b4",
+          "size": 1243,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
     "dxckie.override-server-appearance": {
       "name": "Override Server Appearance",
       "description": "Set a custom icon and banner for any Discord server, only on your device.",
