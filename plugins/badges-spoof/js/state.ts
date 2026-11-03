@@ -617,14 +617,15 @@ function findRealTier(real: any[], mine: any, count: number, index: number): any
 const ICON_KEYS = new Set<string>(['gifting', 'server-boosting'])
 
 // Discord's own small picture of a Gifting or Server Boosting level, once its badge list has been learnt.
-export function realTierIcon(key: string, level: string): string | undefined {
+export function realTierIcon(key: string, level: string, big = false): string | undefined {
 	if (!ICON_KEYS.has(key)) return undefined
 	const real = realTiers.get(key)
 	const mine = (BUILT_IN_DETAILS[key]?.tiers as any[]) ?? []
 	const index = mine.findIndex((item: any) => item.key === level)
 	if (!real || index < 0) return undefined
 	const found = findRealTier(real, mine[index], mine.length, index)
-	const url = found?.simple_icon_raster_url || found?.simple_icon_url
+	// The big picture (the one on the sheet header) is sharp; the small icon is low resolution.
+	const url = (big ? found?.complex_icon_static_url : undefined) || found?.simple_icon_raster_url || found?.simple_icon_url
 	return typeof url === 'string' && url ? url : undefined
 }
 
@@ -756,11 +757,11 @@ for (const key of LEVEL_KEYS) {
 	const pick = (field: 'url' | 'sheetUrl') => () => {
 		const choices = levelChoices(key)
 		const level = getLevel(key)
-		const real = realTierIcon(key, level)
-		// Discord draws the Boosting picture bigger on the badge grid than its small icon (the top level
-		// already matches); the marker
-		// tells the patch to scale it (see TILE_MARK).
-		if (real) return key === 'server-boosting' && field === 'sheetUrl' && level !== choices[choices.length - 1]?.key ? `${real}${TILE_MARK}` : real
+		// On the Boosting badge grid Discord draws its big, sharp picture (the sheet header's); the small
+		// icon, scaled up, comes out blurry. The top level already matches, so it keeps the small icon.
+		const isTop = level === choices[choices.length - 1]?.key
+		const real = realTierIcon(key, level, key === 'server-boosting' && field === 'sheetUrl' && !isTop)
+		if (real) return real
 		if (level === choices[choices.length - 1]?.key) return base[field]
 		const icon = choices.find(item => item.key === level)?.icon
 		if (!icon) return base[field]
