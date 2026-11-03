@@ -95,44 +95,85 @@ function getImageSize(uri: string) {
 }
 
 // The viewer needs the picture's proportions before it can open, and getSize downloads the whole
-// image to find them. A 4096px original takes ages, so a small copy is measured instead and its
-// size scaled up to what was asked for. The viewer then loads the big image itself, already open.
+// image to find them, which can take ages (or never finish). So:
+//  - square images (profile pictures, server icons) need no lookup at all,
+//  - anything else measures a small 128px copy and scales it up, giving up after PROBE_TIMEOUT and
+//    guessing a 16:9 shape instead,
+// and the viewer is opened straight away, loading the big image itself.
 const PROBE_SIZE = 128
-// Animated images are far heavier than still ones at the same size.
+const PROBE_TIMEOUT = 1500
+// What is asked of Discord's CDN. Bigger sizes are slow to generate and download, and no phone
+// screen shows more than this. Animated images are far heavier than still ones.
+const MAX_STATIC_SIZE = 2048
 const MAX_ANIMATED_SIZE = 1024
+const GUESSED_ASPECT = 16 / 9
 const CDN_SIZED =
-	/^(https?:\/\/(?:cdn\.discordapp\.com|media\.discordapp\.net)\/[^?#]+)\.(?:webp|gif|png|jpe?g)\?(?:[^#]*&)?size=(\d+)/
+	/^(https?:\/\/(?:cdn\.discordapp\.com|media\.discordapp\.net)\/[^?#]+)\.(webp|gif|png|jpe?g)\?(?:[^#]*&)?size=(\d+)/
 
-function capAnimated(src: string) {
+interface OpenOptions {
+	/** Tried instead when the image can't be measured at all. */
+	fallback?: string
+	/** The image is square, so it needs no lookup. */
+	square?: boolean
+	/** Width over height, when it is known from how the image is drawn. */
+	aspect?: number
+}
+
+function capSize(src: string) {
 	return src.replace(
-		/(\.gif\?(?:[^#]*&)?size=)(\d+)/,
-		(_, head: string, size: string) =>
-			head + Math.min(Number(size), MAX_ANIMATED_SIZE),
+		/(\.(webp|gif|png|jpe?g)\?(?:[^#]*&)?size=)(\d+)/,
+		(_, head: string, ext: string, size: string) =>
+			head +
+			Math.min(
+				Number(size),
+				ext === 'gif' ? MAX_ANIMATED_SIZE : MAX_STATIC_SIZE,
+			),
 	)
 }
 
-async function measure(src: string) {
+const withTimeout = <T,>(promise: Promise<T>, ms: number) =>
+	new Promise<T | undefined>(resolve => {
+		const timer = setTimeout(() => resolve(undefined), ms)
+		promise.then(
+			value => {
+				clearTimeout(timer)
+				resolve(value)
+			},
+			() => {
+				clearTimeout(timer)
+				resolve(undefined)
+			},
+		)
+	})
+
+async function measure(src: string, { square, aspect }: OpenOptions) {
 	const found = CDN_SIZED.exec(src)
-	const target = found ? Number(found[2]) : 0
-	if (found && target > PROBE_SIZE * 2) {
-		try {
-			const small = await getImageSize(`${found[1]}.png?size=${PROBE_SIZE}`)
-			const scale = target / Math.max(small.width, small.height)
-			return {
-				width: Math.round(small.width * scale),
-				height: Math.round(small.height * scale),
-			}
-		} catch {
-			// fall through and measure the real thing
+	if (!found) return getImageSize(src)
+
+	const target = Number(found[3])
+	if (square) return { width: target, height: target }
+
+	const small = await withTimeout(
+		getImageSize(`${found[1]}.png?size=${PROBE_SIZE}`),
+		PROBE_TIMEOUT,
+	)
+	if (small) {
+		const scale = target / Math.max(small.width, small.height)
+		return {
+			width: Math.round(small.width * scale),
+			height: Math.round(small.height * scale),
 		}
 	}
-	return getImageSize(src)
+	return {
+		width: target,
+		height: Math.round(target / (aspect || GUESSED_ASPECT)),
+	}
 }
 
 async function openModal(
 	src: string,
 	event?: Point,
-	fallback?: string,
+	options: OpenOptions = {},
 ): Promise<void> {
 	const modal = getMediaModal()
 	if (!modal) {
@@ -140,12 +181,13 @@ async function openModal(
 		return
 	}
 
-	src = capAnimated(src)
+	src = capSize(src)
 
 	let size: { width: number; height: number }
 	try {
-		size = await measure(src)
+		size = await measure(src, options)
 	} catch (e) {
+		const { fallback } = options
 		if (fallback && fallback !== src) return openModal(fallback, event)
 		console.warn(`[Picture Links+] could not load ${src}`, e)
 		return
@@ -243,10 +285,11 @@ function patchProfilePictures(cleanup: PluginCleanupApi) {
 								return (
 									<Pressable
 										onPress={({ nativeEvent }: GestureResponderEvent) =>
-											openModal(url, nativeEvent)
+											openModal(url, nativeEvent, { square: true })
 										}
 										onLongPress={({ nativeEvent }: GestureResponderEvent) =>
-											guildSpecific && openModal(guildSpecific, nativeEvent)
+											guildSpecific &&
+											openModal(guildSpecific, nativeEvent, { square: true })
 										}
 										style={style}
 									>
@@ -356,7 +399,7 @@ function resolveImage(original: string): { url: string; original: string } {
 	const base = original.split('?')[0]
 	const animated = /\/a_[^/.]+\.webp$/.test(base)
 	return {
-		url: `${base.replace(/\.webp$/, animated ? '.gif' : '.png')}?size=4096`,
+		url: `${base.replace(/\.webp$/, animated ? '.gif' : '.png')}?size=${animated ? MAX_ANIMATED_SIZE : MAX_STATIC_SIZE}`,
 		original,
 	}
 }
@@ -378,12 +421,21 @@ function wrapImage(el: any): any {
 		if (found.icon && !looksLarge(props)) return el
 
 		const image = resolveImage(found.uri)
+		const { width, height } = flattenStyle(props.style)
+		const aspect =
+			typeof width === 'number' && typeof height === 'number' && height > 0
+				? width / height
+				: undefined
 
 		return (
 			<Pressable
 				style={props.style}
 				onPress={({ nativeEvent }: GestureResponderEvent) =>
-					openModal(image.url, nativeEvent, image.original)
+					openModal(image.url, nativeEvent, {
+						fallback: image.original,
+						square: found.icon,
+						aspect,
+					})
 				}
 			>
 				{el}
@@ -519,7 +571,10 @@ function patchServerImages(cleanup: PluginCleanupApi) {
 							return (
 								<Pressable
 									onPress={({ nativeEvent }: GestureResponderEvent) =>
-										openModal(image.url, nativeEvent, image.original)
+										openModal(image.url, nativeEvent, {
+											fallback: image.original,
+											square: kind === 'icon',
+										})
 									}
 								>
 									{res}
