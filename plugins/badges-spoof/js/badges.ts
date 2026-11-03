@@ -4,6 +4,7 @@ import {
 	getDetails,
 	getOrder,
 	hidesReal,
+	replacesReal,
 	getReplaced,
 	setReplaced,
 	setOrder,
@@ -227,6 +228,7 @@ const matchesReal = (item: unknown, only?: string) => {
 
 const NITRO_ID = 'badges-spoof-nitro'
 const isReplaced = (item: unknown, native = false) => {
+	if (!replacesReal()) return false
 	if (!native) return matchesReal(item)
 	// With Discord's own Nitro badge in use, only the other real badges are replaced.
 	return REPLACES.some(r => r.ours !== NITRO_ID) && matchesReal(item) && !matchesReal(item, NITRO_ID)
@@ -334,7 +336,9 @@ export function withBadges(original: unknown[]): unknown[] {
 	return cached(original, 'badges', () => {
 		const native = hidesReal() ? [] : original.filter(item => !(isRecord(item) && isOurId(item.id)) && !isReplaced(item, usesNativeNitro()))
 		// With Discord's own Nitro badge in use, ours is only added if Discord drew none.
-		const ours = active(false, usesNativeNitro() && original.some(item => matchesReal(item, NITRO_ID))).map(asBadge)
+		const ours = active(false, usesNativeNitro() && original.some(item => matchesReal(item, NITRO_ID)))
+			.filter(badge => replacesReal() || !original.some(item => matchesReal(item, badge.id)))
+			.map(asBadge)
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
 		const known = new Set(getOrder())
@@ -358,7 +362,9 @@ export function withCatalog(original: unknown[], includeHidden: boolean): unknow
 		for (const item of original) if (isRecord(item) && !isOurId(item.badge_id) && typeof item.name === 'string') learnReplaced(item)
 		// The edit list keeps the real badges so they can still be moved; the profile's own list drops them.
 		const native = !includeHidden && hidesReal() ? [] : original.filter(item => !(isRecord(item) && isOurId(item.badge_id)) && !isReplaced(item))
-		const ours = active(includeHidden).map(badge => asCatalogBadge(badge))
+		const ours = active(includeHidden)
+			.filter(badge => replacesReal() || !original.some(item => isRecord(item) && item.owned !== false && matchesReal(item, badge.id)))
+			.map(badge => asCatalogBadge(badge))
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
 		const known = new Set(getOrder())

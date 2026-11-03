@@ -119,6 +119,8 @@ export interface Settings {
 	nativeNitro: boolean
 	// Show only the badges added here, not the ones Discord gives you.
 	hideReal: boolean
+	// Replace the real badge with the spoofed one when you own both (on unless turned off).
+	replaceReal: boolean
 	// The text and dates on the sheets, by field id (see TEXT_FIELDS).
 	texts: Record<string, string>
 }
@@ -133,6 +135,7 @@ export const DEFAULT_SETTINGS: Settings = {
 	nativeNitro: false,
 	animateSheet: true,
 	hideReal: false,
+	replaceReal: true,
 	texts: {},
 }
 
@@ -192,6 +195,7 @@ export function nativeNitroLabel(): string {
 export const animatesSheet = () => read().animateSheet !== false
 
 export const hidesReal = () => read().hideReal === true
+export const replacesReal = () => read().replaceReal !== false
 
 // The numbers and dates on the sheets that can be changed in settings.
 export const TEXT_FIELDS = [
@@ -752,7 +756,7 @@ const rarityLines = (): string[] =>
 		return `${key}: Discord rarity by level ${real.map((item: any) => item?.rarity ?? '-').join(',')}`
 	})
 
-export const PLUGIN_VERSION = '1.33.9'
+export const PLUGIN_VERSION = '1.34.0'
 
 export const getStatusLines = (): string[] => [`Badges Spoof ${PLUGIN_VERSION}`, ...statusLines.values(), ...rarityLines()]
 export const resetStatus = () => statusLines.clear()

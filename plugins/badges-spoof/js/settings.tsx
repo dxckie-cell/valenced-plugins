@@ -105,6 +105,12 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						onValueChange={(hideReal: boolean) => api.jsonStorage.set({ hideReal })}
 					/>
 					<Design.TableSwitchRow
+						label="Replace my real badge with the spoofed one"
+						subLabel="When you really own a badge that is also added here (Account Age, Gifting, Nitro, Boosting, Streaming, Game Time, Game Variety), show the spoofed one and hide the real one. Turn off to keep your real badge and skip the spoofed copy."
+						value={settings.replaceReal !== false}
+						onValueChange={(replaceReal: boolean) => api.jsonStorage.set({ replaceReal })}
+					/>
+					<Design.TableSwitchRow
 						label="Use Discord's animated Nitro badge"
 						subLabel="Makes Discord treat you as a Nitro subscriber at the level picked below and draw its own animated Nitro badge, as CloudCord does. Turn off to use our still picture."
 						value={settings.nativeNitro === true}
