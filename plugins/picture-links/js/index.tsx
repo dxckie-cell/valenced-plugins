@@ -1,4 +1,7 @@
-import { ActionSheetActionCreators } from '@valenced/discord/actions'
+import {
+	ActionSheetActionCreators,
+	ToastActionCreators,
+} from '@valenced/discord/actions'
 import { Stores } from '@valenced/discord/flux'
 import { getModules, lookupModule } from '@valenced/modules/finders'
 import {
@@ -117,6 +120,8 @@ interface OpenOptions {
 	square?: boolean
 	/** Width over height, when it is known from how the image is drawn. */
 	aspect?: number
+	/** What was tapped, for the diagnostics. */
+	label?: string
 }
 
 function capSize(src: string) {
@@ -170,13 +175,54 @@ async function measure(src: string, { square, aspect }: OpenOptions) {
 	}
 }
 
+// TEMPORARY diagnostics: every tap shows a small message with what happened and how long it took,
+// to find out why server icons and banners don't open. Remove once that is fixed.
+const DEBUG = true
+
+type Trace = (step: string) => void
+
+function createTrace(label: string | undefined): Trace | undefined {
+	if (!DEBUG) return
+	const started = Date.now()
+	const steps: string[] = []
+	return step => {
+		steps.push(`${step} ${Date.now() - started}ms`)
+		const text = `[PL ${label ?? '?'}] ${steps.join(' > ')}`
+		console.log(text)
+		try {
+			ToastActionCreators.open('PICTURE_LINKS_DEBUG', { text })
+		} catch {
+			// a diagnostic must never break the tap
+		}
+	}
+}
+
+const describe = (e: unknown) => (e instanceof Error ? e.message : String(e))
+
 async function openModal(
 	src: string,
 	event?: Point,
 	options: OpenOptions = {},
 ): Promise<void> {
+	const trace = createTrace(options.label)
+	trace?.('tap')
+	try {
+		await openViewer(src, event, options, trace)
+	} catch (e) {
+		trace?.(`ERROR ${describe(e)}`)
+		reportError(`open failed: ${getErrorStack(e)}`)
+	}
+}
+
+async function openViewer(
+	src: string,
+	event: Point | undefined,
+	options: OpenOptions,
+	trace: Trace | undefined,
+): Promise<void> {
 	const modal = getMediaModal()
 	if (!modal) {
+		trace?.('NO openMediaModal')
 		console.warn('[Picture Links+] openMediaModal not found')
 		return
 	}
@@ -186,36 +232,51 @@ async function openModal(
 	let size: { width: number; height: number }
 	try {
 		size = await measure(src, options)
+		trace?.(`sized ${size.width}x${size.height}`)
 	} catch (e) {
 		const { fallback } = options
-		if (fallback && fallback !== src) return openModal(fallback, event)
+		trace?.(`size failed (${describe(e)})`)
+		if (fallback && fallback !== src)
+			return openViewer(
+				fallback,
+				event,
+				{ ...options, fallback: undefined },
+				trace,
+			)
 		console.warn(`[Picture Links+] could not load ${src}`, e)
 		return
 	}
 
-	safe('open media modal', () => {
-		ActionSheetActionCreators.hideActionSheet() // hide user sheet
-		modal.openMediaModal({
-			initialSources: [
-				{
-					uri: src,
-					sourceURI: src,
-					width: size.width,
-					height: size.height,
-					guildId: getGuildId(),
-					channelId: getChannelId(),
-				},
-			],
-			initialIndex: 0,
-			originLayout: {
-				width: 0, // this would ideally be the size of the small pfp but this proved very hard to implement
-				height: 0,
-				x: event?.pageX ?? 0,
-				y: event?.pageY ?? 0,
-				resizeMode: 'fill',
+	ActionSheetActionCreators.hideActionSheet() // hide user sheet
+	trace?.('sheet hidden')
+	modal.openMediaModal({
+		initialSources: [
+			{
+				uri: src,
+				sourceURI: src,
+				width: size.width,
+				height: size.height,
+				guildId: getGuildId(),
+				channelId: getChannelId(),
 			},
-		})
+		],
+		initialIndex: 0,
+		originLayout: {
+			width: 0, // this would ideally be the size of the small pfp but this proved very hard to implement
+			height: 0,
+			x: event?.pageX ?? 0,
+			y: event?.pageY ?? 0,
+			resizeMode: 'fill',
+		},
 	})
+	trace?.('viewer called')
+
+	// how long the image itself takes to arrive
+	if (trace)
+		(Image as any).prefetch?.(src)?.then(
+			(ok: boolean) => trace(ok ? 'image loaded' : 'image FAILED'),
+			(e: unknown) => trace(`image ERROR ${describe(e)}`),
+		)
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -285,11 +346,17 @@ function patchProfilePictures(cleanup: PluginCleanupApi) {
 								return (
 									<Pressable
 										onPress={({ nativeEvent }: GestureResponderEvent) =>
-											openModal(url, nativeEvent, { square: true })
+											openModal(url, nativeEvent, {
+												square: true,
+												label: 'avatar',
+											})
 										}
 										onLongPress={({ nativeEvent }: GestureResponderEvent) =>
 											guildSpecific &&
-											openModal(guildSpecific, nativeEvent, { square: true })
+											openModal(guildSpecific, nativeEvent, {
+												square: true,
+												label: 'server avatar',
+											})
 										}
 										style={style}
 									>
@@ -435,6 +502,7 @@ function wrapImage(el: any): any {
 						fallback: image.original,
 						square: found.icon,
 						aspect,
+						label: found.icon ? 'el icon' : 'el banner',
 					})
 				}
 			>
@@ -574,6 +642,7 @@ function patchServerImages(cleanup: PluginCleanupApi) {
 										openModal(image.url, nativeEvent, {
 											fallback: image.original,
 											square: kind === 'icon',
+											label: `cmp ${kind}`,
 										})
 									}
 								>
