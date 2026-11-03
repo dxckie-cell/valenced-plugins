@@ -609,7 +609,8 @@ function findRealTier(real: any[], mine: any, count: number, index: number): any
 	)
 }
 
-const ICON_KEYS = new Set<string>(LEVEL_KEYS)
+// Discord's small pictures are low resolution, so the activity badges keep their own sharp ones.
+const ICON_KEYS = new Set<string>(['gifting', 'server-boosting'])
 
 // Discord's own small picture of a Gifting or Server Boosting level, once its badge list has been learnt.
 export function realTierIcon(key: string, level: string): string | undefined {
