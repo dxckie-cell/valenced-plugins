@@ -267,7 +267,7 @@ const gift = (hash: string, own?: string) => (own ? `${giftArt(own)}${SMALL_MARK
 const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
 const age = (k: string) => `${ICON_BASE}/tiers/age-${k}-hd.png?v=1`
 const art = (k: string, n: number) => `${ICON_BASE}/tiers/${k}-${n}.png?v=1`
-const boost = (n: number) => (n < 9 ? `${ICON_BASE}/tiers/boost-s${n}.png?v=1` : `${ICON_BASE}/tiers/boost-${n}.png`)
+const boost = (n: number) => `${ICON_BASE}/tiers/boost-s${n}.png?v=1`
 
 const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; description: string } & Record<string, unknown>> = {
 	'early-supporter': {
@@ -756,7 +756,7 @@ const rarityLines = (): string[] =>
 		return `${key}: Discord rarity by level ${real.map((item: any) => item?.rarity ?? '-').join(',')}`
 	})
 
-export const PLUGIN_VERSION = '1.34.1'
+export const PLUGIN_VERSION = '1.34.2'
 
 export const getStatusLines = (): string[] => [`Badges Spoof ${PLUGIN_VERSION}`, ...statusLines.values(), ...rarityLines()]
 export const resetStatus = () => statusLines.clear()
@@ -782,9 +782,10 @@ for (const key of LEVEL_KEYS) {
 		// Boosting levels below the top use sharp copies of Discord's own art (drawn at the real sizes);
 		// the top level keeps Discord's own picture.
 		const isTop = level === choices[choices.length - 1]?.key
-		const real = key === 'server-boosting' && !isTop ? undefined : realTierIcon(key, level)
+		const real = key === 'server-boosting' ? undefined : realTierIcon(key, level)
 		if (real) return real
-		if (level === choices[choices.length - 1]?.key) return base[field]
+		// The top Boosting level uses the sharp copy of Discord's art too, same as the others.
+		if (isTop && key !== 'server-boosting') return base[field]
 		const icon = choices.find(item => item.key === level)?.icon
 		if (!icon) return base[field]
 		// On the profile (url) Discord draws the picture at its own smaller size, so Boosting uses the
