@@ -361,10 +361,13 @@ export function withCatalog(original: unknown[], includeHidden: boolean): unknow
 	return cached(original, includeHidden ? 'catalog-all' : 'catalog-shown', () => {
 		for (const item of original) if (isRecord(item) && !isOurId(item.badge_id) && typeof item.name === 'string') learnReplaced(item)
 		// The edit list keeps the real badges so they can still be moved; the profile's own list drops them.
-		const native = !includeHidden && hidesReal() ? [] : original.filter(item => !(isRecord(item) && isOurId(item.badge_id)) && !isReplaced(item))
 		const ours = active(includeHidden)
 			.filter(badge => replacesReal() || !original.some(item => isRecord(item) && item.owned !== false && matchesReal(item, badge.id)))
 			.map(badge => asCatalogBadge(badge))
+		const oursIds = new Set(ours.map(badge => badge.badge_id))
+		// A real badge you don't own is dropped when ours stands in for it (no "Available to unlock" copy).
+		const standsIn = (item: unknown) => isRecord(item) && item.owned === false && REPLACES.some(r => oursIds.has(r.ours) && matchesReal(item, r.ours))
+		const native = !includeHidden && hidesReal() ? [] : original.filter(item => !(isRecord(item) && isOurId(item.badge_id)) && !isReplaced(item) && !standsIn(item))
 
 		const merged = ours.length ? [...native, ...ours] : native.length === original.length ? original : native
 		const known = new Set(getOrder())
