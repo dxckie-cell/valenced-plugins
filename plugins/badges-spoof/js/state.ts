@@ -60,8 +60,8 @@ export const BADGES: BadgeDefinition[] = [
 	define('discord-staff', 'Discord Staff', '5e74e9b61934fc1f67c65515d1f7e60d'),
 	define('gifting', 'Gifting', '7fe346cfc5da1340087d8759a9e7a395', undefined, {
 		tiered: true,
-		url: `${ICON_BASE}/gifting.png?v=3`,
-		sheetUrl: `${ICON_BASE}/gifting.png?v=3`,
+		url: `${ICON_BASE}/tiers/gift-legend.png?v=2`,
+		sheetUrl: `${ICON_BASE}/tiers/gift-legend.png?v=2`,
 	}),
 	define('account-age', 'Account Age', '1d8caace0299b12bcc469c35ce927e838abd9c645a22fe7c556f4394e57fa79b', undefined, {
 		tiered: true,
@@ -251,7 +251,7 @@ const tier = (key: string, name: string | undefined, milestone: string, threshol
 })
 
 // Asks Discord's CDN for a bigger version (ignored if it does not resize).
-const gift = (hash: string, own?: string) => (own ? `${ICON_BASE}/tiers/gift-${own}.png?v=1` : `${BADGE_CDN}/${hash}.png`)
+const gift = (hash: string, own?: string) => (own ? `${ICON_BASE}/tiers/gift-${own}.png?v=2` : `${BADGE_CDN}/${hash}.png`)
 const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
 const age = (k: string) => `${ICON_BASE}/tiers/age-${k}-hd.png?v=1`
 const art = (k: string, n: number) => `${ICON_BASE}/tiers/${k}-${n}.png?v=1`
@@ -308,7 +308,7 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 			tier('luminary', 'Luminary', '3 gifts', 3, gift('3119f5504b2cd09576a323908c7c3517', 'luminary')),
 			tier('icon', 'Icon', '6 gifts', 6, gift('64f2413c9b9803661322aaad25826b62', 'icon')),
 			tier('hero', 'Hero', '10 gifts', 10, gift('77d65b1f210014a11eb1582ee06ab684', 'hero')),
-			tier('legend', 'Legend', '20+ gifts', 20, gift('7fe346cfc5da1340087d8759a9e7a395'), `${ICON_BASE}/sheet/gifting.png?v=4`),
+			tier('legend', 'Legend', '20+ gifts', 20, gift('7fe346cfc5da1340087d8759a9e7a395', 'legend'), `${ICON_BASE}/sheet/gifting.png?v=4`),
 		],
 		current_tier: 'legend',
 		next_tier: null,
@@ -622,7 +622,7 @@ function findRealTier(real: any[], mine: any, count: number, index: number): any
 }
 
 // Discord's small pictures are low resolution, so the activity badges keep their own sharp ones.
-const ICON_KEYS = new Set<string>(['gifting'])
+const ICON_KEYS = new Set<string>()
 
 // Discord's own small picture of a Gifting or Server Boosting level, once its badge list has been learnt.
 export function realTierIcon(key: string, level: string, big = false): string | undefined {
