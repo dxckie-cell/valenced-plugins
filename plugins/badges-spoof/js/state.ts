@@ -589,7 +589,7 @@ export function learnTiers(key: string, tiers: unknown) {
 }
 
 // Badges whose sheet picture is Discord's own (each Gifting level has its own chest).
-const REAL_HEADERS = new Set(['nitro', 'gifting', 'streaming', 'game-time', 'game-variety'])
+const REAL_HEADERS = new Set(['nitro', 'gifting', 'server-boosting', 'streaming', 'game-time', 'game-variety'])
 
 const norm = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
 
@@ -751,12 +751,13 @@ for (const key of LEVEL_KEYS) {
 	const pick = (field: 'url' | 'sheetUrl') => () => {
 		const choices = levelChoices(key)
 		const level = getLevel(key)
+		const real = realTierIcon(key, level)
+		if (real) return real
 		if (level === choices[choices.length - 1]?.key) return base[field]
-		const icon = realTierIcon(key, level) ?? choices.find(item => item.key === level)?.icon
+		const icon = choices.find(item => item.key === level)?.icon
 		if (!icon) return base[field]
 		// On the profile (url) Discord draws the picture at its own smaller size, so Boosting uses the
 		// original-size file there and the bigger one on the badge grid and sheets (sheetUrl).
-		if (realTierIcon(key, level) === icon) return icon
 		return key === 'server-boosting' && field === 'url' ? icon.replace(/\.png/, '-row.png') : icon
 	}
 	Object.defineProperties(badge, {
