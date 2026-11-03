@@ -94,6 +94,41 @@ function getImageSize(uri: string) {
 	})
 }
 
+// The viewer needs the picture's proportions before it can open, and getSize downloads the whole
+// image to find them. A 4096px original takes ages, so a small copy is measured instead and its
+// size scaled up to what was asked for. The viewer then loads the big image itself, already open.
+const PROBE_SIZE = 128
+// Animated images are far heavier than still ones at the same size.
+const MAX_ANIMATED_SIZE = 1024
+const CDN_SIZED =
+	/^(https?:\/\/(?:cdn\.discordapp\.com|media\.discordapp\.net)\/[^?#]+)\.(?:webp|gif|png|jpe?g)\?(?:[^#]*&)?size=(\d+)/
+
+function capAnimated(src: string) {
+	return src.replace(
+		/(\.gif\?(?:[^#]*&)?size=)(\d+)/,
+		(_, head: string, size: string) =>
+			head + Math.min(Number(size), MAX_ANIMATED_SIZE),
+	)
+}
+
+async function measure(src: string) {
+	const found = CDN_SIZED.exec(src)
+	const target = found ? Number(found[2]) : 0
+	if (found && target > PROBE_SIZE * 2) {
+		try {
+			const small = await getImageSize(`${found[1]}.png?size=${PROBE_SIZE}`)
+			const scale = target / Math.max(small.width, small.height)
+			return {
+				width: Math.round(small.width * scale),
+				height: Math.round(small.height * scale),
+			}
+		} catch {
+			// fall through and measure the real thing
+		}
+	}
+	return getImageSize(src)
+}
+
 async function openModal(
 	src: string,
 	event?: Point,
@@ -105,9 +140,11 @@ async function openModal(
 		return
 	}
 
+	src = capAnimated(src)
+
 	let size: { width: number; height: number }
 	try {
-		size = await getImageSize(src)
+		size = await measure(src)
 	} catch (e) {
 		if (fallback && fallback !== src) return openModal(fallback, event)
 		console.warn(`[Picture Links+] could not load ${src}`, e)
