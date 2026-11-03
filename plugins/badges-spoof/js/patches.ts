@@ -13,6 +13,8 @@ import {
 	setHidden,
 	setOrder,
 	sheetScaleFor,
+	TILE_MARK,
+	TILE_SCALE,
 	animatesSheet,
 	showsAll,
 	status,
@@ -373,6 +375,26 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				}
 				if (scale && !props.__badgesSpoofScaled) {
 					return [args[0], { ...props, __badgesSpoofScaled: true, style: [props.style, { transform: [{ scale }] }] }, ...args.slice(2)]
+				}
+			}
+
+			// A picture marked for the badge grid: drawn bigger, without the marker in its address.
+			if (typeof args[0] !== 'string' && !props.__badgesSpoofScaled) {
+				const marked = uriOf(props.source ?? props.uri ?? props.src)
+				if (marked?.endsWith(TILE_MARK)) {
+					const clean = marked.slice(0, -TILE_MARK.length)
+					const strip = (value: any): any =>
+						typeof value === 'string' ? clean : Array.isArray(value) ? value.map(strip) : isRecord(value) && typeof value.uri === 'string' ? { ...value, uri: value.uri.endsWith(TILE_MARK) ? clean : value.uri } : value
+					const source = strip(props.source)
+					const next: Record<string, unknown> = {
+						...props,
+						__badgesSpoofScaled: true,
+						style: [props.style, { transform: [{ scale: TILE_SCALE }] }],
+					}
+					if (props.source !== undefined) next.source = source
+					else if (typeof props.uri === 'string') next.uri = clean
+					else if (typeof props.src === 'string') next.src = clean
+					return [args[0], next, ...args.slice(2)]
 				}
 			}
 

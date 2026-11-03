@@ -446,6 +446,10 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 	},
 }
 
+// Added to a picture's address when it is drawn on the badge grid, which draws it TILE_SCALE bigger.
+export const TILE_MARK = '#bigtile'
+export const TILE_SCALE = 1.2
+
 // Badges with a level picker in settings.
 export const LEVEL_KEYS = ['gifting', 'server-boosting', 'streaming', 'game-time', 'game-variety'] as const
 
@@ -753,7 +757,9 @@ for (const key of LEVEL_KEYS) {
 		const choices = levelChoices(key)
 		const level = getLevel(key)
 		const real = realTierIcon(key, level)
-		if (real) return real
+		// Discord draws the Boosting picture bigger on the badge grid than its small icon; the marker
+		// tells the patch to scale it (see TILE_MARK).
+		if (real) return key === 'server-boosting' && field === 'sheetUrl' ? `${real}${TILE_MARK}` : real
 		if (level === choices[choices.length - 1]?.key) return base[field]
 		const icon = choices.find(item => item.key === level)?.icon
 		if (!icon) return base[field]
