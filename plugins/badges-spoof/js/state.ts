@@ -24,6 +24,9 @@ export const ID_PREFIX = 'badges-spoof-'
 
 const ICON_BASE = 'https://raw.githubusercontent.com/dxckie-cell/valenced-plugins/main/plugins/badges-spoof/icons'
 
+// Badges with sharp 512px pictures (the -hd files).
+const HD = new Set(['early-supporter', 'hypesquad-events', 'moderator-alumni', 'partnered-server-owner', 'bug-hunter', 'golden-bug-hunter', 'early-verified-bot-developer', 'discord-staff'])
+
 function define(
 	key: string,
 	name: string,
@@ -36,8 +39,8 @@ function define(
 		id: `${ID_PREFIX}${key}`,
 		name,
 		icon,
-		url: `${ICON_BASE}/${key}.png`,
-		sheetUrl: `${ICON_BASE}/sheet/${key}.png`,
+		url: HD.has(key) ? `${ICON_BASE}/${key}-hd.png?v=1` : `${ICON_BASE}/${key}.png`,
+		sheetUrl: HD.has(key) ? `${ICON_BASE}/sheet/${key}-hd.png?v=1` : `${ICON_BASE}/sheet/${key}.png`,
 		phrase,
 		...extra,
 	}
@@ -62,8 +65,8 @@ export const BADGES: BadgeDefinition[] = [
 	}),
 	define('account-age', 'Account Age', '1d8caace0299b12bcc469c35ce927e838abd9c645a22fe7c556f4394e57fa79b', undefined, {
 		tiered: true,
-		url: `${ICON_BASE}/account-age.png?v=2`,
-		sheetUrl: `${ICON_BASE}/account-age.png?v=2`,
+		url: `${ICON_BASE}/account-age-hd.png?v=1`,
+		sheetUrl: `${ICON_BASE}/account-age-hd.png?v=1`,
 	}),
 	define('streaming', 'Streaming', '063ec3175b47664507d30feaf83dfa99', undefined, {
 		tiered: true,
@@ -250,7 +253,7 @@ const tier = (key: string, name: string | undefined, milestone: string, threshol
 // Asks Discord's CDN for a bigger version (ignored if it does not resize).
 const gift = (hash: string, own?: string) => (own ? `${ICON_BASE}/tiers/gift-${own}.png?v=1` : `${BADGE_CDN}/${hash}.png`)
 const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
-const age = (k: string) => `${ICON_BASE}/tiers/age-${k}.png`
+const age = (k: string) => `${ICON_BASE}/tiers/age-${k}-hd.png?v=1`
 const art = (k: string, n: number) => `${ICON_BASE}/tiers/${k}-${n}.png?v=1`
 const boost = (n: number) => (n < 9 ? `${ICON_BASE}/tiers/boost-s${n}.png?v=1` : `${ICON_BASE}/tiers/boost-${n}.png`)
 
