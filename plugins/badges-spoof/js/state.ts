@@ -752,7 +752,9 @@ const rarityLines = (): string[] =>
 		return `${key}: Discord rarity by level ${real.map((item: any) => item?.rarity ?? '-').join(',')}`
 	})
 
-export const getStatusLines = (): string[] => [...statusLines.values(), ...rarityLines()]
+export const PLUGIN_VERSION = '1.33.8'
+
+export const getStatusLines = (): string[] => [`Badges Spoof ${PLUGIN_VERSION}`, ...statusLines.values(), ...rarityLines()]
 export const resetStatus = () => statusLines.clear()
 
 // The Nitro badge's icon follows the level chosen in settings.
