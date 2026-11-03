@@ -227,11 +227,13 @@ function patchProfilePictures(cleanup: PluginCleanupApi) {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Profile banners (users and bots)
+// Banners and server icons, caught as they are drawn
 //
-// Discord 349 draws them with a component that has no usable name, so the element is caught
-// instead: anything handed a user banner on Discord's CDN, or a banner-named prop. The hooks are
-// on React's element factories, so the check has to be cheap and leave everything else alone.
+// Discord draws these with components that have no usable name (and the names change between
+// versions), so the element is caught instead: anything handed an image on Discord's CDN that is a
+// user banner, a server banner (both live under /banners/<id>/) or a large server icon, or a
+// banner-named prop. The hooks are on React's element factories, so the check has to be cheap and
+// leave everything else alone.
 // ---------------------------------------------------------------------------------------------
 
 // The banner image a banner component was given. The prop has been called bannerSource; other
@@ -245,10 +247,16 @@ const BANNER_PROPS = [
 	'banner',
 ]
 
+// Props that commonly carry an image, checked before anything more expensive.
+const IMAGE_PROPS = ['source', 'uri', 'url', 'src']
+
 const DISCORD_CDN =
 	/^https?:\/\/(cdn\.discordapp\.com|media\.discordapp\.net)\//
-const USER_BANNER =
+// User banners, bot banners and server banners all live under /banners/<id>/.
+const BANNER_URL =
 	/^https?:\/\/(cdn|media)\.discordapp\.(com|net)\/(banners\/\d+\/|guilds\/\d+\/users\/\d+\/banners\/)/
+const SERVER_ICON_URL =
+	/^https?:\/\/(cdn|media)\.discordapp\.(com|net)\/icons\/\d+\//
 
 function uriOf(value: any): string | undefined {
 	const uri =
@@ -256,55 +264,89 @@ function uriOf(value: any): string | undefined {
 	return typeof uri === 'string' ? uri : undefined
 }
 
-function bannerUri(props: any): string | undefined {
+// A style, a list of styles, or nothing, flattened into one object.
+function flattenStyle(style: any): Record<string, any> {
+	if (!style || typeof style !== 'object') return {}
+	if (!Array.isArray(style)) return style
+	return Object.assign({}, ...style.map(flattenStyle))
+}
+
+// Icons are drawn everywhere (server list, pickers...), so only a big one opens the viewer.
+function looksLarge(props: any): boolean {
+	const style = flattenStyle(props?.style)
+	for (const value of [
+		style.width,
+		style.height,
+		props?.width,
+		props?.height,
+		typeof props?.size === 'number' ? props.size : undefined,
+	]) {
+		if (typeof value === 'number') return value >= 64
+	}
+	return isLargeIcon(props?.size)
+}
+
+interface FoundImage {
+	uri: string
+	/** Whether this is a server icon, which needs to be big to count. */
+	icon: boolean
+}
+
+function findImage(props: any): FoundImage | undefined {
 	try {
 		for (const key of BANNER_PROPS) {
 			const uri = uriOf(props?.[key])
-			if (uri && /^https?:\/\//.test(uri)) return uri
+			if (uri && /^https?:\/\//.test(uri)) return { uri, icon: false }
 		}
-		// renamed prop: any prop (or { uri } inside it) that points at a user banner on Discord's CDN
+		// any other prop (or { uri } inside it) that points at a banner or a server icon on Discord's CDN
 		for (const value of Object.values(props ?? {})) {
 			const uri = uriOf(value)
-			if (uri && USER_BANNER.test(uri)) return uri
+			if (!uri) continue
+			if (BANNER_URL.test(uri)) return { uri, icon: false }
+			if (SERVER_ICON_URL.test(uri)) return { uri, icon: true }
 		}
 	} catch {
 		// a getter that throws
 	}
 }
 
-// Full-size URL for a user banner, plus the untouched original as a fallback.
-function resolveBanner(
-	original: string | undefined,
-): { url: string; original: string } | undefined {
-	if (!original) return
-
+// Full-size URL for an image, plus the untouched original as a fallback.
+function resolveImage(original: string): { url: string; original: string } {
 	// Only rewrite Discord CDN links. Anything else (e.g. custom banner hosts) is used as-is.
 	if (!DISCORD_CDN.test(original)) return { url: original, original }
 
-	// Drop every query parameter, then ask for the largest size.
+	// Drop every query parameter, then ask for the largest size. Animated images stay animated.
+	const base = original.split('?')[0]
+	const animated = /\/a_[^/.]+\.webp$/.test(base)
 	return {
-		url: `${original.split('?')[0].replace('.webp', '.png')}?size=4096`,
+		url: `${base.replace(/\.webp$/, animated ? '.gif' : '.png')}?size=4096`,
 		original,
 	}
 }
 
 let bannerErrorReported = false
 
-function wrapBanner(el: any): any {
+function wrapImage(el: any): any {
 	try {
 		const props = el?.props
 		if (!props || el.type === Pressable) return el
-		if (!props.source && !BANNER_PROPS.some(key => props[key] !== undefined))
+		if (
+			!IMAGE_PROPS.some(key => props[key]) &&
+			!BANNER_PROPS.some(key => props[key] !== undefined)
+		)
 			return el
 
-		const banner = resolveBanner(bannerUri(props))
-		if (!banner) return el
+		const found = findImage(props)
+		if (!found) return el
+		if (found.icon && !looksLarge(props)) return el
+
+		const image = resolveImage(found.uri)
 
 		return (
 			<Pressable
 				style={props.style}
 				onPress={({ nativeEvent }: GestureResponderEvent) =>
-					openModal(banner.url, nativeEvent, banner.original)
+					openModal(image.url, nativeEvent, image.original)
 				}
 			>
 				{el}
@@ -314,24 +356,26 @@ function wrapBanner(el: any): any {
 		// this runs for every element, so a persistent failure must not flood the reports
 		if (!bannerErrorReported) {
 			bannerErrorReported = true
-			reportError(`wrap banner failed: ${getErrorStack(e)}`)
+			reportError(`wrap image failed: ${getErrorStack(e)}`)
 		}
 		return el
 	}
 }
 
-function patchProfileBanners(cleanup: PluginCleanupApi) {
+function patchImages(cleanup: PluginCleanupApi) {
 	cleanup(
-		after(ReactJSXRuntime, 'jsx', wrapBanner),
-		after(ReactJSXRuntime, 'jsxs', wrapBanner),
-		after(React, 'createElement', wrapBanner),
+		after(ReactJSXRuntime, 'jsx', wrapImage),
+		after(ReactJSXRuntime, 'jsxs', wrapImage),
+		after(React, 'createElement', wrapImage),
 	)
 }
 
 // ---------------------------------------------------------------------------------------------
-// Server icons and banners
+// Server icons and banners by component name (fallback)
 //
-// Discord gives these components no stable export names, so they are found by their display names
+// The element catcher above handles these when it can. This also looks for the components by their
+// display names, in case an image is drawn in a way it can't see. Discord gives these components no
+// stable export names, so they are found by their display names
 // (these are the ones used by Discord 343): GuildIconInner draws the server icon and
 // GuildActionSheetHeader draws the banner in the server menu. The icon inside the header has its
 // own tap, which wins over the header's, so tapping the icon still opens the icon.
@@ -463,7 +507,7 @@ export default plugin({
 		reportError = e => plugin.reportError(e)
 
 		safe('patch profile pictures', () => patchProfilePictures(cleanup))
-		safe('patch profile banners', () => patchProfileBanners(cleanup))
+		safe('patch banners and server icons', () => patchImages(cleanup))
 		safe('patch server icons and banners', () => patchServerImages(cleanup))
 	},
 	stop({ plugin }) {
