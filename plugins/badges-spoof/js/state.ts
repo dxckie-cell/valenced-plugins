@@ -50,7 +50,7 @@ function define(
 const giftArt = (level: string) => `https://cdn-discordbadges.pages.dev/assets/gifting/gifting_${level}.png`
 
 export const SMALL_MARK = '#smallicon'
-export const SMALL_SCALE = 0.78
+export const SMALL_SCALE = 0.76
 
 const BADGE_CDN = 'https://cdn.discordapp.com/badge-icons'
 
@@ -66,8 +66,8 @@ export const BADGES: BadgeDefinition[] = [
 	define('discord-staff', 'Discord Staff', '5e74e9b61934fc1f67c65515d1f7e60d'),
 	define('gifting', 'Gifting', '7fe346cfc5da1340087d8759a9e7a395', undefined, {
 		tiered: true,
-		url: giftArt('legend'),
-		sheetUrl: giftArt('legend'),
+		url: `${giftArt('legend')}${SMALL_MARK}`,
+		sheetUrl: `${giftArt('legend')}${SMALL_MARK}`,
 	}),
 	define('account-age', 'Account Age', '1d8caace0299b12bcc469c35ce927e838abd9c645a22fe7c556f4394e57fa79b', undefined, {
 		tiered: true,
@@ -779,7 +779,7 @@ for (const key of LEVEL_KEYS) {
 		const real = key === 'server-boosting' && !isTop ? undefined : realTierIcon(key, level)
 		if (real) return real
 		if (level === choices[choices.length - 1]?.key) return base[field]
-		const icon = choices.find(item => item.key === level)?.icon?.replace(SMALL_MARK, '')
+		const icon = choices.find(item => item.key === level)?.icon
 		if (!icon) return base[field]
 		// On the profile (url) Discord draws the picture at its own smaller size, so Boosting uses the
 		// original-size file there and the bigger one on the badge grid and sheets (sheetUrl).
