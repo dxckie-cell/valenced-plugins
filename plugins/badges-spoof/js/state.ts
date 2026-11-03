@@ -267,7 +267,7 @@ const gift = (hash: string, own?: string) => (own ? `${giftArt(own)}${SMALL_MARK
 const nitro = (k: string) => `${ICON_BASE}/tiers/nitro-${k}.png`
 const age = (k: string) => `${ICON_BASE}/tiers/age-${k}-hd.png?v=1`
 const art = (k: string, n: number) => `${ICON_BASE}/tiers/${k}-${n}.png?v=1`
-const boost = (n: number) => `${ICON_BASE}/tiers/boost-s${n}.png?v=1`
+const boost = (n: number) => `${ICON_BASE}/tiers/boost-s${n}.png?v=2`
 
 const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; description: string } & Record<string, unknown>> = {
 	'early-supporter': {
@@ -756,7 +756,7 @@ const rarityLines = (): string[] =>
 		return `${key}: Discord rarity by level ${real.map((item: any) => item?.rarity ?? '-').join(',')}`
 	})
 
-export const PLUGIN_VERSION = '1.34.2'
+export const PLUGIN_VERSION = '1.34.3'
 
 export const getStatusLines = (): string[] => [`Badges Spoof ${PLUGIN_VERSION}`, ...statusLines.values(), ...rarityLines()]
 export const resetStatus = () => statusLines.clear()
