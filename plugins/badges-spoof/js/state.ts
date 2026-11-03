@@ -722,7 +722,15 @@ export function status(key: string, message: string) {
 	console.log(`[badges-spoof] ${message}`)
 }
 
-export const getStatusLines = (): string[] => [...statusLines.values()]
+// What Discord's own levels say about rarity, so a wrong one can be traced.
+const rarityLines = (): string[] =>
+	['server-boosting', 'gifting', 'streaming', 'game-time', 'game-variety'].map(key => {
+		const real = realTiers.get(key)
+		if (!real) return `${key}: Discord's levels not learnt yet (open Customise Your Badges)`
+		return `${key}: Discord rarity by level ${real.map((item: any) => item?.rarity ?? '-').join(',')}`
+	})
+
+export const getStatusLines = (): string[] => [...statusLines.values(), ...rarityLines()]
 export const resetStatus = () => statusLines.clear()
 
 // The Nitro badge's icon follows the level chosen in settings.
