@@ -1,3 +1,4 @@
+import { refreshUsers, startIdentity } from './identity'
 import { applyPatches } from './patches'
 import { SettingsComponent } from './settings'
 import {
@@ -35,7 +36,19 @@ export default plugin<{ jsonStorage: Settings }>({
 			.catch(e => api.plugin.reportError(e))
 
 		// A changed setting redraws the profile and the badge list straight away.
-		cleanup(jsonStorage.subscribe(() => notifyChange()))
+		cleanup(
+			jsonStorage.subscribe(() => {
+				notifyChange()
+				refreshUsers()
+			}),
+		)
+
+		// Registered before the badge patches, so Nitro's copy of the user is made from the renamed one.
+		try {
+			startIdentity(cleanup, e => api.plugin.reportError(e))
+		} catch (e) {
+			api.plugin.reportError(e)
+		}
 
 		try {
 			applyPatches(unscoped.discord.flux.getStore, cleanup)

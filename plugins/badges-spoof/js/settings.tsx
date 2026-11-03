@@ -2,7 +2,9 @@ import Page from '@valenced/components/Page'
 import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
+import { useState } from 'react'
 import { Image, Pressable, ScrollView, Text, View } from 'react-native'
+import { parseDate } from './identity'
 import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, PLUGIN_VERSION, levelChoices, type Settings } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
@@ -86,6 +88,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 	// Reads the settings and redraws when they change.
 	const settings = (api.jsonStorage.use() ?? {}) as Partial<Settings>
 	const colors = useColors()
+	const [dateError, setDateError] = useState('')
 	const hidden = settings.hidden ?? {}
 	const texts = settings.texts ?? {}
 	const level = NITRO_LEVELS.some(item => item.key === settings.nitroLevel) ? settings.nitroLevel : 'opal'
@@ -203,6 +206,47 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						</View>
 					</Design.TableRowGroup>
 				))}
+
+				<Design.TableRowGroup title="Account">
+					<Design.TableSwitchRow
+						label="Change my Member Since date"
+						subLabel="Only changes what you see on your own profile."
+						value={settings.dateEnabled === true}
+						onValueChange={(dateEnabled: boolean) => api.jsonStorage.set({ dateEnabled })}
+					/>
+				</Design.TableRowGroup>
+				<View style={{ padding: 12, gap: 12 }}>
+					<Design.TextInput
+						label="Member Since (DD-MM-YYYY)"
+						placeholder="13-05-2016"
+						size="md"
+						defaultValue={settings.date ?? ''}
+						status={dateError ? 'error' : 'default'}
+						errorMessage={dateError || undefined}
+						onChange={(value: string) => {
+							if (value.trim() && !parseDate(value)) {
+								setDateError('Enter a valid date as DD-MM-YYYY')
+								return
+							}
+							setDateError('')
+							api.jsonStorage.set({ date: value.trim() })
+						}}
+					/>
+					<Design.TextInput
+						label="Username"
+						placeholder="Leave empty to keep your real username"
+						size="md"
+						defaultValue={settings.username ?? ''}
+						onChange={(username: string) => api.jsonStorage.set({ username })}
+					/>
+					<Design.TextInput
+						label="Display name"
+						placeholder="Leave empty to keep your real display name"
+						size="md"
+						defaultValue={settings.displayName ?? ''}
+						onChange={(displayName: string) => api.jsonStorage.set({ displayName })}
+					/>
+				</View>
 
 				<Design.TableRowGroup title="Order">
 					<Design.TableRow

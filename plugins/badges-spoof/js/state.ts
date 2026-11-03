@@ -118,6 +118,12 @@ export interface Settings {
 	replaceReal: boolean
 	// The text and dates on the sheets, by field id (see TEXT_FIELDS).
 	texts: Record<string, string>
+	// Your own username and display name, shown on this device only (empty keeps the real one).
+	username: string
+	displayName: string
+	// The "Member Since" date on your own profile, as DD-MM-YYYY (when dateEnabled).
+	dateEnabled: boolean
+	date: string
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -131,6 +137,10 @@ export const DEFAULT_SETTINGS: Settings = {
 	hideReal: false,
 	replaceReal: true,
 	texts: {},
+	username: '',
+	displayName: '',
+	dateEnabled: false,
+	date: '',
 }
 
 let storage: JsonStorage<Settings> | undefined
@@ -138,6 +148,8 @@ let storage: JsonStorage<Settings> | undefined
 export function setStorage(value: JsonStorage<Settings> | undefined) {
 	storage = value
 }
+
+export const getSettings = (): Partial<Settings> => read()
 
 function read(): Partial<Settings> {
 	return (storage?.cache as Partial<Settings> | undefined) ?? {}
@@ -727,7 +739,7 @@ export function status(key: string, message: string) {
 	console.log(`[badges-spoof] ${message}`)
 }
 
-export const PLUGIN_VERSION = '1.36.0'
+export const PLUGIN_VERSION = '1.37.0'
 
 
 // The Nitro badge's icon follows the level chosen in settings.
