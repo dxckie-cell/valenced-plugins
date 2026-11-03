@@ -3,7 +3,7 @@ import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
 import { Image, Pressable, ScrollView, Text, View } from 'react-native'
-import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, getStatusLines, levelChoices, type Settings } from './state'
+import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, PLUGIN_VERSION, levelChoices, type Settings } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
 
@@ -117,12 +117,6 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						onValueChange={(nativeNitro: boolean) => api.jsonStorage.set({ nativeNitro })}
 					/>
 					<Design.TableSwitchRow
-						label="Animate the Nitro sheet"
-						subLabel="Adds the flash Discord's Nitro sheet picture has to our own sheet."
-						value={settings.animateSheet !== false}
-						onValueChange={(animateSheet: boolean) => api.jsonStorage.set({ animateSheet })}
-					/>
-					<Design.TableSwitchRow
 						label="Show all badges"
 						subLabel="Show every badge instead of only the first six."
 						value={settings.showAll !== false}
@@ -218,10 +212,8 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					/>
 				</Design.TableRowGroup>
 
-				<Design.TableRowGroup title="Status">
-					{getStatusLines().map((line, index) => (
-						<Design.TableRow key={index} label={line} />
-					))}
+				<Design.TableRowGroup title="About">
+					<Design.TableRow label={`Badges Spoof ${PLUGIN_VERSION}`} />
 				</Design.TableRowGroup>
 			</Page>
 		</ScrollView>

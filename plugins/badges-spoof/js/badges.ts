@@ -14,7 +14,6 @@ import {
 	isHidden,
 	learnTiers,
 	status,
-	getStatusLines,
 	usesNativeNitro,
 } from './state'
 
@@ -271,13 +270,11 @@ const rankName = (value: unknown) => String(value ?? '').toLowerCase().replace(/
 export const forgetDefaultOrder = () => defaultRank.clear()
 
 function learnDefaultOrder(list: unknown[]) {
-	const before = defaultRank.size
 	for (const item of list) {
 		if (!isRecord(item) || isOurId(item.badge_id ?? item.id)) continue
 		const key = rankName(item.name ?? item.description)
 		if (key && !defaultRank.has(key)) defaultRank.set(key, defaultRank.size)
 	}
-	if (defaultRank.size !== before) status('default order', `Discord's badge order: ${[...defaultRank.keys()].slice(0, 12).join(', ')}`)
 }
 
 const defaultRankOf = (item: unknown): number => {
@@ -424,8 +421,6 @@ export function learnFrom(list: unknown[]) {
 		// Discord may call the Boosting badge something else; go by the word.
 		if (/boost/i.test(String(item.name ?? '')) && !/nitro/i.test(String(item.name ?? ''))) {
 			learnTiers('server-boosting', item.tiers)
-			const seen = `Discord's Boosting entry: "${item.name}", ${item.tiers.length} levels`
-			if (!getStatusLines().includes(seen)) status('boost-seen', seen)
 		}
 	}
 }

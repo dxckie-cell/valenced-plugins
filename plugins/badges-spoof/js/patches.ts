@@ -3,7 +3,6 @@ import { withName, withProps } from '@valenced/modules/finders/filters'
 import { before, instead } from '@valenced/patcher'
 import * as React from 'react'
 import { StyleSheet, Text } from 'react-native'
-import { ShimmerPicture } from './shimmer'
 import { badgeIdOf, catalogEntry, findBadge, isInGrid, learnFrom, isOurId, isRecord, moveBadge, withBadges, withCatalog } from './badges'
 import {
 	type BadgeDefinition,
@@ -13,11 +12,8 @@ import {
 	setHidden,
 	setOrder,
 	sheetScaleFor,
-	TILE_MARK,
 	SMALL_MARK,
 	SMALL_SCALE,
-	tileScale,
-	animatesSheet,
 	showsAll,
 	status,
 	subscribe,
@@ -205,8 +201,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	// instead (see setPendingBadgeVisibility below).
 	let menuUntil = 0
 	let pendingMove: { delta: -1 | 1; at: number; token: number } | undefined
-	let menuSeen = false
-	let menuMissSeen = false
 
 	const HIDE_ITEM = /^(un)?hide badge$/i
 	const textKeys = ['label', 'title', 'text', 'actionTitle', 'children'] as const
@@ -319,23 +313,9 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				...list.slice(at + 1),
 			]
 
-			if (!menuSeen) {
-				menuSeen = true
-				status('badge menu', `badge menu: Go Left / Go Right added (${typeName(args[0])}.${key}; item: ${Object.entries(React.isValidElement(item) ? (item as any).props : item).map(([k, v]) => `${k}:${React.isValidElement(v) ? 'element' : typeof v}`).join(',')}; menu: ${Object.keys(props).join(',')})`)
-			}
 			return [args[0], { ...props, [key]: next }, ...args.slice(2)]
 		}
 
-		// The text is there but not in a list this code knows: report where, once.
-		if (!menuMissSeen) {
-			for (const key of Object.keys(props)) {
-				const value = props[key]
-				if (typeof value === 'string' && HIDE_ITEM.test(value)) {
-					menuMissSeen = true
-					status('badge menu', `badge menu: "Hide Badge" found in ${typeName(args[0])}.${key}, nothing added`)
-				}
-			}
-		}
 
 		return undefined
 	}
@@ -371,10 +351,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			if (sheet && Date.now() - sheet.at <= 30_000 && typeof args[0] !== 'string') {
 				const uri = uriOf(props.source ?? props.uri ?? props.src)
 				const scale = uri ? sheetScaleFor(uri) : undefined
-				// Nitro's picture also gets the flash Discord's own one has.
-				if (uri && sheet.badge.key === 'nitro' && /\/sheet\/nitro-[a-z]+\.png/.test(uri) && !props.__badgesSpoofScaled && animatesSheet()) {
-					return [ShimmerPicture, { Original: args[0], imgProps: props, scale }, ...args.slice(2)]
-				}
 				if (scale && !props.__badgesSpoofScaled) {
 					return [args[0], { ...props, __badgesSpoofScaled: true, style: [props.style, { transform: [{ scale }] }] }, ...args.slice(2)]
 				}
@@ -383,7 +359,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			// A picture marked for the badge grid: drawn bigger, without the marker in its address.
 			if (typeof args[0] !== 'string' && !props.__badgesSpoofScaled) {
 				const marked = uriOf(props.source)
-				const mark = marked?.endsWith(TILE_MARK) ? TILE_MARK : marked?.endsWith(SMALL_MARK) ? SMALL_MARK : undefined
+				const mark = marked?.endsWith(SMALL_MARK) ? SMALL_MARK : undefined
 				if (marked && mark) {
 					const clean = marked.slice(0, -mark.length)
 					const strip = (value: any): any =>
@@ -392,7 +368,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 					const next: Record<string, unknown> = {
 						...props,
 						__badgesSpoofScaled: true,
-						style: [props.style, { transform: [{ scale: mark === SMALL_MARK ? SMALL_SCALE : tileScale() }] }],
+						style: [props.style, { transform: [{ scale: SMALL_SCALE }] }],
 					}
 					if (props.source !== undefined) next.source = source
 					else if (typeof props.uri === 'string') next.uri = clean

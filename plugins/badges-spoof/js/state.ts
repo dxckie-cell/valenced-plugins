@@ -24,9 +24,6 @@ export const ID_PREFIX = 'badges-spoof-'
 
 const ICON_BASE = 'https://raw.githubusercontent.com/dxckie-cell/valenced-plugins/main/plugins/badges-spoof/icons'
 
-// Badges with sharp 512px pictures (the -hd files).
-const HD = new Set(['early-supporter', 'hypesquad-events', 'moderator-alumni', 'partnered-server-owner', 'bug-hunter', 'golden-bug-hunter', 'early-verified-bot-developer', 'discord-staff'])
-
 function define(
 	key: string,
 	name: string,
@@ -39,8 +36,8 @@ function define(
 		id: `${ID_PREFIX}${key}`,
 		name,
 		icon,
-		url: HD.has(key) ? `${ICON_BASE}/${key}-hd.png?v=1` : `${ICON_BASE}/${key}.png`,
-		sheetUrl: HD.has(key) ? `${ICON_BASE}/sheet/${key}-hd.png?v=1` : `${ICON_BASE}/sheet/${key}.png`,
+		url: `${ICON_BASE}/${key}-hd.png?v=1`,
+		sheetUrl: `${ICON_BASE}/sheet/${key}-hd.png?v=1`,
 		phrase,
 		...extra,
 	}
@@ -113,8 +110,6 @@ export interface Settings {
 	nitroLevel: string
 	// The level each tiered badge shows, by badge key (Gifting, Server Boosting): a tier key.
 	levels: Record<string, string>
-	// The flash over the Nitro sheet picture (on unless turned off).
-	animateSheet: boolean
 	// Let Discord draw its own (animated) Nitro badge for the chosen level instead of ours.
 	nativeNitro: boolean
 	// Show only the badges added here, not the ones Discord gives you.
@@ -133,7 +128,6 @@ export const DEFAULT_SETTINGS: Settings = {
 	nitroLevel: 'opal',
 	levels: {},
 	nativeNitro: false,
-	animateSheet: true,
 	hideReal: false,
 	replaceReal: true,
 	texts: {},
@@ -192,8 +186,6 @@ export function nativeNitroLabel(): string {
 	return `Subscriber since ${since}`
 }
 
-export const animatesSheet = () => read().animateSheet !== false
-
 export const hidesReal = () => read().hideReal === true
 export const replacesReal = () => read().replaceReal !== false
 
@@ -212,7 +204,6 @@ export const TEXT_FIELDS = [
 	{ id: 'nitro.since', badge: 'nitro', label: 'Nitro subscriber since', placeholder: '04/04/2020' },
 	{ id: 'nitro.date', badge: 'nitro', label: 'Nitro unlocked on', placeholder: '04/04/26' },
 	{ id: 'server-boosting.since', badge: 'server-boosting', label: 'Boosting since', placeholder: '04/04/2020' },
-	{ id: 'server-boosting.scale', badge: 'server-boosting', label: 'Grid picture size (1 = as Discord sends it)', placeholder: '1.3' },
 	{ id: 'server-boosting.date', badge: 'server-boosting', label: 'Server Boosting unlocked on', placeholder: '04/04/22' },
 ] as const
 
@@ -460,14 +451,6 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 		obtained_at: '2022-04-04T12:00:00.000Z',
 		tier_obtained_at: Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => [`boost-${n}`, '2022-04-04T12:00:00.000Z'])),
 	},
-}
-
-// Added to a picture's address when it is drawn on the badge grid, which draws it TILE_SCALE bigger.
-export const TILE_MARK = '#bigtile'
-// How much bigger the Boosting grid picture is drawn; editable in settings to match the real one.
-export const tileScale = (): number => {
-	const value = Number(textOf('server-boosting.scale').replace(',', '.'))
-	return value >= 0.5 && value <= 3 ? value : 1.3
 }
 
 // Badges with a level picker in settings.
@@ -739,27 +722,13 @@ export function notifyChange() {
 	}
 }
 
-// What happened on load, shown at the bottom of the settings screen.
-// Each line has a key, so a later result replaces an earlier one.
-const statusLines = new Map<string, string>()
-
+// Progress notes go to the console only.
 export function status(key: string, message: string) {
-	statusLines.set(key, message)
 	console.log(`[badges-spoof] ${message}`)
 }
 
-// What Discord's own levels say about rarity, so a wrong one can be traced.
-const rarityLines = (): string[] =>
-	['server-boosting', 'gifting', 'streaming', 'game-time', 'game-variety'].map(key => {
-		const real = realTiers.get(key)
-		if (!real) return `${key}: Discord's levels not learnt yet (open Customise Your Badges)`
-		return `${key}: Discord rarity by level ${real.map((item: any) => item?.rarity ?? '-').join(',')}`
-	})
+export const PLUGIN_VERSION = '1.36.0'
 
-export const PLUGIN_VERSION = '1.35.0'
-
-export const getStatusLines = (): string[] => [`Badges Spoof ${PLUGIN_VERSION}`, ...statusLines.values(), ...rarityLines()]
-export const resetStatus = () => statusLines.clear()
 
 // The Nitro badge's icon follows the level chosen in settings.
 const nitroBadge = BADGES.find(badge => badge.key === 'nitro')

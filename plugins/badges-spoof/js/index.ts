@@ -3,7 +3,6 @@ import { SettingsComponent } from './settings'
 import {
 	DEFAULT_SETTINGS,
 	notifyChange,
-	resetStatus,
 	type Settings,
 	setStorage,
 	status,
@@ -22,7 +21,6 @@ export default plugin<{ jsonStorage: Settings }>({
 			return
 		}
 
-		resetStatus()
 		status('loaded', 'loaded')
 
 		const { cleanup, jsonStorage, unscoped } = api
