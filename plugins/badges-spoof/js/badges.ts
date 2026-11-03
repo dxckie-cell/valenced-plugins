@@ -264,9 +264,45 @@ export const badgeIdOf = (item: unknown): string | undefined => {
 }
 
 // Puts the badges in the order saved on this device. Badges not in it (new ones) go last.
+// Discord's own order of its badges, learnt from its badge list (by name), for when no order is saved.
+const defaultRank = new Map<string, number>()
+const rankName = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
+
+export const forgetDefaultOrder = () => defaultRank.clear()
+
+function learnDefaultOrder(list: unknown[]) {
+	const before = defaultRank.size
+	for (const item of list) {
+		if (!isRecord(item) || isOurId(item.badge_id ?? item.id)) continue
+		const key = rankName(item.name ?? item.description)
+		if (key && !defaultRank.has(key)) defaultRank.set(key, defaultRank.size)
+	}
+	if (defaultRank.size !== before) status('default order', `Discord's badge order: ${[...defaultRank.keys()].slice(0, 12).join(', ')}`)
+}
+
+const defaultRankOf = (item: unknown): number => {
+	if (!isRecord(item)) return Number.POSITIVE_INFINITY
+	const id = item.badge_id ?? item.id
+	const names: unknown[] = [item.name, item.description]
+	if (isOurId(id)) {
+		const badge = BADGES.find(entry => entry.id === id)
+		if (badge) names.push(badge.name, getDetails(badge.key)?.name)
+	}
+	const ranks = names.map(name => defaultRank.get(rankName(name))).filter((rank): rank is number => rank !== undefined)
+	return ranks.length ? Math.min(...ranks) : Number.POSITIVE_INFINITY
+}
+
 function inSavedOrder<T>(list: T[], idOf: (item: T) => string | undefined): T[] {
 	const order = getOrder()
-	if (!order.length) return list
+	if (!order.length) {
+		// No order saved: Discord's own order, with ours in the places of the badges they stand for.
+		if (!defaultRank.size) return list
+		const byRank = list
+			.map((item, index) => ({ item, index }))
+			.sort((a, b) => defaultRankOf(a.item) - defaultRankOf(b.item) || a.index - b.index)
+			.map(({ item }) => item)
+		return byRank.every((item, index) => item === list[index]) ? list : byRank
+	}
 
 	const rank = new Map(order.map((id, index) => [id, index]))
 	const rankOf = (item: T) => rank.get(idOf(item) ?? '') ?? Number.POSITIVE_INFINITY
@@ -358,6 +394,7 @@ export function withBadges(original: unknown[]): unknown[] {
 // The badge catalog. The edit profile screen needs the hidden ones too, to show them dimmed.
 export function withCatalog(original: unknown[], includeHidden: boolean): unknown[] {
 	learnFrom(original)
+	learnDefaultOrder(original)
 	return cached(original, includeHidden ? 'catalog-all' : 'catalog-shown', () => {
 		for (const item of original) if (isRecord(item) && !isOurId(item.badge_id) && typeof item.name === 'string') learnReplaced(item)
 		// The edit list keeps the real badges so they can still be moved; the profile's own list drops them.

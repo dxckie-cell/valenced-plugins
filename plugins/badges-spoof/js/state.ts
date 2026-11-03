@@ -756,7 +756,7 @@ const rarityLines = (): string[] =>
 		return `${key}: Discord rarity by level ${real.map((item: any) => item?.rarity ?? '-').join(',')}`
 	})
 
-export const PLUGIN_VERSION = '1.34.3'
+export const PLUGIN_VERSION = '1.35.0'
 
 export const getStatusLines = (): string[] => [`Badges Spoof ${PLUGIN_VERSION}`, ...statusLines.values(), ...rarityLines()]
 export const resetStatus = () => statusLines.clear()
