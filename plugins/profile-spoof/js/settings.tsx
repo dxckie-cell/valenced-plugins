@@ -2,9 +2,8 @@ import Page from '@valenced/components/Page'
 import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
-import { getAssetIdByName } from '@valenced/assets'
-import { useEffect, useRef, useState } from 'react'
-import { Animated, Image, Pressable, ScrollView, Text, View } from 'react-native'
+import { useState } from 'react'
+import { Image, Pressable, ScrollView, Text, View } from 'react-native'
 import { parseDate } from './identity'
 
 import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, PLUGIN_VERSION, levelChoices, type Settings } from './state'
@@ -107,29 +106,10 @@ const TABS: { key: TabKey; label: string }[] = [
 	{ key: 'account', label: 'Account' },
 ]
 
-const TAB_ICONS: Record<TabKey, string> = { badges: 'StarIcon', account: 'UserIcon' }
-
-const tabIcon = (key: TabKey): number | undefined => {
-	try {
-		return getAssetIdByName(TAB_ICONS[key]) ?? undefined
-	} catch {
-		return undefined
-	}
-}
-
-// Two tabs on one track, with an accent pill that slides to the chosen one.
+// Two tabs on one rounded track, the chosen one a filled accent pill.
 function TabSwitcher({ tab, onChange, colors }: { tab: TabKey; onChange: (tab: TabKey) => void; colors: Colors }) {
-	const [width, setWidth] = useState(0)
-	const slide = useRef(new Animated.Value(tab === 'badges' ? 0 : 1)).current
-	const half = Math.max(0, (width - 8) / 2)
-
-	useEffect(() => {
-		Animated.spring(slide, { toValue: tab === 'badges' ? 0 : 1, useNativeDriver: true, friction: 9, tension: 120 }).start()
-	}, [tab, slide])
-
 	return (
 		<View
-			onLayout={event => setWidth(event.nativeEvent.layout.width)}
 			style={{
 				flexDirection: 'row',
 				marginHorizontal: 16,
@@ -142,54 +122,29 @@ function TabSwitcher({ tab, onChange, colors }: { tab: TabKey; onChange: (tab: T
 				backgroundColor: colors.card,
 			}}
 		>
-			<Animated.View
-				pointerEvents="none"
-				style={{
-					position: 'absolute',
-					top: 4,
-					left: 4,
-					bottom: 4,
-					width: half,
-					borderRadius: 999,
-					backgroundColor: colors.accent,
-					transform: [{ translateX: slide.interpolate({ inputRange: [0, 1], outputRange: [0, half] }) }],
-				}}
-			/>
 			{TABS.map(item => {
 				const active = tab === item.key
-				const icon = tabIcon(item.key)
-				const tint = active ? '#ffffff' : colors.muted
 				return (
 					<Pressable
 						key={item.key}
 						accessibilityRole="tab"
 						accessibilityState={{ selected: active }}
 						onPress={() => onChange(item.key)}
-						style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 11 }}
+						style={{
+							flex: 1,
+							alignItems: 'center',
+							justifyContent: 'center',
+							borderRadius: 999,
+							paddingVertical: 12,
+							backgroundColor: active ? colors.accent : 'transparent',
+							elevation: active ? 2 : 0,
+						}}
 					>
-						{icon !== undefined && <Image source={icon} style={{ width: 18, height: 18, tintColor: tint }} />}
-						<Text style={{ color: tint, fontSize: 15, fontWeight: '700' }}>{item.label}</Text>
+						<Text style={{ color: active ? '#ffffff' : colors.muted, fontSize: 15, fontWeight: '700' }}>{item.label}</Text>
 					</Pressable>
 				)
 			})}
 		</View>
-	)
-}
-
-// Fades and lifts its content in when it appears (the key changes with the tab).
-function FadeIn({ children }: { children: React.ReactNode }) {
-	const progress = useRef(new Animated.Value(0)).current
-
-	useEffect(() => {
-		Animated.timing(progress, { toValue: 1, duration: 220, useNativeDriver: true }).start()
-	}, [progress])
-
-	return (
-		<Animated.View
-			style={{ opacity: progress, transform: [{ translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }] }}
-		>
-			{children}
-		</Animated.View>
 	)
 }
 
@@ -249,7 +204,6 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 			<Page>
 				<TabSwitcher tab={tab} onChange={setTab} colors={colors} />
 
-				<FadeIn key={tab}>
 				{tab === 'badges' && (
 					<>
 				{levelHeading('BADGES')}
@@ -407,7 +361,6 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 				<Design.TableRowGroup>
 					<Design.TableRow label={`Profile Spoof ${PLUGIN_VERSION}`} />
 				</Design.TableRowGroup>
-				</FadeIn>
 			</Page>
 		</ScrollView>
 	)
