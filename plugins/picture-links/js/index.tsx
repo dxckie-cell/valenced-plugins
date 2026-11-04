@@ -13,7 +13,7 @@ import { after, instead } from '@valenced/patcher'
 import { React, ReactJSXRuntime } from '@valenced/react'
 import { getErrorStack } from '@valenced/utils/error'
 import { cloneElement } from 'react'
-import { Image, Pressable } from 'react-native'
+import { Image, Linking, Pressable } from 'react-native'
 import type { DiscordModules } from '@valenced/discord/types'
 import type { PluginCleanupApi } from '@valenced/plugins/types'
 import type { FC, ReactElement } from 'react'
@@ -71,6 +71,9 @@ function safe<T>(label: string, fn: () => T): T | undefined {
 }
 
 // Looked up on first use: it is only needed once something is tapped.
+// Discord loads its image viewer lazily, and only on screens that use it (a user's profile does,
+// a server's menu doesn't), and Valenced only finds modules that are already loaded. So the viewer
+// is picked up as soon as Discord loads it (see `start`), and looked up when it is needed too.
 let mediaModal: MediaModalActions | undefined
 const getMediaModal = () =>
 	(mediaModal ??= lookupModule(
@@ -193,7 +196,7 @@ const DEBUG = true
 type Trace = (step: string) => void
 
 // Steps after which a tap has finished, one way or another.
-const FINAL_STEPS = /^(viewer called|ERROR|NO |size failed)/
+const FINAL_STEPS = /^(viewer called|module available|ERROR|NO |size failed)/
 
 let toastCount = 0
 
@@ -249,13 +252,14 @@ async function openViewer(
 	trace: Trace | undefined,
 ): Promise<void> {
 	const modal = getMediaModal()
+	src = capSize(src)
+
 	if (!modal) {
-		trace?.('NO openMediaModal')
-		console.warn('[Picture Links+] openMediaModal not found')
+		// The viewer isn't loaded yet, so open the full-size image as a link instead.
+		trace?.('NO openMediaModal, opening the link')
+		await Linking.openURL(src)
 		return
 	}
-
-	src = capSize(src)
 
 	let size: { width: number; height: number }
 	try {
@@ -694,6 +698,14 @@ export default plugin({
 		}
 
 		reportError = e => plugin.reportError(e)
+
+		// Called now if Discord has loaded the viewer already, and later when it does.
+		cleanup(
+			getModules(withProps<MediaModalActions>('openMediaModal'), exports => {
+				mediaModal = exports
+				createTrace('viewer')?.('module available')
+			}),
+		)
 
 		safe('patch profile pictures', () => patchProfilePictures(cleanup))
 		safe('patch banners and server icons', () => patchImages(cleanup))
