@@ -105,6 +105,8 @@ function getImageSize(uri: string) {
 // and the viewer is opened straight away, loading the big image itself.
 const PROBE_SIZE = 128
 const PROBE_TIMEOUT = 1500
+// Images that can't be probed with a small copy are measured as they are, which can be slow.
+const DIRECT_TIMEOUT = 3000
 // What is asked of Discord's CDN. Bigger sizes are slow to generate and download, and no phone
 // screen shows more than this. Animated images are far heavier than still ones.
 const MAX_STATIC_SIZE = 2048
@@ -153,7 +155,16 @@ const withTimeout = <T,>(promise: Promise<T>, ms: number) =>
 
 async function measure(src: string, { square, aspect }: OpenOptions) {
 	const found = CDN_SIZED.exec(src)
-	if (!found) return getImageSize(src)
+	if (!found) {
+		const direct = await withTimeout(getImageSize(src), DIRECT_TIMEOUT)
+		if (direct) return direct
+		return {
+			width: MAX_STATIC_SIZE,
+			height: Math.round(
+				MAX_STATIC_SIZE / (square ? 1 : aspect || GUESSED_ASPECT),
+			),
+		}
+	}
 
 	const target = Number(found[3])
 	if (square) return { width: target, height: target }
@@ -181,19 +192,36 @@ const DEBUG = true
 
 type Trace = (step: string) => void
 
+// Steps after which a tap has finished, one way or another.
+const FINAL_STEPS = /^(viewer called|ERROR|NO |size failed)/
+
+let toastCount = 0
+
 function createTrace(label: string | undefined): Trace | undefined {
 	if (!DEBUG) return
 	const started = Date.now()
 	const steps: string[] = []
-	return step => {
-		steps.push(`${step} ${Date.now() - started}ms`)
-		const text = `[PL ${label ?? '?'}] ${steps.join(' > ')}`
+	let finished = false
+
+	const show = (prefix: string) => {
+		const text = `${prefix}[PL ${label ?? '?'}] ${steps.join(' > ')}`
 		console.log(text)
 		try {
-			ToastActionCreators.open('PICTURE_LINKS_DEBUG', { text })
+			// a new key every time: one shared key may keep showing the first message
+			ToastActionCreators.open(`PICTURE_LINKS_DEBUG_${toastCount++}`, { text })
 		} catch {
 			// a diagnostic must never break the tap
 		}
+	}
+
+	setTimeout(() => {
+		if (!finished) show('STALLED ')
+	}, 3000)
+
+	return step => {
+		steps.push(`${step} ${Date.now() - started}ms`)
+		if (FINAL_STEPS.test(step)) finished = true
+		show('')
 	}
 }
 
