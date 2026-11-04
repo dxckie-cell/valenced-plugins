@@ -121,6 +121,8 @@ export interface Settings {
 	// Your own username and display name, shown on this device only (empty keeps the real one).
 	username: string
 	displayName: string
+	// Connected accounts shown on your own profile (see connections.ts).
+	connections: { id: string; type: string; name: string }[]
 	// The "Member Since" date on your own profile, as DD-MM-YYYY (empty keeps the real one).
 	date: string
 }
@@ -136,6 +138,7 @@ export const DEFAULT_SETTINGS: Settings = {
 	hideReal: false,
 	replaceReal: true,
 	texts: {},
+	connections: [],
 	username: '',
 	displayName: '',
 	date: '',
@@ -743,7 +746,7 @@ export function status(key: string, message: string) {
 	console.log(`[badges-spoof] ${message}`)
 }
 
-export const PLUGIN_VERSION = '1.44.0'
+export const PLUGIN_VERSION = '1.45.0'
 
 
 // The Nitro badge's icon follows the level chosen in settings.

@@ -4,6 +4,7 @@ import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
 import { useState } from 'react'
 import { Image, Pressable, ScrollView, Text, View } from 'react-native'
+import { getConnections, platformLabel, PLATFORMS, type Connection } from './connections'
 import { parseDate } from './identity'
 
 import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, PLUGIN_VERSION, levelChoices, type Settings } from './state'
@@ -257,6 +258,92 @@ function BadgeGrid({
 	)
 }
 
+// Adds and removes the connected accounts shown on your own profile.
+function ConnectionsEditor({
+	list,
+	colors,
+	onChange,
+}: {
+	list: Connection[]
+	colors: Colors
+	onChange: (list: Connection[]) => void
+}) {
+	const [type, setType] = useState(PLATFORMS[0].type)
+	const [name, setName] = useState('')
+	const [field, setField] = useState(0)
+
+	const add = () => {
+		const trimmed = name.trim()
+		if (!trimmed) return
+		onChange([...list, { id: `spoof-${Date.now()}`, type, name: trimmed }])
+		setName('')
+		setField(field + 1)
+	}
+
+	return (
+		<View style={{ paddingHorizontal: 16, gap: 12 }}>
+			<Text style={{ color: colors.muted, fontSize: 13 }}>
+				Shown on your own profile on this device only. They are not linked accounts.
+			</Text>
+			{list.map(item => (
+				<View
+					key={item.id}
+					style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 14, backgroundColor: colors.card }}
+				>
+					<View style={{ flex: 1 }}>
+						<Text style={{ color: colors.text, fontSize: 16, fontWeight: '600' }}>{item.name}</Text>
+						<Text style={{ color: colors.muted, fontSize: 13 }}>{platformLabel(item.type)}</Text>
+					</View>
+					<Pressable accessibilityRole="button" onPress={() => onChange(list.filter(other => other.id !== item.id))}>
+						<Text style={{ color: colors.accent, fontSize: 14, fontWeight: '700' }}>Remove</Text>
+					</Pressable>
+				</View>
+			))}
+			<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+				{PLATFORMS.map(item => (
+					<Pressable
+						key={item.type}
+						accessibilityRole="button"
+						onPress={() => setType(item.type)}
+						style={{
+							borderRadius: 999,
+							borderWidth: 1,
+							borderColor: type === item.type ? colors.accent : colors.muted + '55',
+							backgroundColor: type === item.type ? colors.accent : colors.card,
+							paddingHorizontal: 14,
+							paddingVertical: 8,
+						}}
+					>
+						<Text style={{ color: type === item.type ? '#ffffff' : colors.text, fontSize: 14, fontWeight: '600' }}>
+							{item.label}
+						</Text>
+					</Pressable>
+				))}
+			</ScrollView>
+			<Design.TextInput
+				key={field}
+				label="Username on that account"
+				placeholder="For example: moonfight"
+				size="md"
+				defaultValue=""
+				onChange={(value: string) => setName(value)}
+			/>
+			<Pressable
+				accessibilityRole="button"
+				onPress={add}
+				style={{
+					alignItems: 'center',
+					borderRadius: 14,
+					paddingVertical: 14,
+					backgroundColor: name.trim() ? colors.accent : colors.card,
+				}}
+			>
+				<Text style={{ color: name.trim() ? '#ffffff' : colors.muted, fontSize: 15, fontWeight: '700' }}>Add connection</Text>
+			</Pressable>
+		</View>
+	)
+}
+
 // A section title with a short bar in the theme's accent colour beside it.
 function Heading({ text, colors }: { text: string; colors: Colors }) {
 	return (
@@ -430,6 +517,13 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						onChange={(displayName: string) => saveLater('displayName', () => api.jsonStorage.set({ displayName }))}
 					/>
 				</View>
+
+				{levelHeading('CONNECTIONS')}
+				<ConnectionsEditor
+					list={getConnections()}
+					colors={colors}
+					onChange={connections => api.jsonStorage.set({ connections })}
+				/>
 
 					</>
 				)}

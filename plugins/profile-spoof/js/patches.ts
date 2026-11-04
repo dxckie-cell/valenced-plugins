@@ -1,3 +1,4 @@
+import { withConnections } from './connections'
 import { getModules } from '@valenced/modules/finders'
 import { withName, withProps } from '@valenced/modules/finders/filters'
 import { before, instead } from '@valenced/patcher'
@@ -474,7 +475,7 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				'getUserProfile',
 				function (this: any, args, original) {
 					const profile = Reflect.apply(original, this, args)
-					return ownId && args[0] === ownId ? asSubscriber(profile) : profile
+					return ownId && args[0] === ownId ? withConnections(asSubscriber(profile)) : profile
 				},
 				cleanup,
 				'Nitro (profile)',
