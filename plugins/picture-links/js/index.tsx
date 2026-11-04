@@ -14,7 +14,15 @@ import { after, instead } from '@valenced/patcher'
 import { React, ReactJSXRuntime } from '@valenced/react'
 import { getErrorStack } from '@valenced/utils/error'
 import { cloneElement, useState } from 'react'
-import { Dimensions, Image, Linking, Pressable, View } from 'react-native'
+import {
+	Dimensions,
+	Image,
+	Linking,
+	Pressable,
+	ScrollView,
+	Text,
+	View,
+} from 'react-native'
 import type { DiscordModules } from '@valenced/discord/types'
 import type { PluginCleanupApi } from '@valenced/plugins/types'
 import type { FC, ReactElement } from 'react'
@@ -192,7 +200,7 @@ async function measure(src: string, { square, aspect }: OpenOptions) {
 
 // TEMPORARY diagnostics: every tap shows a small message with what happened and how long it took,
 // to find out why server icons and banners don't open. Remove once that is fixed.
-const DEBUG = true
+const DEBUG = false
 
 type Trace = (step: string) => void
 
@@ -333,36 +341,96 @@ function ImageSheet({
 	aspect: number
 }) {
 	const [aspect, setAspect] = useState(guessed)
-	const maxHeight = Dimensions.get('window').height * 0.7
+	const [zoomed, setZoomed] = useState(false)
+	const { width: screenWidth, height: screenHeight } = Dimensions.get('window')
+	const maxHeight = screenHeight * 0.7
+	const fitWidth = screenWidth - 32
 
 	buildingSheet++
 	try {
+		const image = (
+			<Image
+				source={{ uri: picture }}
+				resizeMode="contain"
+				// the real shape, once the image has loaded
+				onLoad={(e: {
+					nativeEvent: { source?: { width: number; height: number } }
+				}) => {
+					const { width, height } = e.nativeEvent.source ?? {}
+					if (width && height) setAspect(width / height)
+				}}
+				style={
+					zoomed
+						? { width: fitWidth * 2.5, height: (fitWidth * 2.5) / aspect }
+						: {
+								width: '100%',
+								aspectRatio: aspect,
+								maxHeight,
+								borderRadius: 12,
+							}
+				}
+			/>
+		)
+
 		return (
 			<ActionSheet>
 				<View style={{ padding: 16, paddingBottom: 48 }}>
-					<Image
-						source={{ uri: picture }}
-						resizeMode="contain"
-						// the real shape, once the image has loaded
-						onLoad={(e: {
-							nativeEvent: { source?: { width: number; height: number } }
-						}) => {
-							const { width, height } = e.nativeEvent.source ?? {}
-							if (width && height) setAspect(width / height)
-						}}
-						style={{
-							width: '100%',
-							aspectRatio: aspect,
-							maxHeight,
-							borderRadius: 12,
-						}}
-					/>
+					<Pressable onPress={() => setZoomed(z => !z)}>
+						{zoomed ? (
+							// pan around the enlarged image (pinch also works where the platform allows it)
+							<ScrollView
+								horizontal
+								nestedScrollEnabled
+								maximumZoomScale={4}
+								style={{ maxHeight }}
+							>
+								<ScrollView nestedScrollEnabled style={{ maxHeight }}>
+									{image}
+								</ScrollView>
+							</ScrollView>
+						) : (
+							image
+						)}
+					</Pressable>
+					<View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+						<SheetButton
+							label={zoomed ? 'Zoom out' : 'Zoom in'}
+							onPress={() => setZoomed(z => !z)}
+						/>
+						<SheetButton
+							label="Open / save"
+							onPress={() => void Linking.openURL(picture)}
+						/>
+					</View>
 				</View>
 			</ActionSheet>
 		)
 	} finally {
 		buildingSheet--
 	}
+}
+
+function SheetButton({
+	label,
+	onPress,
+}: {
+	label: string
+	onPress: () => void
+}) {
+	return (
+		<Pressable
+			onPress={onPress}
+			style={{
+				flex: 1,
+				padding: 12,
+				borderRadius: 8,
+				alignItems: 'center',
+				backgroundColor: 'rgba(128,128,128,0.25)',
+			}}
+		>
+			<Text style={{ color: '#fff', fontWeight: '600' }}>{label}</Text>
+		</Pressable>
+	)
 }
 
 function openImageSheet(uri: string, aspect: number) {
