@@ -11,21 +11,41 @@ import type { PluginSettingsComponent } from '@valenced/plugins/types'
 
 // Theme colours from Discord, with plain fallbacks if they can't be read.
 function useColors() {
-	const pick = (name: string, fallback: string): string => {
+	const read = (name: string): string | undefined => {
 		try {
 			const { colors, internal } = (Tokens as any).default
-			return colors[name]
-				? internal.resolveSemanticColor((Stores as any).ThemeStore.theme, colors[name])
-				: fallback
+			return colors[name] ? internal.resolveSemanticColor((Stores as any).ThemeStore.theme, colors[name]) : undefined
 		} catch {
-			return fallback
+			return undefined
 		}
 	}
+	const pick = (name: string, fallback: string): string => read(name) ?? fallback
 	return {
 		card: pick('BACKGROUND_MOD_SUBTLE', '#2b2d31'),
 		text: pick('TEXT_NORMAL', '#dbdee1'),
 		muted: pick('TEXT_MUTED', '#949ba4'),
-		accent: pick('BUTTON_BACKGROUND_BRAND', '#5865f2'),
+		// The colour Discord's own switches turn when on, so the outline follows the theme the same way.
+		accent: accentColor(read) ?? '#5865f2',
+	}
+}
+
+const ACCENT_PATTERNS = [/SWITCH.*(ACTIVE|ON|CHECKED|SELECTED)/, /TOGGLE.*(ACTIVE|ON|CHECKED|SELECTED)/, /^CONTROL_BRAND_FOREGROUND/]
+const ACCENT_NAMES = ['BUTTON_BACKGROUND_BRAND', 'BACKGROUND_BRAND']
+
+function accentColor(read: (name: string) => string | undefined): string | undefined {
+	let names: string[] = []
+	try {
+		names = Object.keys((Tokens as any).default.colors)
+	} catch {}
+	for (const pattern of ACCENT_PATTERNS) {
+		for (const name of names.filter(item => pattern.test(item))) {
+			const value = read(name)
+			if (value) return value
+		}
+	}
+	for (const name of ACCENT_NAMES) {
+		const value = read(name)
+		if (value) return value
 	}
 }
 
