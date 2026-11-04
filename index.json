@@ -870,7 +870,7 @@
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "AwardIcon",
       "channels": {
-        "latest": "1.43.2"
+        "latest": "1.43.3"
       },
       "versions": {
         "1.37.2": {
@@ -1115,6 +1115,21 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.profile-spoof@1.43.2.zip",
           "sha256": "dac3766516664bfbb593f03d2da03ceef8ed2ac7bc8abf41507ed67f35d17cab",
           "size": 18994,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            },
+            "valenced.settings": {},
+            "valenced.settings.plugins": {}
+          }
+        },
+        "1.43.3": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.profile-spoof@1.43.3.zip",
+          "sha256": "3e0c39762aa9c2536ecd39126478aa172b77765b2038ef8923d8b588798132a8",
+          "size": 18988,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
