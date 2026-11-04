@@ -473,7 +473,7 @@ export const levelChoices = (key: string): { key: string; label: string; icon: s
 	((BUILT_IN_DETAILS[key]?.tiers as any[]) ?? []).map(item => ({
 		key: item.key,
 		label: item.name ?? item.milestone_text,
-		icon: item.simple_icon_url,
+		icon: (ICON_KEYS.has(key) ? realTierIcon(key, item.key) : undefined) ?? item.simple_icon_url,
 		threshold: item.requirements[0].threshold,
 	}))
 
@@ -633,8 +633,9 @@ function findRealTier(real: any[], mine: any, count: number, index: number): any
 	)
 }
 
-// Discord's small pictures are low resolution, so the activity badges keep their own sharp ones.
-const ICON_KEYS = new Set<string>()
+// Badges that take their level pictures from Discord's own list on this device. The others keep their own
+// sharp pictures, because Discord's small ones are low resolution.
+const ICON_KEYS = new Set<string>(['account-age'])
 
 // Discord's own small picture of a Gifting or Server Boosting level, once its badge list has been learnt.
 export function realTierIcon(key: string, level: string, big = false): string | undefined {
@@ -744,7 +745,7 @@ export function status(key: string, message: string) {
 	console.log(`[badges-spoof] ${message}`)
 }
 
-export const PLUGIN_VERSION = '1.42.3'
+export const PLUGIN_VERSION = '1.43.0'
 
 
 // The Nitro badge's icon follows the level chosen in settings.
@@ -768,7 +769,7 @@ for (const key of LEVEL_KEYS) {
 		// Boosting levels below the top use sharp copies of Discord's own art (drawn at the real sizes);
 		// the top level keeps Discord's own picture.
 		const isTop = level === choices[choices.length - 1]?.key
-		const real = key === 'server-boosting' ? undefined : realTierIcon(key, level)
+		const real = key === 'server-boosting' ? undefined : realTierIcon(key, level, field === 'sheetUrl')
 		if (real) return real
 		// The top Boosting level uses the sharp copy of Discord's art too, same as the others.
 		if (isTop && key !== 'server-boosting') return base[field]
