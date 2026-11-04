@@ -466,7 +466,7 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 }
 
 // Badges with a level picker in settings.
-export const LEVEL_KEYS = ['gifting', 'account-age', 'server-boosting', 'streaming', 'game-time', 'game-variety'] as const
+export const LEVEL_KEYS = ['gifting', 'server-boosting', 'account-age', 'streaming', 'game-time', 'game-variety'] as const
 
 // The levels of Gifting and Server Boosting, lowest first, for the level pickers in settings.
 export const levelChoices = (key: string): { key: string; label: string; icon: string; threshold: number }[] =>
@@ -744,7 +744,7 @@ export function status(key: string, message: string) {
 	console.log(`[badges-spoof] ${message}`)
 }
 
-export const PLUGIN_VERSION = '1.40.0'
+export const PLUGIN_VERSION = '1.40.1'
 
 
 // The Nitro badge's icon follows the level chosen in settings.
