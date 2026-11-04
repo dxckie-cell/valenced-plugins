@@ -5,6 +5,7 @@ import { Stores } from '@valenced/discord/flux'
 import { useState } from 'react'
 import { Image, Pressable, ScrollView, Text, View } from 'react-native'
 import { parseDate } from './identity'
+import { takeRequestedTab, type TabKey } from './tabs'
 import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, PLUGIN_VERSION, levelChoices, type Settings } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
@@ -98,6 +99,11 @@ function Tile({
 	)
 }
 
+const TABS: { key: TabKey; label: string }[] = [
+	{ key: 'badges', label: 'Badges' },
+	{ key: 'account', label: 'Account' },
+]
+
 const Grid = ({ children }: { children: React.ReactNode }) => (
 	<View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 16 }}>
 		{children}
@@ -109,6 +115,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 	const settings = (api.jsonStorage.use() ?? {}) as Partial<Settings>
 	const colors = useColors()
 	const [dateError, setDateError] = useState('')
+	const [tab, setTab] = useState<TabKey>(takeRequestedTab())
 	const hidden = settings.hidden ?? {}
 	const texts = settings.texts ?? {}
 	const level = NITRO_LEVELS.some(item => item.key === settings.nitroLevel) ? settings.nitroLevel : 'opal'
@@ -120,6 +127,28 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 	return (
 		<ScrollView keyboardShouldPersistTaps="handled">
 			<Page>
+				<View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 12 }}>
+					{TABS.map(item => (
+						<Pressable
+							key={item.key}
+							accessibilityRole="button"
+							onPress={() => setTab(item.key)}
+							style={{
+								borderRadius: 999,
+								borderWidth: 1,
+								borderColor: tab === item.key ? colors.accent : colors.muted,
+								backgroundColor: tab === item.key ? colors.accent : colors.card,
+								paddingHorizontal: 18,
+								paddingVertical: 10,
+							}}
+						>
+							<Text style={{ color: tab === item.key ? '#ffffff' : colors.text, fontSize: 15, fontWeight: '600' }}>{item.label}</Text>
+						</Pressable>
+					))}
+				</View>
+
+				{tab === 'badges' && (
+					<>
 				<Design.TableRowGroup title="Badges">
 					<Design.TableSwitchRow
 						label="Hide my real badges"
@@ -227,6 +256,19 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					</Design.TableRowGroup>
 				))}
 
+				<Design.TableRowGroup title="Order">
+					<Design.TableRow
+						label="Reset badge order"
+						subLabel="Go back to Discord's own order. Hold a badge in Edit Profile and use Go Left / Go Right."
+						onPress={() => api.jsonStorage.set({ order: [] })}
+					/>
+				</Design.TableRowGroup>
+
+					</>
+				)}
+
+				{tab === 'account' && (
+					<>
 				<Design.TableRowGroup title="Account">
 					<Design.TableSwitchRow
 						label="Change my Member Since date"
@@ -268,13 +310,8 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					/>
 				</View>
 
-				<Design.TableRowGroup title="Order">
-					<Design.TableRow
-						label="Reset badge order"
-						subLabel="Go back to Discord's own order. Hold a badge in Edit Profile and use Go Left / Go Right."
-						onPress={() => api.jsonStorage.set({ order: [] })}
-					/>
-				</Design.TableRowGroup>
+					</>
+				)}
 
 				<Design.TableRowGroup title="About">
 					<Design.TableRow label={`Profile Spoof ${PLUGIN_VERSION}`} />

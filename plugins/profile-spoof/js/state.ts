@@ -739,7 +739,7 @@ export function status(key: string, message: string) {
 	console.log(`[badges-spoof] ${message}`)
 }
 
-export const PLUGIN_VERSION = '1.38.2'
+export const PLUGIN_VERSION = '1.39.0'
 
 
 // The Nitro badge's icon follows the level chosen in settings.
