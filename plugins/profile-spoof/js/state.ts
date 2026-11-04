@@ -466,7 +466,7 @@ const BUILT_IN_DETAILS: Record<string, { name: string; info_label: string; descr
 }
 
 // Badges with a level picker in settings.
-export const LEVEL_KEYS = ['gifting', 'server-boosting', 'streaming', 'game-time', 'game-variety'] as const
+export const LEVEL_KEYS = ['gifting', 'account-age', 'server-boosting', 'streaming', 'game-time', 'game-variety'] as const
 
 // The levels of Gifting and Server Boosting, lowest first, for the level pickers in settings.
 export const levelChoices = (key: string): { key: string; label: string; icon: string; threshold: number }[] =>
@@ -545,14 +545,19 @@ function withSettings(key: string, base: Record<string, any> | undefined): Recor
 	}
 
 	if (key === 'account-age') {
-		const age = textOf('account-age.age')
 		const iso = isoDate(textOf('account-age.date'), base.obtained_at)
+		const lv = levelState(key, base)
+		// Without an age of your own, the age is the one the level needs.
+		const own = (read().texts?.['account-age.age'] ?? '').trim()
+		const age = own || (lv.top ? textOf('account-age.age') : `${lv.threshold} year${lv.threshold === 1 ? '' : 's'}`)
 		return {
 			...base,
 			info_label: age,
-			progress: base.progress.map((item: any) => ({ ...item, progress_helper_text: age })),
+			current_tier: lv.level,
+			next_tier: lv.next,
+			progress: base.progress.map((item: any) => ({ ...item, current: lv.threshold, progress_helper_text: age })),
 			obtained_at: iso,
-			tier_obtained_at: datesFor(Object.keys(base.tier_obtained_at), iso),
+			tier_obtained_at: datesFor(lv.reached, iso),
 		}
 	}
 
@@ -739,7 +744,7 @@ export function status(key: string, message: string) {
 	console.log(`[badges-spoof] ${message}`)
 }
 
-export const PLUGIN_VERSION = '1.39.2'
+export const PLUGIN_VERSION = '1.40.0'
 
 
 // The Nitro badge's icon follows the level chosen in settings.
