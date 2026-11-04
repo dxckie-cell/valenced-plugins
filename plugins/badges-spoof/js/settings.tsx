@@ -257,7 +257,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 				</Design.TableRowGroup>
 
 				<Design.TableRowGroup title="About">
-					<Design.TableRow label={`Badges Spoof ${PLUGIN_VERSION}`} />
+					<Design.TableRow label={`Profile Spoof ${PLUGIN_VERSION}`} />
 				</Design.TableRowGroup>
 			</Page>
 		</ScrollView>

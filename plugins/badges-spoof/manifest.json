@@ -1,11 +1,11 @@
 {
 	"format": 1,
 	"id": "dxckie.badges-spoof",
-	"name": "Badges Spoof",
-	"description": "Adds profile badges to your own profile, only on your device, and lets you hide or show them.",
+	"name": "Profile Spoof",
+	"description": "Changes your own profile, only on your device: badges, username, display name and Member Since date.",
 	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
 	"icon": "AwardIcon",
-	"version": "1.37.0",
+	"version": "1.37.1",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"
