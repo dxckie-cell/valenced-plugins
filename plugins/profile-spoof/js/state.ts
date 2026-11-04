@@ -473,7 +473,7 @@ export const levelChoices = (key: string): { key: string; label: string; icon: s
 	((BUILT_IN_DETAILS[key]?.tiers as any[]) ?? []).map(item => ({
 		key: item.key,
 		label: item.name ?? item.milestone_text,
-		icon: (ICON_KEYS.has(key) ? realTierIcon(key, item.key) : undefined) ?? item.simple_icon_url,
+		icon: item.simple_icon_url,
 		threshold: item.requirements[0].threshold,
 	}))
 
@@ -745,7 +745,7 @@ export function status(key: string, message: string) {
 	console.log(`[badges-spoof] ${message}`)
 }
 
-export const PLUGIN_VERSION = '1.43.0'
+export const PLUGIN_VERSION = '1.43.1'
 
 
 // The Nitro badge's icon follows the level chosen in settings.
