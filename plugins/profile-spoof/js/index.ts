@@ -1,5 +1,6 @@
 import { refreshUsers, startIdentity } from './identity'
 import { applyPatches } from './patches'
+import { addProfileRow } from './shortcut'
 import { SettingsComponent } from './settings'
 import {
 	DEFAULT_SETTINGS,
@@ -46,6 +47,14 @@ export default plugin<{ jsonStorage: Settings }>({
 		// Registered before the badge patches, so Nitro's copy of the user is made from the renamed one.
 		try {
 			startIdentity(cleanup, e => api.plugin.reportError(e))
+		} catch (e) {
+			api.plugin.reportError(e)
+		}
+
+		// The row in Valenced's settings that opens this plugin's settings.
+		try {
+			const { pluginSettings } = api as any
+			cleanup(addProfileRow(() => pluginSettings.openPluginSettings('dxckie.profile-spoof')))
 		} catch (e) {
 			api.plugin.reportError(e)
 		}
