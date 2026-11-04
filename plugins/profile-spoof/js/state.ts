@@ -613,7 +613,7 @@ export function learnTiers(key: string, tiers: unknown) {
 }
 
 // Badges whose sheet picture is Discord's own (each Gifting level has its own chest).
-const REAL_HEADERS = new Set(['nitro', 'gifting', 'server-boosting', 'streaming', 'game-time', 'game-variety'])
+const REAL_HEADERS = new Set(['nitro', 'gifting', 'server-boosting', 'streaming', 'game-time', 'game-variety', 'account-age'])
 
 const norm = (value: unknown) => String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
 
@@ -636,12 +636,10 @@ function findRealTier(real: any[], mine: any, count: number, index: number): any
 // Badges that take their level pictures from Discord's own list on this device. The others keep their own
 // sharp pictures, because Discord's small ones are low resolution.
 const ICON_KEYS = new Set<string>()
-// Badges whose big sheet picture comes from Discord's own list, while everything else stays ours.
-const SHEET_ART_KEYS = new Set<string>()
 
 // Discord's own small picture of a Gifting or Server Boosting level, once its badge list has been learnt.
 export function realTierIcon(key: string, level: string, big = false): string | undefined {
-	if (!ICON_KEYS.has(key) && key !== 'server-boosting' && !(big && SHEET_ART_KEYS.has(key))) return undefined
+	if (!ICON_KEYS.has(key) && key !== 'server-boosting') return undefined
 	const real = realTiers.get(key)
 	const mine = (BUILT_IN_DETAILS[key]?.tiers as any[]) ?? []
 	const index = mine.findIndex((item: any) => item.key === level)
@@ -747,7 +745,7 @@ export function status(key: string, message: string) {
 	console.log(`[badges-spoof] ${message}`)
 }
 
-export const PLUGIN_VERSION = '1.43.3'
+export const PLUGIN_VERSION = '1.43.4'
 
 
 // The Nitro badge's icon follows the level chosen in settings.
