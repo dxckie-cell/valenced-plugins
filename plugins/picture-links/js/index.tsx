@@ -2,6 +2,7 @@ import {
 	ActionSheetActionCreators,
 	ToastActionCreators,
 } from '@valenced/discord/actions'
+import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
 import { getModules, lookupModule } from '@valenced/modules/finders'
 import {
@@ -12,8 +13,8 @@ import {
 import { after, instead } from '@valenced/patcher'
 import { React, ReactJSXRuntime } from '@valenced/react'
 import { getErrorStack } from '@valenced/utils/error'
-import { cloneElement } from 'react'
-import { Image, Linking, Pressable } from 'react-native'
+import { cloneElement, useState } from 'react'
+import { Dimensions, Image, Linking, Pressable, View } from 'react-native'
 import type { DiscordModules } from '@valenced/discord/types'
 import type { PluginCleanupApi } from '@valenced/plugins/types'
 import type { FC, ReactElement } from 'react'
@@ -254,13 +255,6 @@ async function openViewer(
 	const modal = getMediaModal()
 	src = capSize(src)
 
-	if (!modal) {
-		// The viewer isn't loaded yet, so open the full-size image as a link instead.
-		trace?.('NO openMediaModal, opening the link')
-		await Linking.openURL(src)
-		return
-	}
-
 	let size: { width: number; height: number }
 	try {
 		size = await measure(src, options)
@@ -276,6 +270,19 @@ async function openViewer(
 				trace,
 			)
 		console.warn(`[Picture Links+] could not load ${src}`, e)
+		return
+	}
+
+	if (!modal) {
+		// Discord hasn't loaded its viewer, so show the image in a sheet of our own.
+		trace?.('NO openMediaModal, using the sheet')
+		try {
+			openImageSheet(src, size.width / size.height)
+			trace?.('sheet opened')
+		} catch (e) {
+			trace?.(`sheet failed (${describe(e)}), opening the link`)
+			await Linking.openURL(src)
+		}
 		return
 	}
 
@@ -309,6 +316,71 @@ async function openViewer(
 			(ok: boolean) => trace(ok ? 'image loaded' : 'image FAILED'),
 			(e: unknown) => trace(`image ERROR ${describe(e)}`),
 		)
+}
+
+// ---------------------------------------------------------------------------------------------
+// Image sheet, for when Discord's own viewer isn't loaded
+// ---------------------------------------------------------------------------------------------
+
+const { ActionSheet } = Design
+
+// The image is passed as `picture`, not `uri`/`src`/`source`, which the catcher above looks at.
+function ImageSheet({
+	picture,
+	aspect: guessed,
+}: {
+	picture: string
+	aspect: number
+}) {
+	const [aspect, setAspect] = useState(guessed)
+	const maxHeight = Dimensions.get('window').height * 0.7
+
+	buildingSheet++
+	try {
+		return (
+			<ActionSheet>
+				<View style={{ padding: 16, paddingBottom: 48 }}>
+					<Image
+						source={{ uri: picture }}
+						resizeMode="contain"
+						// the real shape, once the image has loaded
+						onLoad={(e: {
+							nativeEvent: { source?: { width: number; height: number } }
+						}) => {
+							const { width, height } = e.nativeEvent.source ?? {}
+							if (width && height) setAspect(width / height)
+						}}
+						style={{
+							width: '100%',
+							aspectRatio: aspect,
+							maxHeight,
+							borderRadius: 12,
+						}}
+					/>
+				</View>
+			</ActionSheet>
+		)
+	} finally {
+		buildingSheet--
+	}
+}
+
+function openImageSheet(uri: string, aspect: number) {
+	ActionSheetActionCreators.openLazy(
+		Promise.resolve({
+			default: () => {
+				buildingSheet++
+				try {
+					return <ImageSheet picture={uri} aspect={aspect} />
+				} finally {
+					buildingSheet--
+				}
+			},
+		}),
+		'PictureLinks',
+		{},
+		'replaceTopSheet',
+	)
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -503,12 +575,15 @@ function resolveImage(original: string): { url: string; original: string } {
 	}
 }
 
+// Above zero while our own sheet builds its image, which must not be made tappable itself.
+let buildingSheet = 0
+
 let bannerErrorReported = false
 
 function wrapImage(el: any): any {
 	try {
 		const props = el?.props
-		if (!props || el.type === Pressable) return el
+		if (!props || el.type === Pressable || buildingSheet) return el
 		if (
 			!IMAGE_PROPS.some(key => props[key]) &&
 			!BANNER_PROPS.some(key => props[key] !== undefined)
