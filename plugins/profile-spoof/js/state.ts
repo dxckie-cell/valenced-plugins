@@ -111,7 +111,6 @@ export interface Settings {
 	// The level each tiered badge shows, by badge key (Gifting, Server Boosting): a tier key.
 	levels: Record<string, string>
 	// Let Discord draw its own (animated) Nitro badge for the chosen level instead of ours.
-	nativeNitro: boolean
 	// Show only the badges added here, not the ones Discord gives you.
 	hideReal: boolean
 	// Replace the real badge with the spoofed one when you own both (on unless turned off).
@@ -134,7 +133,6 @@ export const DEFAULT_SETTINGS: Settings = {
 	replaced: [],
 	nitroLevel: 'opal',
 	levels: {},
-	nativeNitro: false,
 	hideReal: false,
 	replaceReal: true,
 	texts: {},
@@ -173,18 +171,6 @@ export const NITRO_LEVELS = [
 export function getNitroLevel(): string {
 	const level = read().nitroLevel
 	return NITRO_LEVELS.some(item => item.key === level) ? (level as string) : 'opal'
-}
-
-// Give our Nitro badge the id of Discord's own Nitro badge, so Discord draws it (animated).
-export const usesNativeNitro = () => read().nativeNitro === true && getNitroLevel() !== 'none'
-
-// The profile fields that make Discord treat you as a Nitro subscriber since the level's start.
-export function nativeNitroFields(): Record<string, unknown> {
-	const months = NITRO_MONTHS[getNitroLevel()] ?? 0
-	const since = new Date()
-	since.setMonth(since.getMonth() - months)
-	since.setHours(12, 0, 0, 0)
-	return { premiumType: 2, premium_type: 2, premiumSince: since, premium_since: since.toISOString() }
 }
 
 export const hidesReal = () => read().hideReal === true
@@ -729,7 +715,7 @@ export function notifyChange() {
 	}
 }
 
-export const PLUGIN_VERSION = '1.45.1'
+export const PLUGIN_VERSION = '1.46.0'
 
 // The Nitro badge's icon follows the level chosen in settings.
 const nitroBadge = BADGES.find(badge => badge.key === 'nitro')

@@ -419,12 +419,6 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						onValueChange={(replaceReal: boolean) => api.jsonStorage.set({ replaceReal })}
 					/>
 					<Design.TableSwitchRow
-						label="Use Discord's animated Nitro badge"
-						subLabel="Makes Discord treat you as a Nitro subscriber at the level picked below and draw its own animated Nitro badge, as CloudCord does. Turn off to use our still picture."
-						value={settings.nativeNitro === true}
-						onValueChange={(nativeNitro: boolean) => api.jsonStorage.set({ nativeNitro })}
-					/>
-					<Design.TableSwitchRow
 						label="Show all badges"
 						subLabel="Show every badge instead of only the first six."
 						value={settings.showAll !== false}
