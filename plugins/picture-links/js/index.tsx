@@ -1,7 +1,4 @@
-import {
-	ActionSheetActionCreators,
-	ToastActionCreators,
-} from '@valenced/discord/actions'
+import { ActionSheetActionCreators } from '@valenced/discord/actions'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
 import { getModules, lookupModule } from '@valenced/modules/finders'
@@ -198,58 +195,14 @@ async function measure(src: string, { square, aspect }: OpenOptions) {
 	}
 }
 
-// TEMPORARY diagnostics: every tap shows a small message with what happened and how long it took,
-// to find out why server icons and banners don't open. Remove once that is fixed.
-const DEBUG = false
-
-type Trace = (step: string) => void
-
-// Steps after which a tap has finished, one way or another.
-const FINAL_STEPS = /^(viewer called|module available|ERROR|NO |size failed)/
-
-let toastCount = 0
-
-function createTrace(label: string | undefined): Trace | undefined {
-	if (!DEBUG) return
-	const started = Date.now()
-	const steps: string[] = []
-	let finished = false
-
-	const show = (prefix: string) => {
-		const text = `${prefix}[PL ${label ?? '?'}] ${steps.join(' > ')}`
-		console.log(text)
-		try {
-			// a new key every time: one shared key may keep showing the first message
-			ToastActionCreators.open(`PICTURE_LINKS_DEBUG_${toastCount++}`, { text })
-		} catch {
-			// a diagnostic must never break the tap
-		}
-	}
-
-	setTimeout(() => {
-		if (!finished) show('STALLED ')
-	}, 3000)
-
-	return step => {
-		steps.push(`${step} ${Date.now() - started}ms`)
-		if (FINAL_STEPS.test(step)) finished = true
-		show('')
-	}
-}
-
-const describe = (e: unknown) => (e instanceof Error ? e.message : String(e))
-
 async function openModal(
 	src: string,
 	event?: Point,
 	options: OpenOptions = {},
 ): Promise<void> {
-	const trace = createTrace(options.label)
-	trace?.('tap')
 	try {
-		await openViewer(src, event, options, trace)
+		await openViewer(src, event, options)
 	} catch (e) {
-		trace?.(`ERROR ${describe(e)}`)
 		reportError(`open failed: ${getErrorStack(e)}`)
 	}
 }
@@ -258,7 +211,6 @@ async function openViewer(
 	src: string,
 	event: Point | undefined,
 	options: OpenOptions,
-	trace: Trace | undefined,
 ): Promise<void> {
 	const modal = getMediaModal()
 	src = capSize(src)
@@ -266,36 +218,25 @@ async function openViewer(
 	let size: { width: number; height: number }
 	try {
 		size = await measure(src, options)
-		trace?.(`sized ${size.width}x${size.height}`)
 	} catch (e) {
 		const { fallback } = options
-		trace?.(`size failed (${describe(e)})`)
 		if (fallback && fallback !== src)
-			return openViewer(
-				fallback,
-				event,
-				{ ...options, fallback: undefined },
-				trace,
-			)
+			return openViewer(fallback, event, { ...options, fallback: undefined })
 		console.warn(`[Picture Links+] could not load ${src}`, e)
 		return
 	}
 
 	if (!modal) {
 		// Discord hasn't loaded its viewer, so show the image in a sheet of our own.
-		trace?.('NO openMediaModal, using the sheet')
 		try {
 			openImageSheet(src, size.width / size.height)
-			trace?.('sheet opened')
-		} catch (e) {
-			trace?.(`sheet failed (${describe(e)}), opening the link`)
+		} catch {
 			await Linking.openURL(src)
 		}
 		return
 	}
 
 	ActionSheetActionCreators.hideActionSheet() // hide user sheet
-	trace?.('sheet hidden')
 	modal.openMediaModal({
 		initialSources: [
 			{
@@ -316,14 +257,6 @@ async function openViewer(
 			resizeMode: 'fill',
 		},
 	})
-	trace?.('viewer called')
-
-	// how long the image itself takes to arrive
-	if (trace)
-		(Image as any).prefetch?.(src)?.then(
-			(ok: boolean) => trace(ok ? 'image loaded' : 'image FAILED'),
-			(e: unknown) => trace(`image ERROR ${describe(e)}`),
-		)
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -846,7 +779,6 @@ export default plugin({
 		cleanup(
 			getModules(withProps<MediaModalActions>('openMediaModal'), exports => {
 				mediaModal = exports
-				createTrace('viewer')?.('module available')
 			}),
 		)
 
