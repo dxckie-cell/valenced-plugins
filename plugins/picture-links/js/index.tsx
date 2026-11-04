@@ -4,11 +4,13 @@ import { Stores } from '@valenced/discord/flux'
 import { getModules, lookupModule } from '@valenced/modules/finders'
 import {
 	createFilterGenerator,
+	FilterScopes,
 	withName,
 	withProps,
 } from '@valenced/modules/finders/filters'
 import { after, instead } from '@valenced/patcher'
 import { React, ReactJSXRuntime } from '@valenced/react'
+import { isModuleExportBad } from '@valenced/modules/metro'
 import { getErrorStack } from '@valenced/utils/error'
 import { cloneElement, useState } from 'react'
 import {
@@ -85,6 +87,46 @@ const getMediaModal = () =>
 	(mediaModal ??= lookupModule(
 		withProps<MediaModalActions>('openMediaModal'),
 	)[0])
+
+// Valenced only finds modules that are already loaded, so the viewer is loaded here by hand:
+// modules are initialized one by one, within a time budget, until one exports `openMediaModal`.
+// It runs in small slices in the background, and the progress is kept between slices.
+const triedModules = new Set<number>()
+let viewerSlice = 0
+let viewerSearchDone = false
+
+const withViewerModule = createFilterGenerator<[deadline: number]>(
+	([deadline], id, exports, initialized) => {
+		if (initialized) {
+			if (isModuleExportBad(exports)) return false
+			if (typeof exports !== 'object' && typeof exports !== 'function')
+				return false
+			return typeof (exports as any).openMediaModal === 'function'
+		}
+		if (triedModules.has(id) || Date.now() > deadline) return false
+		triedModules.add(id)
+		return true
+	},
+	() => `picture-links.viewer(${viewerSlice++})`,
+	FilterScopes.Uninitialized | FilterScopes.Initialized,
+)
+
+/** Initializes modules for up to `budget` ms. @returns whether the viewer is loaded now. */
+function loadViewerSlice(budget: number): boolean {
+	if (mediaModal) return true
+	if (viewerSearchDone) return false
+	const before = triedModules.size
+	try {
+		mediaModal = lookupModule(withViewerModule(Date.now() + budget))[0]
+	} catch (e) {
+		reportError(`loading the viewer failed: ${getErrorStack(e)}`)
+		viewerSearchDone = true
+		return false
+	}
+	// nothing new was tried: every module has been looked at
+	if (!mediaModal && triedModules.size === before) viewerSearchDone = true
+	return !!mediaModal
+}
 
 const getChannelId = () =>
 	(
@@ -212,6 +254,7 @@ async function openViewer(
 	event: Point | undefined,
 	options: OpenOptions,
 ): Promise<void> {
+	loadViewerSlice(400) // the viewer may not be loaded yet
 	const modal = getMediaModal()
 	src = capSize(src)
 
@@ -781,6 +824,16 @@ export default plugin({
 				mediaModal = exports
 			}),
 		)
+
+		// Load Discord's viewer in the background, so it is ready by the time something is tapped.
+		let timer: ReturnType<typeof setTimeout> | undefined
+		const step = () => {
+			if (!loadViewerSlice(40)) {
+				if (!viewerSearchDone) timer = setTimeout(step, 30)
+			}
+		}
+		timer = setTimeout(step, 2000)
+		cleanup(() => clearTimeout(timer))
 
 		safe('patch profile pictures', () => patchProfilePictures(cleanup))
 		safe('patch banners and server icons', () => patchImages(cleanup))
