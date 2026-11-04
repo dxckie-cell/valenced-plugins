@@ -120,10 +120,9 @@ export function startIdentity(cleanup: Register, reportError: (e: unknown) => vo
 			}),
 		)
 
-	// The fake date, but only when `target` (a user or an ID) is you.
+	// The fake date (when one is set), but only when `target` (a user or an ID) is you.
 	const fakeDate = (target: unknown) => {
 		const settings = getSettings()
-		if (!settings.dateEnabled) return null
 		const id = typeof target === 'string' ? target : (target as any)?.id
 		return id && id === (Stores as any).UserStore?.getCurrentUser?.()?.id ? parseDate(settings.date) : null
 	}

@@ -398,18 +398,10 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 				{tab === 'account' && (
 					<>
 				{levelHeading('ACCOUNT')}
-				<Design.TableRowGroup>
-					<Design.TableSwitchRow
-						label="Change my Member Since date"
-						subLabel="Only changes what you see on your own profile."
-						value={settings.dateEnabled === true}
-						onValueChange={(dateEnabled: boolean) => api.jsonStorage.set({ dateEnabled })}
-					/>
-				</Design.TableRowGroup>
 				<View style={{ padding: 12, gap: 12 }}>
 					<Design.TextInput
 						label="Member Since (DD-MM-YYYY)"
-						placeholder="13-05-2016"
+						placeholder="Leave empty to keep your real date (DD-MM-YYYY)"
 						size="md"
 						defaultValue={settings.date ?? ''}
 						status={dateError ? 'error' : 'default'}
