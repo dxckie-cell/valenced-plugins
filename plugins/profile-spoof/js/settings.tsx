@@ -179,6 +179,84 @@ function TabSwitcher({ tab, onChange, colors }: { tab: TabKey; onChange: (tab: T
 	)
 }
 
+// Keeps a value shown straight away when tapped, while the real save (which redraws Discord's profile)
+// happens a moment later. Follows `value` again whenever the saved value changes.
+function useLocal<T>(value: T, signature: string): [T, (next: T) => void] {
+	const [state, setState] = useState({ signature, shown: value })
+	if (state.signature !== signature) setState({ signature, shown: value })
+	return [state.shown, (next: T) => setState({ signature: state.signature, shown: next })]
+}
+
+// A grid of tiles where one is chosen.
+function Picker({
+	items,
+	value,
+	saveKey,
+	onPick,
+	colors,
+}: {
+	items: { key: string; label: string; uri?: string }[]
+	value: string
+	saveKey: string
+	onPick: (key: string) => void
+	colors: Colors
+}) {
+	const [shown, setShown] = useLocal(value, value)
+	return (
+		<Grid>
+			{items.map(item => (
+				<Tile
+					key={item.key}
+					label={item.label}
+					uri={item.uri}
+					colors={colors}
+					selected={shown === item.key}
+					onPress={() => {
+						setShown(item.key)
+						saveLater(saveKey, () => onPick(item.key))
+					}}
+				/>
+			))}
+		</Grid>
+	)
+}
+
+// The grid of badges to show or hide.
+function BadgeGrid({
+	hidden,
+	level,
+	colors,
+	save,
+}: {
+	hidden: Record<string, boolean>
+	level: string | undefined
+	colors: Colors
+	save: (changes: Partial<Settings>) => void
+}) {
+	const [shown, setShown] = useLocal(hidden, JSON.stringify(hidden) + level)
+	return (
+		<Grid>
+			{BADGES.map(badge => {
+				const isNitro = badge.key === 'nitro'
+				return (
+					<Tile
+						key={badge.key}
+						label={isNitro ? 'Nitro\u200b' : badge.name}
+						uri={badge.url}
+						colors={colors}
+						selected={isNitro ? level !== 'none' && shown.nitro !== true : shown[badge.key] !== true}
+						onPress={() => {
+							const next = isNitro && level === 'none' ? { ...shown, nitro: false } : { ...shown, [badge.key]: shown[badge.key] !== true }
+							setShown(next)
+							saveLater('hidden', () => save(isNitro && level === 'none' ? { nitroLevel: 'opal', hidden: next } : { hidden: next }))
+						}}
+					/>
+				)
+			})}
+		</Grid>
+	)
+}
+
 // A section title with a short bar in the theme's accent colour beside it.
 function Heading({ text, colors }: { text: string; colors: Colors }) {
 	return (
@@ -268,58 +346,32 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 				</Design.TableRowGroup>
 
 				{levelHeading('PICK YOUR BADGES')}
-				<Grid>
-					{BADGES.map(badge => {
-						const isNitro = badge.key === 'nitro'
-						return (
-							<Tile
-								key={badge.key}
-								label={badge.key === 'nitro' ? 'Nitro\u200b' : badge.name}
-								uri={badge.url}
-								colors={colors}
-								selected={isNitro ? level !== 'none' && hidden.nitro !== true : hidden[badge.key] !== true}
-								onPress={() => {
-									if (isNitro && level === 'none') {
-										api.jsonStorage.set({ nitroLevel: 'opal', hidden: { ...hidden, nitro: false } })
-									} else {
-										api.jsonStorage.set({ hidden: { ...hidden, [badge.key]: hidden[badge.key] !== true } })
-									}
-								}}
-							/>
-						)
-					})}
-				</Grid>
+				<BadgeGrid hidden={hidden} level={level} colors={colors} save={changes => api.jsonStorage.set(changes)} />
 
 				{levelHeading('NITRO LEVEL')}
-				<Grid>
-					{NITRO_LEVELS.map(item => (
-						<Tile
-							key={item.key}
-							label={item.key === 'starter' ? 'Nitro\u200b' : item.label}
-							uri={item.key === 'none' ? undefined : `${iconBase}/nitro-${item.key}.png`}
-							colors={colors}
-							selected={level === item.key}
-							onPress={() => api.jsonStorage.set({ nitroLevel: item.key })}
-						/>
-					))}
-				</Grid>
+				<Picker
+					items={NITRO_LEVELS.map(item => ({
+						key: item.key,
+						label: item.key === 'starter' ? 'Nitro\u200b' : item.label,
+						uri: item.key === 'none' ? undefined : `${iconBase}/nitro-${item.key}.png`,
+					}))}
+					value={level ?? 'opal'}
+					saveKey="nitroLevel"
+					onPick={key => api.jsonStorage.set({ nitroLevel: key })}
+					colors={colors}
+				/>
 				{fieldsFor('nitro')}
 
 				{LEVEL_KEYS.map(key => (
 					<View key={key}>
 						{levelHeading(`${BADGES.find(item => item.key === key)?.name ?? key} LEVEL`.toUpperCase())}
-						<Grid>
-							{levelChoices(key).map(item => (
-								<Tile
-									key={item.key}
-									label={item.label}
-									uri={item.icon}
-									colors={colors}
-									selected={(settings.levels?.[key] && levelChoices(key).some(c => c.key === settings.levels?.[key]) ? settings.levels[key] : getLevel(key)) === item.key}
-									onPress={() => api.jsonStorage.set({ levels: { ...(settings.levels ?? {}), [key]: item.key } })}
-								/>
-							))}
-						</Grid>
+						<Picker
+							items={levelChoices(key).map(item => ({ key: item.key, label: item.label, uri: item.icon }))}
+							value={settings.levels?.[key] && levelChoices(key).some(c => c.key === settings.levels?.[key]) ? settings.levels[key] : getLevel(key)}
+							saveKey={`level-${key}`}
+							onPick={choice => api.jsonStorage.set({ levels: { ...((api.jsonStorage.cache as any)?.levels ?? {}), [key]: choice } })}
+							colors={colors}
+						/>
 						{fieldsFor(key)}
 					</View>
 				))}
