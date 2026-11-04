@@ -2037,7 +2037,7 @@
       ],
       "icon": "LinkIcon",
       "channels": {
-        "latest": "1.0.4"
+        "latest": "1.0.5"
       },
       "versions": {
         "1.0.0": {
@@ -2096,6 +2096,19 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.picture-links@1.0.4.zip",
           "sha256": "eb72dc4a6a7bdb7af84989961647415dafad41cd52e9a600fb398c634487363c",
           "size": 3664,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.0.5": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.picture-links@1.0.5.zip",
+          "sha256": "ca16e917400e0cb54725102ee4c4c5086cd61cc77c7a992b93fff0d492b7bdd7",
+          "size": 3761,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
