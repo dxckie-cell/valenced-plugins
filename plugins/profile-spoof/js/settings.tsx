@@ -5,7 +5,7 @@ import { Stores } from '@valenced/discord/flux'
 import { useState } from 'react'
 import { Image, Pressable, ScrollView, Text, View } from 'react-native'
 import { parseDate } from './identity'
-import { takeRequestedTab, type TabKey } from './tabs'
+
 import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, PLUGIN_VERSION, levelChoices, type Settings } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
@@ -99,6 +99,8 @@ function Tile({
 	)
 }
 
+type TabKey = 'badges' | 'account'
+
 const TABS: { key: TabKey; label: string }[] = [
 	{ key: 'badges', label: 'Badges' },
 	{ key: 'account', label: 'Account' },
@@ -115,7 +117,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 	const settings = (api.jsonStorage.use() ?? {}) as Partial<Settings>
 	const colors = useColors()
 	const [dateError, setDateError] = useState('')
-	const [tab, setTab] = useState<TabKey>(takeRequestedTab())
+	const [tab, setTab] = useState<TabKey>('badges')
 	const hidden = settings.hidden ?? {}
 	const texts = settings.texts ?? {}
 	const level = NITRO_LEVELS.some(item => item.key === settings.nitroLevel) ? settings.nitroLevel : 'opal'

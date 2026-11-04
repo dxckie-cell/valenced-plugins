@@ -1,6 +1,6 @@
 import { refreshUsers, startIdentity } from './identity'
 import { applyPatches } from './patches'
-import { addProfileRows } from './shortcut'
+import { addProfileRow } from './shortcut'
 import { SettingsComponent } from './settings'
 import {
 	DEFAULT_SETTINGS,
@@ -54,7 +54,7 @@ export default plugin<{ jsonStorage: Settings }>({
 		// The row in Valenced's settings that opens this plugin's settings.
 		try {
 			const { pluginSettings } = api as any
-			cleanup(addProfileRows(() => pluginSettings.openPluginSettings('dxckie.profile-spoof')))
+			cleanup(addProfileRow(() => pluginSettings.openPluginSettings('dxckie.profile-spoof')))
 		} catch (e) {
 			api.plugin.reportError(e)
 		}
