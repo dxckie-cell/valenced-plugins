@@ -124,27 +124,59 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 
 	const nitro = BADGES.find(badge => badge.key === 'nitro')
 	const iconBase = nitro ? nitro.url.replace(/\/[^/]*$/, '') : ''
-	const fieldBadges = BADGES.filter(badge => TEXT_FIELDS.some(field => field.badge === badge.key))
+	const otherFieldBadges = BADGES.filter(badge => badge.key !== 'nitro' && !(LEVEL_KEYS as readonly string[]).includes(badge.key) && TEXT_FIELDS.some(field => field.badge === badge.key))
+
+	const fieldsFor = (key: string) => {
+		const list = TEXT_FIELDS.filter(field => field.badge === key)
+		if (list.length === 0) return null
+		return (
+			<View style={{ paddingHorizontal: 16, paddingTop: 12, gap: 12 }}>
+				{list.map(field => (
+					<Design.TextInput
+						key={field.id}
+						label={field.label}
+						placeholder={field.placeholder}
+						size="md"
+						value={texts[field.id] ?? ''}
+						onChange={(value: string) => api.jsonStorage.set({ texts: { ...(settings.texts ?? {}), [field.id]: value } })}
+					/>
+				))}
+			</View>
+		)
+	}
+
+	const levelHeading = (text: string) => (
+		<Text style={{ color: colors.muted, fontSize: 12, fontWeight: '600', margin: 16, marginBottom: 8 }}>{text}</Text>
+	)
 
 	return (
 		<ScrollView keyboardShouldPersistTaps="handled">
 			<Page>
-				<View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 12 }}>
+				<View
+					style={{
+						flexDirection: 'row',
+						marginHorizontal: 16,
+						marginVertical: 12,
+						padding: 4,
+						borderRadius: 999,
+						backgroundColor: colors.card,
+					}}
+				>
 					{TABS.map(item => (
 						<Pressable
 							key={item.key}
-							accessibilityRole="button"
+							accessibilityRole="tab"
+							accessibilityState={{ selected: tab === item.key }}
 							onPress={() => setTab(item.key)}
 							style={{
+								flex: 1,
+								alignItems: 'center',
 								borderRadius: 999,
-								borderWidth: 1,
-								borderColor: tab === item.key ? colors.accent : colors.muted,
-								backgroundColor: tab === item.key ? colors.accent : colors.card,
-								paddingHorizontal: 18,
-								paddingVertical: 10,
+								backgroundColor: tab === item.key ? colors.accent : 'transparent',
+								paddingVertical: 9,
 							}}
 						>
-							<Text style={{ color: tab === item.key ? '#ffffff' : colors.text, fontSize: 15, fontWeight: '600' }}>{item.label}</Text>
+							<Text style={{ color: tab === item.key ? '#ffffff' : colors.muted, fontSize: 14, fontWeight: '600' }}>{item.label}</Text>
 						</Pressable>
 					))}
 				</View>
@@ -218,6 +250,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						/>
 					))}
 				</Grid>
+				{fieldsFor('nitro')}
 
 				{LEVEL_KEYS.map(key => (
 					<View key={key}>
@@ -236,26 +269,15 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 								/>
 							))}
 						</Grid>
+						{fieldsFor(key)}
 					</View>
 				))}
 
-				{fieldBadges.map(badge => (
-					<Design.TableRowGroup key={badge.key} title={`${badge.name} sheet`}>
-						<View style={{ padding: 12, gap: 12 }}>
-							{TEXT_FIELDS.filter(field => field.badge === badge.key).map(field => (
-								<Design.TextInput
-									key={field.id}
-									label={field.label}
-									placeholder={field.placeholder}
-									size="md"
-									value={texts[field.id] ?? ''}
-									onChange={(value: string) =>
-										api.jsonStorage.set({ texts: { ...(settings.texts ?? {}), [field.id]: value } })
-									}
-								/>
-							))}
-						</View>
-					</Design.TableRowGroup>
+				{otherFieldBadges.map(badge => (
+					<View key={badge.key}>
+						{levelHeading(`${badge.name} sheet`.toUpperCase())}
+						{fieldsFor(badge.key)}
+					</View>
 				))}
 
 				<Design.TableRowGroup title="Order">
