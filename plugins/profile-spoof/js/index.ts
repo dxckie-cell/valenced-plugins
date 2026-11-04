@@ -7,7 +7,6 @@ import {
 	notifyChange,
 	type Settings,
 	setStorage,
-	status,
 } from './state'
 
 export default plugin<{ jsonStorage: Settings }>({
@@ -23,7 +22,6 @@ export default plugin<{ jsonStorage: Settings }>({
 			return
 		}
 
-		status('loaded', 'loaded')
 
 		const { cleanup, jsonStorage, unscoped } = api
 

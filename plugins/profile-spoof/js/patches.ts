@@ -16,7 +16,6 @@ import {
 	SMALL_MARK,
 	SMALL_SCALE,
 	showsAll,
-	status,
 	subscribe,
 	usesNativeNitro,
 } from './state'
@@ -46,9 +45,7 @@ const WRAP_STYLE = { flexWrap: 'wrap', rowGap: 4, flexShrink: 1 }
 function patchKey(target: any, key: string, hook: Hook, cleanup: Register, what: string) {
 	try {
 		cleanup(instead(target, key, hook))
-		status(what, `${what}: patched`)
 	} catch (e) {
-		status(what, `${what}: could not patch ${key} (${(e as Error)?.message})`)
 	}
 }
 
@@ -65,11 +62,9 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 		}
 	}
 
-	status('current user', 'current user: waiting for Discord to load it')
 	cleanup(
 		getStore('UserStore', store => {
 			userStore = store
-			status('current user', 'current user: found')
 			patchKey(
 				store,
 				'getCurrentUser',
@@ -95,7 +90,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	)
 
 	// The hook that builds the badge list for a profile.
-	status('useBadges hook', 'useBadges hook: waiting for Discord to load it')
 	cleanup(
 		getModules(
 			withName('useBadges'),
@@ -125,8 +119,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 
 	// The profile's badge row, found by the props it gets so it keeps working when Discord
 	// renames its components. It gets `{ userId, badges, catalogBadges }`.
-	status('profile badge row', 'profile badge row: waiting for it to be drawn')
-	let rowSeen = false
 
 	// The badge whose sheet was asked for last. While it is one of ours, the tagline word that
 	// Discord fills in for your own badges ("Unlocked") is swapped for what it says on a profile
@@ -177,9 +169,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 
 		return children
 	}
-
-	const typeName = (type: any): string =>
-		type?.displayName ?? type?.name ?? type?.render?.name ?? type?.type?.name ?? 'unknown'
 
 	// True if any of the children is one of our badges. Looks one list deeper for mapped lists.
 	const holdsOurs = (children: unknown, depth = 0): boolean =>
@@ -236,12 +225,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	const doMove = (id: string, delta: -1 | 1) => {
 		const moved = moveBadge(id, delta)
 		lastMove = { id, at: Date.now() }
-		status(
-			'badge menu move',
-			moved
-				? `badge menu: moved ${id} ${delta < 0 ? 'left' : 'right'}`
-				: `badge menu: ${id} cannot go ${delta < 0 ? 'left' : 'right'} (end of the list, or not in it)`,
-		)
 	}
 
 	let pressToken = 0
@@ -278,7 +261,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 				setTimeout(() => {
 					if (pendingMove?.token !== token) return
 					pendingMove = undefined
-					status('badge menu move', `badge menu: ${label} pressed, but Discord did not ask to hide a badge`)
 				}, 1500)
 				return handler(...args)
 			}
@@ -321,8 +303,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 		return undefined
 	}
 
-	let wrapSeen = false
-	let iconSeen = false
 
 	const intercept = (args: any[]) => {
 		try {
@@ -381,10 +361,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			// One of our badges being drawn: give it the sharp icon.
 			const badge = findBadge(props.id ?? props.badgeId)
 			if (badge && typeof args[0] !== 'string') {
-				if (!iconSeen) {
-					iconSeen = true
-					status('badge icon', `badge icon: sharp icon used (${typeName(args[0])})`)
-				}
 				return [args[0], { ...props, source: { uri: badge.url } }, ...args.slice(2)]
 			}
 
@@ -395,10 +371,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			if (showsAll() && typeof args[0] !== 'string' && holdsOurs(props.children)) {
 				const flat: any = StyleSheet.flatten(props.style) ?? {}
 				if (flat.flexDirection === 'row' && flat.flexWrap !== 'wrap') {
-					if (!wrapSeen) {
-						wrapSeen = true
-						status('badge row wrap', `badge row wrap: wrapping (${typeName(args[0])})`)
-					}
 					return [args[0], { ...props, style: [props.style, WRAP_STYLE] }, ...args.slice(2)]
 				}
 			}
@@ -407,10 +379,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			if (!Array.isArray(props.badges) || !props.badges.every(isRecord)) return args
 			if (props.userId !== currentUserId()) return args
 
-			if (!rowSeen) {
-				rowSeen = true
-				status('profile badge row', 'profile badge row: patched')
-			}
 
 			const next: Record<string, unknown> = { ...props, badges: withBadges(props.badges) }
 			if (Array.isArray(props.catalogBadges)) {
@@ -484,7 +452,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	)
 
 	// The badge list on the edit profile screen ("Customise your badges").
-	status('badge list', 'badge list: waiting for Discord to load it')
 	cleanup(
 		getStore('BadgeDirectoryStore', directory => {
 			patchKey(
@@ -536,7 +503,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	// Long-press > "Hide Badge" / "Unhide Badge" on the edit profile screen. Our badges are
 	// hidden on this device only. Discord must never send their ids to its servers, so they
 	// are taken out of everything it is about to save.
-	status('hide and show', 'hide and show: waiting for Discord to load it')
 	let lastToggle = { id: '', at: 0 }
 
 	cleanup(
@@ -552,7 +518,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 					const ids = order.map(badgeIdOf).filter((id): id is string => Boolean(id))
 					if (ids.length > 1) {
 						setOrder(ids)
-						status('badge order', `badge order: saved ${ids.length} (${ids.slice(0, 3).join(', ')}...)`)
 					}
 
 					// Discord only gets the real badges, in the order they now have.
@@ -609,7 +574,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	)
 
 	// Discord looks badge ids up by their number or name, which our ids don't have.
-	status('badge ids', 'badge ids: waiting for Discord to load it')
 	cleanup(
 		getModules(withProps('resolveProfileBadgeId', 'toProfileBadgeLegacyId'), (module: any) => {
 			for (const key of ['resolveProfileBadgeId', 'toProfileBadgeLegacyId']) {
@@ -664,12 +628,10 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 	)
 
 	// Discord shows the first six badges on a profile. This lifts that limit.
-	status('badge limit', 'badge limit: waiting for Discord to load it')
 	cleanup(
 		getModules(withProps('MAX_DISPLAYED_PROFILE_BADGES', 'getProfileBadgeIconUrl'), (module: any) => {
 			const descriptor = Object.getOwnPropertyDescriptor(module, 'MAX_DISPLAYED_PROFILE_BADGES')
 			if (!descriptor || descriptor.configurable === false) {
-				status('badge limit', 'badge limit: cannot be changed in this Discord version')
 				return
 			}
 
@@ -681,7 +643,6 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 			})
 
 			cleanup(() => Object.defineProperty(module, 'MAX_DISPLAYED_PROFILE_BADGES', descriptor))
-			status('badge limit', 'badge limit: patched')
 		}),
 	)
 }

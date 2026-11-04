@@ -178,13 +178,6 @@ export function getNitroLevel(): string {
 // Give our Nitro badge the id of Discord's own Nitro badge, so Discord draws it (animated).
 export const usesNativeNitro = () => read().nativeNitro === true && getNitroLevel() !== 'none'
 
-// The id Discord gives a Nitro badge for the level. Discord draws a badge with one of these ids
-// its own way (animated) whatever picture it is given.
-export function nativeNitroId(): string {
-	const months = NITRO_MONTHS[getNitroLevel()] ?? 0
-	return months > 0 ? `premium_tenure_${months}_month_v2` : 'premium'
-}
-
 // The profile fields that make Discord treat you as a Nitro subscriber since the level's start.
 export function nativeNitroFields(): Record<string, unknown> {
 	const months = NITRO_MONTHS[getNitroLevel()] ?? 0
@@ -192,11 +185,6 @@ export function nativeNitroFields(): Record<string, unknown> {
 	since.setMonth(since.getMonth() - months)
 	since.setHours(12, 0, 0, 0)
 	return { premiumType: 2, premium_type: 2, premiumSince: since, premium_since: since.toISOString() }
-}
-
-export function nativeNitroLabel(): string {
-	const since = textOf('nitro.since')
-	return `Subscriber since ${since}`
 }
 
 export const hidesReal = () => read().hideReal === true
@@ -705,16 +693,16 @@ export function getReplaced(): string[] {
 }
 
 export function setReplaced(replaced: string[]) {
-	storage?.set({ replaced })?.catch?.((e: unknown) => status('settings', `could not save: ${(e as Error)?.message}`))
+	storage?.set({ replaced })?.catch?.(() => undefined)
 }
 
 export function setOrder(order: string[]) {
-	storage?.set({ order })?.catch?.((e: unknown) => status('order', `could not save: ${(e as Error)?.message}`))
+	storage?.set({ order })?.catch?.(() => undefined)
 }
 
 export function setHidden(key: string, value: boolean) {
 	const hidden = { ...(read().hidden ?? {}), [key]: value }
-	storage?.set({ hidden })?.catch?.((e: unknown) => status('settings', `could not save: ${(e as Error)?.message}`))
+	storage?.set({ hidden })?.catch?.(() => undefined)
 }
 
 // Lets Discord's hooks re-render when a setting changes.
@@ -741,13 +729,7 @@ export function notifyChange() {
 	}
 }
 
-// Progress notes go to the console only.
-export function status(key: string, message: string) {
-	console.log(`[badges-spoof] ${message}`)
-}
-
-export const PLUGIN_VERSION = '1.45.0'
-
+export const PLUGIN_VERSION = '1.45.1'
 
 // The Nitro badge's icon follows the level chosen in settings.
 const nitroBadge = BADGES.find(badge => badge.key === 'nitro')

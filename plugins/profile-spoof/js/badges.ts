@@ -13,7 +13,6 @@ import {
 	getArtVersion,
 	isHidden,
 	learnTiers,
-	status,
 	usesNativeNitro,
 } from './state'
 
