@@ -10,8 +10,19 @@ import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, PL
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
 
-// Theme colours from Discord, with plain fallbacks if they can't be read.
-function useColors() {
+// Theme colours from Discord, with plain fallbacks if they can't be read. Worked out once per theme,
+// since the settings screen draws many times while typing.
+let colorCache: { theme: unknown; value: ReturnType<typeof computeColors> } | undefined
+
+function currentTheme(): unknown {
+	try {
+		return (Stores as any).ThemeStore.theme
+	} catch {
+		return undefined
+	}
+}
+
+function computeColors() {
 	const read = (name: string): string | undefined => {
 		try {
 			const { colors, internal } = (Tokens as any).default
@@ -28,6 +39,26 @@ function useColors() {
 		// The colour Discord's own switches turn when on, so the outline follows the theme the same way.
 		accent: accentColor(read) ?? '#5865f2',
 	}
+}
+
+function useColors() {
+	const theme = currentTheme()
+	if (!colorCache || colorCache.theme !== theme) colorCache = { theme, value: computeColors() }
+	return colorCache.value
+}
+
+// Saves a typed value a moment after typing stops, so each key doesn't redraw Discord's profile.
+const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
+function saveLater(key: string, save: () => void) {
+	const pending = saveTimers.get(key)
+	if (pending) clearTimeout(pending)
+	saveTimers.set(
+		key,
+		setTimeout(() => {
+			saveTimers.delete(key)
+			save()
+		}, 400),
+	)
 }
 
 const ACCENT_PATTERNS = [/SWITCH.*(ACTIVE|ON|CHECKED|SELECTED)/, /TOGGLE.*(ACTIVE|ON|CHECKED|SELECTED)/, /^CONTROL_BRAND_FOREGROUND/]
@@ -50,7 +81,7 @@ function accentColor(read: (name: string) => string | undefined): string | undef
 	}
 }
 
-type Colors = ReturnType<typeof useColors>
+type Colors = ReturnType<typeof computeColors>
 
 function Tile({
 	label,
@@ -189,8 +220,10 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						label={field.label}
 						placeholder={field.placeholder}
 						size="md"
-						value={texts[field.id] ?? ''}
-						onChange={(value: string) => api.jsonStorage.set({ texts: { ...(settings.texts ?? {}), [field.id]: value } })}
+						defaultValue={texts[field.id] ?? ''}
+						onChange={(value: string) =>
+							saveLater(field.id, () => api.jsonStorage.set({ texts: { ...((api.jsonStorage.cache as any)?.texts ?? {}), [field.id]: value } }))
+						}
 					/>
 				))}
 			</View>
@@ -335,7 +368,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 								return
 							}
 							setDateError('')
-							api.jsonStorage.set({ date: value.trim() })
+							saveLater('date', () => api.jsonStorage.set({ date: value.trim() }))
 						}}
 					/>
 					<Design.TextInput
@@ -343,14 +376,14 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						placeholder="Leave empty to keep your real username"
 						size="md"
 						defaultValue={settings.username ?? ''}
-						onChange={(username: string) => api.jsonStorage.set({ username })}
+						onChange={(username: string) => saveLater('username', () => api.jsonStorage.set({ username }))}
 					/>
 					<Design.TextInput
 						label="Display name"
 						placeholder="Leave empty to keep your real display name"
 						size="md"
 						defaultValue={settings.displayName ?? ''}
-						onChange={(displayName: string) => api.jsonStorage.set({ displayName })}
+						onChange={(displayName: string) => saveLater('displayName', () => api.jsonStorage.set({ displayName }))}
 					/>
 				</View>
 
