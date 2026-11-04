@@ -22,7 +22,7 @@ export interface BadgeDefinition {
 
 export const ID_PREFIX = 'badges-spoof-'
 
-const ICON_BASE = 'https://raw.githubusercontent.com/dxckie-cell/valenced-plugins/main/plugins/badges-spoof/icons'
+const ICON_BASE = 'https://raw.githubusercontent.com/dxckie-cell/valenced-plugins/main/plugins/profile-spoof/icons'
 
 function define(
 	key: string,
@@ -739,7 +739,7 @@ export function status(key: string, message: string) {
 	console.log(`[badges-spoof] ${message}`)
 }
 
-export const PLUGIN_VERSION = '1.37.1'
+export const PLUGIN_VERSION = '1.37.2'
 
 
 // The Nitro badge's icon follows the level chosen in settings.
