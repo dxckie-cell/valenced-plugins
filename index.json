@@ -27,12 +27,12 @@
       }
     },
     "dxckie.badges-spoof": {
-      "name": "Badges Spoof",
-      "description": "Adds profile badges to your own profile, only on your device, and lets you hide or show them.",
+      "name": "Profile Spoof",
+      "description": "Changes your own profile, only on your device: badges, username, display name and Member Since date.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "AwardIcon",
       "channels": {
-        "latest": "1.37.0"
+        "latest": "1.37.1"
       },
       "versions": {
         "1.10.0": {
@@ -1092,6 +1092,19 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.badges-spoof@1.37.0.zip",
           "sha256": "920da264fca5e6a01d804720fc80131e9ead9bca6495635fcfc0ee647d737f2f",
           "size": 17682,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.37.1": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.badges-spoof@1.37.1.zip",
+          "sha256": "b3abdc9f0d4690c4f07a7646b6bdf53f78b22619c1c18b6026ffed613e4c4474",
+          "size": 17694,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
