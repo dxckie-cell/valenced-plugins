@@ -106,6 +106,16 @@ const TABS: { key: TabKey; label: string }[] = [
 	{ key: 'account', label: 'Account' },
 ]
 
+// A section title with a short bar in the theme's accent colour beside it.
+function Heading({ text, colors }: { text: string; colors: Colors }) {
+	return (
+		<View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 16, marginTop: 20, marginBottom: 10 }}>
+			<View style={{ width: 4, height: 18, borderRadius: 2, backgroundColor: colors.accent }} />
+			<Text style={{ color: colors.muted, fontSize: 13, fontWeight: '700' }}>{text}</Text>
+		</View>
+	)
+}
+
 const Grid = ({ children }: { children: React.ReactNode }) => (
 	<View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 16 }}>
 		{children}
@@ -145,9 +155,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 		)
 	}
 
-	const levelHeading = (text: string) => (
-		<Text style={{ color: colors.muted, fontSize: 12, fontWeight: '600', margin: 16, marginBottom: 8 }}>{text}</Text>
-	)
+	const levelHeading = (text: string) => <Heading text={text} colors={colors} />
 
 	return (
 		<ScrollView keyboardShouldPersistTaps="handled">
@@ -183,7 +191,8 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 
 				{tab === 'badges' && (
 					<>
-				<Design.TableRowGroup title="Badges">
+				{levelHeading('BADGES')}
+				<Design.TableRowGroup>
 					<Design.TableSwitchRow
 						label="Hide my real badges"
 						subLabel="Only show the badges picked below, not the ones your account really has."
@@ -210,9 +219,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					/>
 				</Design.TableRowGroup>
 
-				<Text style={{ color: colors.muted, fontSize: 12, fontWeight: '600', margin: 16, marginBottom: 8 }}>
-					PICK YOUR BADGES
-				</Text>
+				{levelHeading('PICK YOUR BADGES')}
 				<Grid>
 					{BADGES.map(badge => {
 						const isNitro = badge.key === 'nitro'
@@ -235,9 +242,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					})}
 				</Grid>
 
-				<Text style={{ color: colors.muted, fontSize: 12, fontWeight: '600', margin: 16, marginBottom: 8 }}>
-					NITRO LEVEL
-				</Text>
+				{levelHeading('NITRO LEVEL')}
 				<Grid>
 					{NITRO_LEVELS.map(item => (
 						<Tile
@@ -254,9 +259,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 
 				{LEVEL_KEYS.map(key => (
 					<View key={key}>
-						<Text style={{ color: colors.muted, fontSize: 12, fontWeight: '600', margin: 16, marginBottom: 8 }}>
-							{`${BADGES.find(item => item.key === key)?.name ?? key} LEVEL`.toUpperCase()}
-						</Text>
+						{levelHeading(`${BADGES.find(item => item.key === key)?.name ?? key} LEVEL`.toUpperCase())}
 						<Grid>
 							{levelChoices(key).map(item => (
 								<Tile
@@ -280,7 +283,8 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					</View>
 				))}
 
-				<Design.TableRowGroup title="Order">
+				{levelHeading('ORDER')}
+				<Design.TableRowGroup>
 					<Design.TableRow
 						label="Reset badge order"
 						subLabel="Go back to Discord's own order. Hold a badge in Edit Profile and use Go Left / Go Right."
@@ -293,7 +297,8 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 
 				{tab === 'account' && (
 					<>
-				<Design.TableRowGroup title="Account">
+				{levelHeading('ACCOUNT')}
+				<Design.TableRowGroup>
 					<Design.TableSwitchRow
 						label="Change my Member Since date"
 						subLabel="Only changes what you see on your own profile."
@@ -337,7 +342,8 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					</>
 				)}
 
-				<Design.TableRowGroup title="About">
+				{levelHeading('ABOUT')}
+				<Design.TableRowGroup>
 					<Design.TableRow label={`Profile Spoof ${PLUGIN_VERSION}`} />
 				</Design.TableRowGroup>
 			</Page>
