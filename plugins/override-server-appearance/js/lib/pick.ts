@@ -8,7 +8,25 @@ export async function pickImage(): Promise<string | undefined> {
 
 	try {
 		const result: any = await new Promise(done =>
-			manager.launchImageLibrary({ mediaType: 'photo', selectionLimit: 1, quality: 1, includeBase64: false }, done),
+			manager.launchImageLibrary({
+					// The same options Discord itself passes; the native side crashes if some are missing.
+					mediaType: 'photo',
+					videoQuality: 'high',
+					quality: 1,
+					maxWidth: 0,
+					maxHeight: 0,
+					includeBase64: false,
+					cameraType: 'back',
+					selectionLimit: 1,
+					saveToPhotos: false,
+					durationLimit: 0,
+					includeExtra: false,
+					presentationStyle: 'pageSheet',
+					selection: [],
+					useNewIOSPicker: true,
+					forceGetContent: false,
+					enableAndroidPhotoPicker: false,
+				}, done),
 		)
 		if (result?.errorCode || result?.errorMessage) throw new Error(result.errorMessage ?? result.errorCode)
 		const asset = result?.assets?.[0] ?? result
