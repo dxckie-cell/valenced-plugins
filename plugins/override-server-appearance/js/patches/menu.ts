@@ -9,6 +9,12 @@ import type { Storage } from '../lib/storage'
 /** Adds "Override Icon" to the menu that opens when you long-press a server in the server bar. */
 export function patchMenu(storage: JsonStorage<Storage>, openSettings: () => void): () => void {
 	let unpatch: (() => void) | undefined
+	const g = globalThis as any
+	const lookupIcon = (g.valenced ?? g.revenge)?.utils?.discord?.lookupGeneratedIconComponent
+	let icon: any
+	try {
+		icon = lookupIcon?.('ImageIcon')
+	} catch {}
 
 	// The server bar builds its long-press menu in a gesture handler and passes it to showContextMenu, so add the row there.
 	const cancel = withModule(
@@ -23,7 +29,8 @@ export function patchMenu(storage: JsonStorage<Storage>, openSettings: () => voi
 				if (Array.isArray(menu?.items) && typeof id === 'string' && /^\d{5,}$/.test(id)) {
 					menu.items.push(
 						{
-							IconComponent: () => createElement(TableRowAssetIcon, { name: 'ImageIcon' }),
+							// Discord's own icon component, like the other rows, so the size and spacing match.
+							IconComponent: icon ?? (() => createElement(TableRowAssetIcon, { name: 'ImageIcon' })),
 							label: 'Override Icon',
 							async action() {
 								try {
