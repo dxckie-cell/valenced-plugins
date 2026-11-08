@@ -122,6 +122,32 @@ class Pop extends Component<{ active: boolean; style?: object; children?: ReactN
 	}
 }
 
+// Fades and slides its content in when it first appears (a tab switch mounts a new one).
+class FadeIn extends Component<{ children?: ReactNode }> {
+	progress: any = (() => {
+		try {
+			return new Animated.Value(0)
+		} catch {
+			return null
+		}
+	})()
+
+	componentDidMount() {
+		try {
+			if (this.progress) Animated.timing(this.progress, { toValue: 1, duration: 220, useNativeDriver: true }).start()
+		} catch {
+			// Shows without the fade.
+		}
+	}
+
+	render() {
+		const { children } = this.props
+		if (!this.progress) return <View>{children}</View>
+		const lift = this.progress.interpolate({ inputRange: [0, 1], outputRange: [10, 0] })
+		return <AnimatedView style={{ opacity: this.progress, transform: [{ translateY: lift }] }}>{children}</AnimatedView>
+	}
+}
+
 function Tile({
 	label,
 	uri,
@@ -230,7 +256,7 @@ function Tabs({ colors, badges, account }: { colors: Colors; badges: React.React
 	return (
 		<>
 			<TabSwitcher tab={tab} onChange={setTab} colors={colors} />
-			{tab === 'badges' ? badges : account}
+			<FadeIn key={tab}>{tab === 'badges' ? badges : account}</FadeIn>
 		</>
 	)
 }
