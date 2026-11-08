@@ -1,6 +1,5 @@
 import { Alert } from 'react-native'
-import { lookupModule } from '@valenced/modules/finders'
-import { withProps } from '@valenced/modules/finders/filters'
+import { lookupModuleWithImportedPath } from '@valenced/discord/utils/modules/finders'
 import { patchAppearance } from './patches/appearance'
 import { patchMenu } from './patches/menu'
 import { DEFAULTS, type Storage } from './lib/storage'
@@ -18,8 +17,8 @@ export default plugin<{ jsonStorage: Storage }>({
 		api.cleanup(patchAppearance(api.jsonStorage))
 		api.cleanup(patchMenu(api.jsonStorage, () => {
 			// The plugin settings page opens inside Discord's settings screen, so open that first when coming from a server.
-			const found: any = lookupModule(withProps<any>('openUserSettings'))?.[0]
-			const open = (found?.default ?? found)?.openUserSettings
+			const found: any = lookupModuleWithImportedPath('modules/user_settings/core/native/openUserSettings.tsx')?.[0]
+			const open = found?.openUserSettings
 			const notes = [`openUserSettings: ${typeof open}`, `pluginSettings: ${typeof (api as any).pluginSettings}`]
 			try {
 				open?.()
