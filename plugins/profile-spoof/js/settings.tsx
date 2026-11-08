@@ -2,8 +2,8 @@ import Page from '@valenced/components/Page'
 import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
-import { useEffect, useRef, useState } from 'react'
-import { Animated, Image, Pressable, ScrollView, Text, View } from 'react-native'
+import { useState } from 'react'
+import { Image, Pressable, ScrollView, Text, View } from 'react-native'
 import { getConnections, platformLabel, PLATFORMS, type Connection } from './connections'
 import { parseDate } from './identity'
 
@@ -84,22 +84,17 @@ function accentColor(read: (name: string) => string | undefined): string | undef
 
 type Colors = ReturnType<typeof computeColors>
 
-// Springs a little bigger and back each time `active` turns on (not on first draw).
-function Pop({ active, style, children }: { active: boolean; style?: object; children: React.ReactNode }) {
-	const scale = useRef(new Animated.Value(1)).current
-	const first = useRef(true)
-	useEffect(() => {
-		if (first.current) {
-			first.current = false
-			return
-		}
-		if (active)
-			Animated.sequence([
-				Animated.spring(scale, { toValue: 1.12, stiffness: 600, damping: 14, mass: 0.5, useNativeDriver: true }),
-				Animated.spring(scale, { toValue: 1, stiffness: 400, damping: 18, mass: 0.5, useNativeDriver: true }),
-			]).start()
-	}, [active])
-	return <Animated.View style={[style, { transform: [{ scale }] }]}>{children}</Animated.View>
+// A quick pop on tap: a little bigger, then back in steps. Uses state only (Animated crashed here).
+function usePop(): [number, () => void] {
+	const [scale, setScale] = useState(1)
+	return [
+		scale,
+		() => {
+			setScale(1.12)
+			setTimeout(() => setScale(1.05), 90)
+			setTimeout(() => setScale(1), 180)
+		},
+	]
 }
 
 function Tile({
@@ -115,12 +110,16 @@ function Tile({
 	onPress: () => void
 	colors: Colors
 }) {
+	const [scale, pop] = usePop()
 	return (
-		<Pop active={selected} style={{ width: '31%' }}>
 		<Pressable
-			onPress={onPress}
+			onPress={() => {
+				if (!selected) pop()
+				onPress()
+			}}
 			style={{
-				width: '100%',
+				width: '31%',
+				transform: [{ scale }],
 				alignItems: 'center',
 				paddingVertical: 10,
 				paddingHorizontal: 4,
@@ -147,7 +146,6 @@ function Tile({
 				{label}
 			</Text>
 		</Pressable>
-		</Pop>
 	)
 }
 
@@ -157,6 +155,32 @@ const TABS: { key: TabKey; label: string }[] = [
 	{ key: 'badges', label: 'Badges' },
 	{ key: 'account', label: 'Account' },
 ]
+
+function TabButton({ item, active, onChange, colors }: { item: { key: TabKey; label: string }; active: boolean; onChange: (tab: TabKey) => void; colors: Colors }) {
+	const [scale, pop] = usePop()
+	return (
+		<Pressable
+			accessibilityRole="tab"
+			accessibilityState={{ selected: active }}
+			onPress={() => {
+				if (!active) pop()
+				onChange(item.key)
+			}}
+			style={{
+				flex: 1,
+				alignItems: 'center',
+				justifyContent: 'center',
+				borderRadius: 999,
+				paddingVertical: 12,
+				backgroundColor: active ? colors.accent : 'transparent',
+				elevation: active ? 2 : 0,
+				transform: [{ scale }],
+			}}
+		>
+			<Text style={{ color: active ? '#ffffff' : colors.muted, fontSize: 15, fontWeight: '700' }}>{item.label}</Text>
+		</Pressable>
+	)
+}
 
 // Two tabs on one rounded track, the chosen one a filled accent pill.
 function TabSwitcher({ tab, onChange, colors }: { tab: TabKey; onChange: (tab: TabKey) => void; colors: Colors }) {
@@ -174,29 +198,9 @@ function TabSwitcher({ tab, onChange, colors }: { tab: TabKey; onChange: (tab: T
 				backgroundColor: colors.card,
 			}}
 		>
-			{TABS.map(item => {
-				const active = tab === item.key
-				return (
-					<Pop key={item.key} active={active} style={{ flex: 1 }}>
-					<Pressable
-						accessibilityRole="tab"
-						accessibilityState={{ selected: active }}
-						onPress={() => onChange(item.key)}
-						style={{
-							flex: 1,
-							alignItems: 'center',
-							justifyContent: 'center',
-							borderRadius: 999,
-							paddingVertical: 12,
-							backgroundColor: active ? colors.accent : 'transparent',
-							elevation: active ? 2 : 0,
-						}}
-					>
-						<Text style={{ color: active ? '#ffffff' : colors.muted, fontSize: 15, fontWeight: '700' }}>{item.label}</Text>
-					</Pressable>
-					</Pop>
-				)
-			})}
+			{TABS.map(item => (
+				<TabButton key={item.key} item={item} active={tab === item.key} onChange={onChange} colors={colors} />
+			))}
 		</View>
 	)
 }
