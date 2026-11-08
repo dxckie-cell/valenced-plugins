@@ -205,6 +205,18 @@ function TabSwitcher({ tab, onChange, colors }: { tab: TabKey; onChange: (tab: T
 	)
 }
 
+// Holds the tab state, so a switch redraws only this and not the (unchanged) tab contents.
+function Tabs({ colors, badges, account }: { colors: Colors; badges: React.ReactNode; account: React.ReactNode }) {
+	const [tab, setTab] = useState<TabKey>('badges')
+	return (
+		<>
+			<TabSwitcher tab={tab} onChange={setTab} colors={colors} />
+			<View style={tab === 'badges' ? undefined : { display: 'none' }}>{badges}</View>
+			<View style={tab === 'account' ? undefined : { display: 'none' }}>{account}</View>
+		</>
+	)
+}
+
 // Keeps a value shown straight away when tapped, while the real save (which redraws Discord's profile)
 // happens a moment later. Follows `value` again whenever the saved value changes.
 function useLocal<T>(value: T, signature: string): [T, (next: T) => void] {
@@ -390,7 +402,6 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 	const settings = (api.jsonStorage.use() ?? {}) as Partial<Settings>
 	const colors = useColors()
 	const [dateError, setDateError] = useState('')
-	const [tab, setTab] = useState<TabKey>('badges')
 	const hidden = settings.hidden ?? {}
 	const texts = settings.texts ?? {}
 	const level = NITRO_LEVELS.some(item => item.key === settings.nitroLevel) ? settings.nitroLevel : 'opal'
@@ -422,12 +433,9 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 
 	const levelHeading = (text: string) => <Heading text={text} colors={colors} />
 
-	return (
-		<ScrollView keyboardShouldPersistTaps="handled">
-			<Page>
-				<TabSwitcher tab={tab} onChange={setTab} colors={colors} />
-
-				<View style={tab === 'badges' ? undefined : { display: 'none' }}>
+	// Built once per settings change, so switching tab does not redraw them.
+	const badgesView = (
+		<>
 				{levelHeading('BADGES')}
 				<Design.TableRowGroup>
 					<Design.TableSwitchRow
@@ -497,9 +505,11 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					/>
 				</Design.TableRowGroup>
 
-				</View>
+		</>
+	)
 
-				<View style={tab === 'account' ? undefined : { display: 'none' }}>
+	const accountView = (
+		<>
 				{levelHeading('ACCOUNT')}
 				<View style={{ padding: 12, gap: 12 }}>
 					<Design.TextInput
@@ -541,7 +551,13 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					onChange={connections => api.jsonStorage.set({ connections })}
 				/>
 
-				</View>
+		</>
+	)
+
+	return (
+		<ScrollView keyboardShouldPersistTaps="handled">
+			<Page>
+				<Tabs colors={colors} badges={badgesView} account={accountView} />
 
 				{levelHeading('ABOUT')}
 				<Design.TableRowGroup>
