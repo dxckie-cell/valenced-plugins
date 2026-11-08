@@ -19,24 +19,16 @@ export default plugin<{ jsonStorage: Storage }>({
 		const notesEarly: string[] = []
 		api.cleanup(patchMenu(api.jsonStorage, () => {
 			// The plugin settings page opens inside Discord's settings screen, so open that first when coming from a server.
-			// Discord only loads this module once settings are opened, so it has to be loaded here.
+			// Same call Discord's own openUserSettings makes: navigate to its settings screens.
 			let open: any
 			try {
-				const found: any = lookupModule(withProps<any>('openUserSettings'), { initialize: true } as any)?.[0]
-				open = (found?.default ?? found)?.openUserSettings
+				const root: any = lookupModule(withProps<any>('getRootNavigationRef'))?.[0]
+				const ref = (root?.default ?? root)?.getRootNavigationRef?.()
+				if (ref?.isReady?.()) open = () => ref.navigate('settings', 'OVERVIEW', { pop: true })
 			} catch (e: any) {
-				notesEarly.push(`lookup threw: ${e?.message}`)
+				notesEarly.push(`navigation lookup threw: ${e?.message}`)
 			}
-			// shortcut: module ID 7490 is only right for this Discord build; remove once the lookup above works
-			if (typeof open !== 'function') {
-				try {
-					open = (globalThis as any).__r?.(7490)?.openUserSettings
-					notesEarly.push('used module 7490')
-				} catch (e: any) {
-					notesEarly.push(`__r threw: ${e?.message}`)
-				}
-			}
-			const notes = [...notesEarly, `openUserSettings: ${typeof open}`, `pluginSettings: ${typeof (api as any).pluginSettings}`]
+			const notes = [...notesEarly, `navigate: ${typeof open}`, `pluginSettings: ${typeof (api as any).pluginSettings}`]
 			try {
 				open?.()
 			} catch (e: any) {
