@@ -10,7 +10,7 @@ import { lookupModuleWithImportedPath } from '@valenced/discord/utils/modules/fi
 export function withModule<T = any>(
 	path: string,
 	isReady: (mod: T) => boolean,
-	onModule: (mod: T) => void,
+	onModule: (mod: T, exports: any) => void,
 ): () => void {
 	let timer: ReturnType<typeof setTimeout> | undefined
 	let cancelled = false
@@ -22,7 +22,7 @@ export function withModule<T = any>(
 			const found = lookupModuleWithImportedPath(path) as any
 			if (Array.isArray(found)) {
 				const mod = (found[0]?.default ?? found[0]) as T
-				if (mod && isReady(mod)) return onModule(mod)
+				if (mod && isReady(mod)) return onModule(mod, found[0])
 			}
 		} catch {
 			// not ready yet

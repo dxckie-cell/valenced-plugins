@@ -80,7 +80,7 @@ export function patchAppearance(storage: JsonStorage<Storage>): () => void {
 	}
 
 	// A copy of a collection is kept per original, so the same input keeps giving the same output.
-	const signature = () => overrides().map(o => `${o.id}|${o.icon}|${o.banner}`).join(',')
+	const signature = () => overrides().map(o => `${o.id}|${+!!o.icon}|${+!!o.banner}`).join(',')
 	const collections = new WeakMap<object, { sig: string; value: any }>()
 
 	const decorateAll = (all: any, map: (all: any) => any) => {
