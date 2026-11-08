@@ -107,8 +107,8 @@ class Pop extends Component<{ active: boolean; style?: object; children?: ReactN
 		if (!this.props.active || prev.active || !this.scale) return
 		try {
 			Animated.sequence([
-				Animated.spring(this.scale, { toValue: 1.12, stiffness: 600, damping: 14, mass: 0.5, useNativeDriver: true }),
-				Animated.spring(this.scale, { toValue: 1, stiffness: 400, damping: 18, mass: 0.5, useNativeDriver: true }),
+				Animated.timing(this.scale, { toValue: 1.1, duration: 70, useNativeDriver: true }),
+				Animated.timing(this.scale, { toValue: 1, duration: 90, useNativeDriver: true }),
 			]).start()
 		} catch (error) {
 			animationError = String((error as Error)?.message ?? error)
@@ -134,7 +134,7 @@ class FadeIn extends Component<{ children?: ReactNode }> {
 
 	componentDidMount() {
 		try {
-			if (this.progress) Animated.timing(this.progress, { toValue: 1, duration: 220, useNativeDriver: true }).start()
+			if (this.progress) Animated.timing(this.progress, { toValue: 1, duration: 160, useNativeDriver: true }).start()
 		} catch {
 			// Shows without the fade.
 		}
