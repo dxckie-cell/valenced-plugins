@@ -1,7 +1,4 @@
-import TableRowAssetIcon from '@valenced/components/TableRowAssetIcon'
 import { instead } from '@valenced/patcher'
-import { createElement } from 'react'
-import { Alert } from 'react-native'
 import { withModule } from '../lib/modules'
 import type { JsonStorage } from '@valenced/json-storage'
 import type { Storage } from '../lib/storage'
@@ -11,15 +8,12 @@ export function patchMenu(storage: JsonStorage<Storage>, openSettings: () => voi
 	let unpatch: (() => void) | undefined
 	const g = globalThis as any
 	const lookupIcon = (g.valenced ?? g.revenge)?.utils?.discord?.lookupGeneratedIconComponent
-	let icon: any
-	try {
-		icon = lookupIcon?.('ImageIcon')
-	} catch {}
+	const icon = lookupIcon?.('ImageIcon')
 
 	// The server bar builds its long-press menu in a gesture handler and passes it to showContextMenu, so add the row there.
 	const cancel = withModule(
 		'design/components/ContextMenu/native/ContextMenuState.native.tsx',
-		(m: any) => typeof m?.showContextMenu === 'function' || typeof m === 'object',
+		(m: any) => typeof m?.showContextMenu === 'function',
 		(_, exports) => {
 			unpatch = instead(exports, 'showContextMenu', (args: any[], original: any) => {
 				const menu = args[0]
@@ -30,26 +24,16 @@ export function patchMenu(storage: JsonStorage<Storage>, openSettings: () => voi
 					menu.items.push(
 						{
 							// Discord's own icon component, like the other rows, so the size and spacing match.
-							IconComponent: icon ?? (() => createElement(TableRowAssetIcon, { name: 'ImageIcon' })),
+							IconComponent: icon,
 							label: 'Override Icon',
 							async action() {
-								try {
-									const overrides = storage.cache?.overrides ?? []
-									// The server's ID goes first in the list, so it is the first thing in settings.
-									if (!overrides.some(o => o.id === id)) {
-										await storage.set({ overrides: [{ id, icon: '', banner: '' }, ...overrides] })
-									}
-									// Wait until the menu has closed, or the settings page can open underneath it.
-									setTimeout(() => {
-										try {
-											openSettings()
-										} catch (e: any) {
-											Alert.alert('Could not open settings', String(e?.message ?? e))
-										}
-									}, 300)
-								} catch (e: any) {
-									Alert.alert('Override Icon failed', String(e?.message ?? e))
+								const overrides = storage.cache?.overrides ?? []
+								// The server's ID goes first in the list, so it is the first thing in settings.
+								if (!overrides.some(o => o.id === id)) {
+									await storage.set({ overrides: [{ id, icon: '', banner: '' }, ...overrides] })
 								}
+								// Wait until the menu has closed, or the settings page can open underneath it.
+								setTimeout(openSettings, 300)
 							},
 						},
 					)

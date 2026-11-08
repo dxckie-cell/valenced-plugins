@@ -48,7 +48,7 @@ export async function pickImage(): Promise<string | undefined> {
 		const name = asset.fileName ?? asset.name ?? 'image.jpg'
 		const form = new FormData()
 		form.append('reqtype', 'fileupload')
-		form.append('fileToUpload', { uri: uri, name, type: asset.type ?? asset.mimeType ?? 'image/jpeg' } as any)
+		form.append('fileToUpload', { uri, name, type: asset.type ?? asset.mimeType ?? 'image/jpeg' } as any)
 
 		const response = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: form })
 		const text = (await response.text()).trim()
