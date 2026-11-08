@@ -2,8 +2,8 @@ import Page from '@valenced/components/Page'
 import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
-import { useState } from 'react'
-import { Image, Pressable, ScrollView, Text, View } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { Animated, Image, Pressable, ScrollView, Text, View } from 'react-native'
 import { getConnections, platformLabel, PLATFORMS, type Connection } from './connections'
 import { parseDate } from './identity'
 
@@ -84,6 +84,24 @@ function accentColor(read: (name: string) => string | undefined): string | undef
 
 type Colors = ReturnType<typeof computeColors>
 
+// Springs a little bigger and back each time `active` turns on (not on first draw).
+function Pop({ active, style, children }: { active: boolean; style?: object; children: React.ReactNode }) {
+	const scale = useRef(new Animated.Value(1)).current
+	const first = useRef(true)
+	useEffect(() => {
+		if (first.current) {
+			first.current = false
+			return
+		}
+		if (active)
+			Animated.sequence([
+				Animated.spring(scale, { toValue: 1.12, stiffness: 600, damping: 14, mass: 0.5, useNativeDriver: true }),
+				Animated.spring(scale, { toValue: 1, stiffness: 400, damping: 18, mass: 0.5, useNativeDriver: true }),
+			]).start()
+	}, [active])
+	return <Animated.View style={[style, { transform: [{ scale }] }]}>{children}</Animated.View>
+}
+
 function Tile({
 	label,
 	uri,
@@ -98,10 +116,11 @@ function Tile({
 	colors: Colors
 }) {
 	return (
+		<Pop active={selected} style={{ width: '31%' }}>
 		<Pressable
 			onPress={onPress}
 			style={{
-				width: '31%',
+				width: '100%',
 				alignItems: 'center',
 				paddingVertical: 10,
 				paddingHorizontal: 4,
@@ -128,6 +147,7 @@ function Tile({
 				{label}
 			</Text>
 		</Pressable>
+		</Pop>
 	)
 }
 
@@ -157,8 +177,8 @@ function TabSwitcher({ tab, onChange, colors }: { tab: TabKey; onChange: (tab: T
 			{TABS.map(item => {
 				const active = tab === item.key
 				return (
+					<Pop key={item.key} active={active} style={{ flex: 1 }}>
 					<Pressable
-						key={item.key}
 						accessibilityRole="tab"
 						accessibilityState={{ selected: active }}
 						onPress={() => onChange(item.key)}
@@ -174,6 +194,7 @@ function TabSwitcher({ tab, onChange, colors }: { tab: TabKey; onChange: (tab: T
 					>
 						<Text style={{ color: active ? '#ffffff' : colors.muted, fontSize: 15, fontWeight: '700' }}>{item.label}</Text>
 					</Pressable>
+					</Pop>
 				)
 			})}
 		</View>
