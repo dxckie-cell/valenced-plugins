@@ -31,13 +31,13 @@ export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storag
 					<TextInput
 						label="Icon URL"
 						placeholder="https://... (optional)"
-						value={entry.icon?.startsWith('data:') ? 'Image from this device' : entry.icon}
+						value={entry.icon}
 						onChange={(v: string) => edit(index, { icon: v })}
 					/>
 					<View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
 						<Button
 							variant="secondary"
-							text="Choose icon image from device"
+							text="Upload icon from my photos"
 							onPress={async () => {
 								const image = await pickImage()
 								if (image) edit(index, { icon: image })
@@ -47,13 +47,13 @@ export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storag
 					<TextInput
 						label="Banner URL"
 						placeholder="https://... (optional)"
-						value={entry.banner?.startsWith('data:') ? 'Image from this device' : entry.banner}
+						value={entry.banner}
 						onChange={(v: string) => edit(index, { banner: v })}
 					/>
 					<View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
 						<Button
 							variant="secondary"
-							text="Choose banner image from device"
+							text="Upload banner from my photos"
 							onPress={async () => {
 								const image = await pickImage()
 								if (image) edit(index, { banner: image })
