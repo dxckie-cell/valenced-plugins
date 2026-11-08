@@ -2,7 +2,7 @@ import Page from '@valenced/components/Page'
 import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
-import { useEffect, useRef, useState } from 'react'
+import { Component, useState, type ReactNode } from 'react'
 import { Animated, Image, Pressable, ScrollView, Text, View } from 'react-native'
 import { getConnections, platformLabel, PLATFORMS, type Connection } from './connections'
 import { parseDate } from './identity'
@@ -88,35 +88,35 @@ type Colors = ReturnType<typeof computeColors>
 // it is created inside try/catch and the page works without it.
 let animationError = ''
 
-// Springs a little bigger and back each time `active` turns on (not on first draw).
-function Pop({ active, style, children }: { active: boolean; style?: object; children: React.ReactNode }) {
-	const scale = useRef<any>(undefined)
-	if (scale.current === undefined) {
+// Springs a little bigger and back each time `active` turns on. A class, with no hooks: hooks plus
+// Animated crashed this page. Animated is created inside try/catch so the page works without it.
+class Pop extends Component<{ active: boolean; style?: object; children?: ReactNode }> {
+	scale: any = (() => {
 		try {
-			scale.current = new Animated.Value(1)
+			return new Animated.Value(1)
 		} catch (error) {
-			scale.current = null
 			animationError = String((error as Error)?.message ?? error)
+			return null
 		}
-	}
-	const first = useRef(true)
-	useEffect(() => {
-		if (first.current) {
-			first.current = false
-			return
-		}
-		if (!active || !scale.current) return
+	})()
+
+	componentDidUpdate(prev: { active: boolean }) {
+		if (!this.props.active || prev.active || !this.scale) return
 		try {
 			Animated.sequence([
-				Animated.spring(scale.current, { toValue: 1.12, stiffness: 600, damping: 14, mass: 0.5, useNativeDriver: true }),
-				Animated.spring(scale.current, { toValue: 1, stiffness: 400, damping: 18, mass: 0.5, useNativeDriver: true }),
+				Animated.spring(this.scale, { toValue: 1.12, stiffness: 600, damping: 14, mass: 0.5, useNativeDriver: true }),
+				Animated.spring(this.scale, { toValue: 1, stiffness: 400, damping: 18, mass: 0.5, useNativeDriver: true }),
 			]).start()
 		} catch (error) {
 			animationError = String((error as Error)?.message ?? error)
 		}
-	}, [active])
-	if (!scale.current) return <View style={style}>{children}</View>
-	return <Animated.View style={[style, { transform: [{ scale: scale.current }] }]}>{children}</Animated.View>
+	}
+
+	render() {
+		const { style, children } = this.props
+		if (!this.scale) return <View style={style}>{children}</View>
+		return <Animated.View style={[style, { transform: [{ scale: this.scale }] }]}>{children}</Animated.View>
+	}
 }
 
 function Tile({
