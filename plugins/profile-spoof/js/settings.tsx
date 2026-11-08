@@ -88,6 +88,9 @@ type Colors = ReturnType<typeof computeColors>
 // it is created inside try/catch and the page works without it.
 let animationError = ''
 
+// Not <Animated.View>: the plugin build rewrites the `View` after the dot too, which broke the page.
+const AnimatedView = Animated.View
+
 // Springs a little bigger and back each time `active` turns on. A class, with no hooks: hooks plus
 // Animated crashed this page. Animated is created inside try/catch so the page works without it.
 class Pop extends Component<{ active: boolean; style?: object; children?: ReactNode }> {
@@ -115,7 +118,7 @@ class Pop extends Component<{ active: boolean; style?: object; children?: ReactN
 	render() {
 		const { style, children } = this.props
 		if (!this.scale) return <View style={style}>{children}</View>
-		return <Animated.View style={[style, { transform: [{ scale: this.scale }] }]}>{children}</Animated.View>
+		return <AnimatedView style={[style, { transform: [{ scale: this.scale }] }]}>{children}</AnimatedView>
 	}
 }
 
