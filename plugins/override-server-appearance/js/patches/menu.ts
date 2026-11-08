@@ -18,10 +18,10 @@ export function patchMenu(storage: JsonStorage<Storage>, openSettings: () => voi
 			unpatch = instead(exports, 'showContextMenu', (args: any[], original: any) => {
 				const menu = args[0]
 				const id = menu?.key
+				// push, not replace: Discord picks the tapped row from its own copy of this same array.
 				// Servers have a numeric ID as key; folders have none.
 				if (Array.isArray(menu?.items) && typeof id === 'string' && /^\d{5,}$/.test(id)) {
-					menu.items = [
-						...menu.items,
+					menu.items.push(
 						{
 							IconComponent: () => createElement(TableRowAssetIcon, { name: 'ImageIcon' }),
 							label: 'Override Icon',
@@ -45,7 +45,7 @@ export function patchMenu(storage: JsonStorage<Storage>, openSettings: () => voi
 								}
 							},
 						},
-					]
+					)
 				}
 				return original(...args)
 			})
