@@ -167,6 +167,7 @@ function Tile({
 			onPress={onPress}
 			style={{
 				width: '100%',
+				flexGrow: 1,
 				alignItems: 'center',
 				paddingVertical: 10,
 				paddingHorizontal: 4,
