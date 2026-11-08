@@ -1,3 +1,4 @@
+import { Alert } from 'react-native'
 import { lookupModule } from '@valenced/modules/finders'
 import { withProps } from '@valenced/modules/finders/filters'
 import { patchAppearance } from './patches/appearance'
@@ -17,9 +18,23 @@ export default plugin<{ jsonStorage: Storage }>({
 		api.cleanup(patchAppearance(api.jsonStorage))
 		api.cleanup(patchMenu(api.jsonStorage, () => {
 			// The plugin settings page opens inside Discord's settings screen, so open that first when coming from a server.
-			const userSettings: any = lookupModule(withProps<any>('openUserSettings'))?.[0]
-			;(userSettings?.default ?? userSettings)?.openUserSettings?.()
-			setTimeout(() => (api as any).pluginSettings.openPluginSettings('dxckie.override-server-appearance'), 400)
+			const found: any = lookupModule(withProps<any>('openUserSettings'))?.[0]
+			const open = (found?.default ?? found)?.openUserSettings
+			const notes = [`openUserSettings: ${typeof open}`, `pluginSettings: ${typeof (api as any).pluginSettings}`]
+			try {
+				open?.()
+			} catch (e: any) {
+				notes.push(`openUserSettings threw: ${e?.message}`)
+			}
+			setTimeout(() => {
+				try {
+					;(api as any).pluginSettings.openPluginSettings('dxckie.override-server-appearance')
+				} catch (e: any) {
+					notes.push(`openPluginSettings threw: ${e?.message}`)
+				}
+				// shortcut: temporary diagnostics, remove once the row opens settings
+				Alert.alert('Override Icon debug', notes.join('\n'))
+			}, 400)
 		}))
 	},
 
