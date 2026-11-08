@@ -427,8 +427,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 			<Page>
 				<TabSwitcher tab={tab} onChange={setTab} colors={colors} />
 
-				{tab === 'badges' && (
-					<>
+				<View style={tab === 'badges' ? undefined : { display: 'none' }}>
 				{levelHeading('BADGES')}
 				<Design.TableRowGroup>
 					<Design.TableSwitchRow
@@ -498,11 +497,9 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					/>
 				</Design.TableRowGroup>
 
-					</>
-				)}
+				</View>
 
-				{tab === 'account' && (
-					<>
+				<View style={tab === 'account' ? undefined : { display: 'none' }}>
 				{levelHeading('ACCOUNT')}
 				<View style={{ padding: 12, gap: 12 }}>
 					<Design.TextInput
@@ -544,8 +541,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 					onChange={connections => api.jsonStorage.set({ connections })}
 				/>
 
-					</>
-				)}
+				</View>
 
 				{levelHeading('ABOUT')}
 				<Design.TableRowGroup>
