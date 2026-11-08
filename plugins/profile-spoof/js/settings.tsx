@@ -3,7 +3,7 @@ import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
 import { useState } from 'react'
-import { Image, Pressable, ScrollView, Text, View } from 'react-native'
+import { Image, LayoutAnimation, Pressable, ScrollView, Text, View } from 'react-native'
 import { getConnections, platformLabel, PLATFORMS, type Connection } from './connections'
 import { parseDate } from './identity'
 
@@ -84,18 +84,8 @@ function accentColor(read: (name: string) => string | undefined): string | undef
 
 type Colors = ReturnType<typeof computeColors>
 
-// A quick pop on tap: a little bigger, then back in steps. Uses state only (Animated crashed here).
-function usePop(): [number, () => void] {
-	const [scale, setScale] = useState(1)
-	return [
-		scale,
-		() => {
-			setScale(1.12)
-			setTimeout(() => setScale(1.05), 90)
-			setTimeout(() => setScale(1), 180)
-		},
-	]
-}
+// Smooths the next layout change natively, as Multi RPC does (no Animated, which crashed here).
+const smooth = () => LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
 
 function Tile({
 	label,
@@ -110,16 +100,14 @@ function Tile({
 	onPress: () => void
 	colors: Colors
 }) {
-	const [scale, pop] = usePop()
 	return (
 		<Pressable
 			onPress={() => {
-				if (!selected) pop()
+				if (!selected) smooth()
 				onPress()
 			}}
 			style={{
 				width: '31%',
-				transform: [{ scale }],
 				alignItems: 'center',
 				paddingVertical: 10,
 				paddingHorizontal: 4,
@@ -157,13 +145,12 @@ const TABS: { key: TabKey; label: string }[] = [
 ]
 
 function TabButton({ item, active, onChange, colors }: { item: { key: TabKey; label: string }; active: boolean; onChange: (tab: TabKey) => void; colors: Colors }) {
-	const [scale, pop] = usePop()
 	return (
 		<Pressable
 			accessibilityRole="tab"
 			accessibilityState={{ selected: active }}
 			onPress={() => {
-				if (!active) pop()
+				if (!active) smooth()
 				onChange(item.key)
 			}}
 			style={{
@@ -174,7 +161,6 @@ function TabButton({ item, active, onChange, colors }: { item: { key: TabKey; la
 				paddingVertical: 12,
 				backgroundColor: active ? colors.accent : 'transparent',
 				elevation: active ? 2 : 0,
-				transform: [{ scale }],
 			}}
 		>
 			<Text style={{ color: active ? '#ffffff' : colors.muted, fontSize: 15, fontWeight: '700' }}>{item.label}</Text>
