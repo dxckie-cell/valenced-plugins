@@ -1,5 +1,6 @@
 import { Alert } from 'react-native'
-import { withModule } from './lib/modules'
+import { lookupModule } from '@valenced/modules/finders'
+import { withProps } from '@valenced/modules/finders/filters'
 import { patchAppearance } from './patches/appearance'
 import { patchMenu } from './patches/menu'
 import { DEFAULTS, type Storage } from './lib/storage'
@@ -15,19 +16,27 @@ export default plugin<{ jsonStorage: Storage }>({
 		// The saved overrides load asynchronously, so wait for them before Discord draws any server.
 		await api.jsonStorage.get().catch(() => {})
 		api.cleanup(patchAppearance(api.jsonStorage))
-		// Looked up like the other Discord modules: right after startup its exports can still be empty.
-		let openUserSettings: (() => void) | undefined
-		api.cleanup(
-			withModule(
-				'modules/user_settings/core/native/openUserSettings.tsx',
-				(m: any) => typeof m?.openUserSettings === 'function',
-				(m: any) => (openUserSettings = m.openUserSettings),
-			),
-		)
+		const notesEarly: string[] = []
 		api.cleanup(patchMenu(api.jsonStorage, () => {
 			// The plugin settings page opens inside Discord's settings screen, so open that first when coming from a server.
-			const open = openUserSettings
-			const notes = [`openUserSettings: ${typeof open}`, `pluginSettings: ${typeof (api as any).pluginSettings}`]
+			// Discord only loads this module once settings are opened, so it has to be loaded here.
+			let open: any
+			try {
+				const found: any = lookupModule(withProps<any>('openUserSettings'), { initialize: true } as any)?.[0]
+				open = (found?.default ?? found)?.openUserSettings
+			} catch (e: any) {
+				notesEarly.push(`lookup threw: ${e?.message}`)
+			}
+			// shortcut: module ID 7490 is only right for this Discord build; remove once the lookup above works
+			if (typeof open !== 'function') {
+				try {
+					open = (globalThis as any).__r?.(7490)?.openUserSettings
+					notesEarly.push('used module 7490')
+				} catch (e: any) {
+					notesEarly.push(`__r threw: ${e?.message}`)
+				}
+			}
+			const notes = [...notesEarly, `openUserSettings: ${typeof open}`, `pluginSettings: ${typeof (api as any).pluginSettings}`]
 			try {
 				open?.()
 			} catch (e: any) {
