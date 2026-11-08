@@ -19,7 +19,7 @@ export default plugin<{ jsonStorage: Storage }>({
 			// Same call Discord's own openUserSettings makes: navigate to its settings screens.
 			const root: any = lookupModule(withProps<any>('getRootNavigationRef'))?.[0]
 			;(root?.default ?? root)?.getRootNavigationRef?.()?.navigate('settings', 'OVERVIEW', { pop: true })
-			setTimeout(() => (api as any).pluginSettings.openPluginSettings('dxckie.override-server-appearance'), 400)
+			setTimeout(() => (api as any).pluginSettings.openPluginSettings('dxckie.override-server-appearance'), 50)
 		}))
 	},
 
