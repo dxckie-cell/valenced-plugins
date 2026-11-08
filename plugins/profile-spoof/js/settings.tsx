@@ -7,7 +7,7 @@ import { Animated, Image, Pressable, ScrollView, Text, View } from 'react-native
 import { getConnections, platformLabel, PLATFORMS, type Connection } from './connections'
 import { parseDate } from './identity'
 
-import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, PLUGIN_VERSION, levelChoices, type Settings } from './state'
+import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, levelChoices, type Settings } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
 
@@ -602,11 +602,6 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 		<ScrollView keyboardShouldPersistTaps="handled">
 			<Page>
 				<Tabs colors={colors} badges={badgesView} account={accountView} />
-
-				{levelHeading('ABOUT')}
-				<Design.TableRowGroup>
-					<Design.TableRow label={`Profile Spoof ${PLUGIN_VERSION}`} subLabel={animationError ? `Animation off: ${animationError}` : undefined} />
-				</Design.TableRowGroup>
 			</Page>
 		</ScrollView>
 	)
