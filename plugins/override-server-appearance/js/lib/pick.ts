@@ -1,4 +1,15 @@
+import { ToastActionCreators } from '@valenced/discord/actions'
 import { Alert, NativeModules } from 'react-native'
+
+function toast(text: string) {
+	try {
+		const creators = ToastActionCreators as any
+		if (typeof creators.openMana === 'function') creators.openMana('OverrideServerAppearanceToast', { text })
+		else creators.open({ key: 'OverrideServerAppearanceToast', content: text }, { text })
+	} catch {
+		/* a missing toast must never stop the upload */
+	}
+}
 
 /** Lets the user pick a photo with Discord's own image picker, uploads it to catbox.moe and returns the link. */
 export async function pickImage(): Promise<string | undefined> {
@@ -33,6 +44,7 @@ export async function pickImage(): Promise<string | undefined> {
 		const uri: string | undefined = asset?.uri ?? asset?.path
 		if (!uri || result?.didCancel || result?.cancelled) return
 
+		toast('Uploading...')
 		const name = asset.fileName ?? asset.name ?? 'image.jpg'
 		const form = new FormData()
 		form.append('reqtype', 'fileupload')
