@@ -2,8 +2,8 @@ import Page from '@valenced/components/Page'
 import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
-import { useState } from 'react'
-import { Image, LayoutAnimation, Pressable, ScrollView, Text, UIManager, View } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { Animated, Image, Pressable, ScrollView, Text, View } from 'react-native'
 import { getConnections, platformLabel, PLATFORMS, type Connection } from './connections'
 import { parseDate } from './identity'
 
@@ -84,14 +84,39 @@ function accentColor(read: (name: string) => string | undefined): string | undef
 
 type Colors = ReturnType<typeof computeColors>
 
-// Smooths the next layout change natively, as Multi RPC does (no Animated, which crashed here).
-const smooth = () => {
-	try {
-		UIManager.setLayoutAnimationEnabledExperimental?.(true)
-	} catch {
-		// Not needed on every version.
+// Why the animation is off, if it is (shown under About). Animated crashed this page before, so
+// it is created inside try/catch and the page works without it.
+let animationError = ''
+
+// Springs a little bigger and back each time `active` turns on (not on first draw).
+function Pop({ active, style, children }: { active: boolean; style?: object; children: React.ReactNode }) {
+	const scale = useRef<any>(undefined)
+	if (scale.current === undefined) {
+		try {
+			scale.current = new Animated.Value(1)
+		} catch (error) {
+			scale.current = null
+			animationError = String((error as Error)?.message ?? error)
+		}
 	}
-	LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+	const first = useRef(true)
+	useEffect(() => {
+		if (first.current) {
+			first.current = false
+			return
+		}
+		if (!active || !scale.current) return
+		try {
+			Animated.sequence([
+				Animated.spring(scale.current, { toValue: 1.12, stiffness: 600, damping: 14, mass: 0.5, useNativeDriver: true }),
+				Animated.spring(scale.current, { toValue: 1, stiffness: 400, damping: 18, mass: 0.5, useNativeDriver: true }),
+			]).start()
+		} catch (error) {
+			animationError = String((error as Error)?.message ?? error)
+		}
+	}, [active])
+	if (!scale.current) return <View style={style}>{children}</View>
+	return <Animated.View style={[style, { transform: [{ scale: scale.current }] }]}>{children}</Animated.View>
 }
 
 function Tile({
@@ -108,13 +133,11 @@ function Tile({
 	colors: Colors
 }) {
 	return (
+		<Pop active={selected} style={{ width: '31%' }}>
 		<Pressable
-			onPress={() => {
-				if (!selected) smooth()
-				onPress()
-			}}
+			onPress={onPress}
 			style={{
-				width: '31%',
+				width: '100%',
 				alignItems: 'center',
 				paddingVertical: 10,
 				paddingHorizontal: 4,
@@ -141,6 +164,7 @@ function Tile({
 				{label}
 			</Text>
 		</Pressable>
+		</Pop>
 	)
 }
 
@@ -153,13 +177,11 @@ const TABS: { key: TabKey; label: string }[] = [
 
 function TabButton({ item, active, onChange, colors }: { item: { key: TabKey; label: string }; active: boolean; onChange: (tab: TabKey) => void; colors: Colors }) {
 	return (
+		<Pop active={active} style={{ flex: 1 }}>
 		<Pressable
 			accessibilityRole="tab"
 			accessibilityState={{ selected: active }}
-			onPress={() => {
-				if (!active) smooth()
-				onChange(item.key)
-			}}
+			onPress={() => onChange(item.key)}
 			style={{
 				flex: 1,
 				alignItems: 'center',
@@ -172,6 +194,7 @@ function TabButton({ item, active, onChange, colors }: { item: { key: TabKey; la
 		>
 			<Text style={{ color: active ? '#ffffff' : colors.muted, fontSize: 15, fontWeight: '700' }}>{item.label}</Text>
 		</Pressable>
+		</Pop>
 	)
 }
 
@@ -553,7 +576,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 
 				{levelHeading('ABOUT')}
 				<Design.TableRowGroup>
-					<Design.TableRow label={`Profile Spoof ${PLUGIN_VERSION}`} />
+					<Design.TableRow label={`Profile Spoof ${PLUGIN_VERSION}`} subLabel={animationError ? `Animation off: ${animationError}` : undefined} />
 				</Design.TableRowGroup>
 			</Page>
 		</ScrollView>
