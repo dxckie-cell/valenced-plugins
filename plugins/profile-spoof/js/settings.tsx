@@ -3,7 +3,7 @@ import { Tokens } from '@valenced/discord/common/tokens'
 import { Design } from '@valenced/discord/design'
 import { Stores } from '@valenced/discord/flux'
 import { useState } from 'react'
-import { Image, LayoutAnimation, Pressable, ScrollView, Text, View } from 'react-native'
+import { Image, LayoutAnimation, Pressable, ScrollView, Text, UIManager, View } from 'react-native'
 import { getConnections, platformLabel, PLATFORMS, type Connection } from './connections'
 import { parseDate } from './identity'
 
@@ -85,7 +85,14 @@ function accentColor(read: (name: string) => string | undefined): string | undef
 type Colors = ReturnType<typeof computeColors>
 
 // Smooths the next layout change natively, as Multi RPC does (no Animated, which crashed here).
-const smooth = () => LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+const smooth = () => {
+	try {
+		UIManager.setLayoutAnimationEnabledExperimental?.(true)
+	} catch {
+		// Not needed on every version.
+	}
+	LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+}
 
 function Tile({
 	label,
@@ -197,8 +204,7 @@ function Tabs({ colors, badges, account }: { colors: Colors; badges: React.React
 	return (
 		<>
 			<TabSwitcher tab={tab} onChange={setTab} colors={colors} />
-			<View style={tab === 'badges' ? undefined : { display: 'none' }}>{badges}</View>
-			<View style={tab === 'account' ? undefined : { display: 'none' }}>{account}</View>
+			{tab === 'badges' ? badges : account}
 		</>
 	)
 }
