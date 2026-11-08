@@ -7,8 +7,18 @@ const MAX_LENGTH = 2_000_000
 
 /** Lets the user pick an image from their device and returns it as a data URL (the image itself, not a link). */
 export async function pickImage(): Promise<string | undefined> {
-	const legacy: any = lookupModule(withProps<any>('pickSingle', 'isCancel'))?.[0]
-	const modern: any = lookupModule(withProps<any>('pick', 'saveDocuments'))?.[0]
+	// Discord may not have loaded the picker yet, so ask for it to be loaded if it isn't.
+	const find = (...props: string[]): any => {
+		const filter = withProps<any>(...props)
+		let found: any
+		try {
+			found = lookupModule(filter)?.[0] ?? lookupModule(filter, { initialize: true } as any)?.[0]
+		} catch {}
+		return found?.default?.[props[0]] ? found.default : found
+	}
+	const legacy = find('pickSingle', 'isCancel')
+	const modern = legacy ? undefined : find('pick', 'saveDocuments')
+	if (!legacy && !modern) return void Alert.alert('No file picker', "This Discord build has no file picker, so use an image link instead.")
 
 	try {
 		let uri: string | undefined
