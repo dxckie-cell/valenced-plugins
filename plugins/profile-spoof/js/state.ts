@@ -718,7 +718,7 @@ export function notifyChange() {
 // Where hidden badges are drawn (component and props), to find the screens that should drop them.
 export const hiddenTiles: string[] = []
 
-export const PLUGIN_VERSION = '1.50.4'
+export const PLUGIN_VERSION = '1.50.5'
 
 // The Nitro badge's icon follows the level chosen in settings.
 const nitroBadge = BADGES.find(badge => badge.key === 'nitro')

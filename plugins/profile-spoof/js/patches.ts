@@ -351,11 +351,25 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 
 			// One of our badges being drawn: give it the sharp icon.
 			const badge = findBadge(props.id ?? props.badgeId)
-			if (badge && isHidden(badge.key)) {
-				const type: any = args[0]
-				const name = typeof type === 'string' ? type : (type?.displayName ?? type?.name ?? type?.type?.name ?? '?')
-				const line = `${name}: ${Object.keys(props).slice(0, 12).join(',')}`
-				if (!hiddenTiles.includes(line) && hiddenTiles.length < 8) hiddenTiles.push(line)
+			if (Date.now() < menuUntil && hiddenTiles.length < 8) {
+				const isHiddenOurs = (value: unknown): boolean => {
+					if (isRecord(value)) {
+						const id = value.badge_id ?? value.id ?? value.badgeId
+						const found = isOurId(id) ? findBadge(id) : undefined
+						return Boolean(found && isHidden(found.key))
+					}
+					return typeof value === 'string' && Boolean(isOurId(value) && findBadge(value) && isHidden(findBadge(value)!.key))
+				}
+				const hit = Object.keys(props).find(key => {
+					const value = props[key]
+					return Array.isArray(value) ? value.slice(0, 60).some(isHiddenOurs) : isHiddenOurs(value)
+				})
+				if (hit) {
+					const type: any = args[0]
+					const name = typeof type === 'string' ? type : (type?.displayName ?? type?.name ?? type?.type?.name ?? '?')
+					const line = `${name} [${hit}]: ${Object.keys(props).slice(0, 12).join(',')}`
+					if (!hiddenTiles.includes(line)) hiddenTiles.push(line)
+				}
 			}
 			if (badge && typeof args[0] !== 'string') {
 				return [args[0], { ...props, source: { uri: badge.url } }, ...args.slice(2)]
