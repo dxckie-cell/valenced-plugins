@@ -1,3 +1,6 @@
+import { lookupModule } from '@valenced/modules/finders'
+import { withProps } from '@valenced/modules/finders/filters'
+import { patchMenu } from './menu'
 import { applyPatches } from './patches'
 import { SettingsComponent } from './settings'
 import { DEFAULT_SETTINGS, resetStatus, type Settings, setStorage, status } from './state'
@@ -8,7 +11,8 @@ export default plugin<{ jsonStorage: Settings }>({
 
 	SettingsComponent,
 
-	start({ jsonStorage, cleanup, unscoped }) {
+	start(api) {
+		const { jsonStorage, cleanup, unscoped } = api
 		resetStatus()
 		status('loaded', `loaded v${unscoped.plugins.utils.formatVersion(this.manifest.version)}`)
 
@@ -23,6 +27,15 @@ export default plugin<{ jsonStorage: Settings }>({
 		applyPatches(
 			(unscoped.discord as any).utils?.modules?.finders?.getModuleWithImportedPath,
 			cleanup,
+		)
+
+		cleanup(
+			patchMenu(jsonStorage, () => {
+				// The plugin's page opens inside Discord's settings screens, so open those first.
+				const root: any = lookupModule(withProps<any>('getRootNavigationRef'))?.[0]
+				;(root?.default ?? root)?.getRootNavigationRef?.()?.navigate('settings', 'OVERVIEW', { pop: true })
+				setTimeout(() => (api as any).pluginSettings.openPluginSettings('dxckie.override-user-avatars'), 50)
+			}),
 		)
 	},
 })

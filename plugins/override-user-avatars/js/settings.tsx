@@ -2,6 +2,7 @@ import Page from '@valenced/components/Page'
 import { Design } from '@valenced/discord/design'
 import { useEffect, useState } from 'react'
 import { ScrollView } from 'react-native'
+import { pickImage } from './pick'
 import { type AvatarOverride, getStatusLines } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
@@ -45,6 +46,13 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 							placeholder="Enter avatar image URL"
 							value={row.url}
 							onChange={url => edit(index, { url })}
+						/>
+						<Design.TableRow
+							label="Upload avatar from my photos"
+							onPress={async () => {
+								const url = await pickImage()
+								if (url) edit(index, { url })
+							}}
 						/>
 						<Design.TableRow
 							label="Remove this user"
