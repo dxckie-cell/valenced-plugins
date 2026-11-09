@@ -8,6 +8,7 @@ import { badgeIdOf, catalogEntry, findBadge, isInGrid, learnFrom, isOurId, isRec
 import {
 	type BadgeDefinition,
 	getVersion,
+	hiddenTiles,
 	isHidden,
 	setHidden,
 	setOrder,
@@ -350,6 +351,12 @@ export function applyPatches(getStore: GetStore, cleanup: Register) {
 
 			// One of our badges being drawn: give it the sharp icon.
 			const badge = findBadge(props.id ?? props.badgeId)
+			if (badge && isHidden(badge.key)) {
+				const type: any = args[0]
+				const name = typeof type === 'string' ? type : (type?.displayName ?? type?.name ?? type?.type?.name ?? '?')
+				const line = `${name}: ${Object.keys(props).slice(0, 12).join(',')}`
+				if (!hiddenTiles.includes(line) && hiddenTiles.length < 8) hiddenTiles.push(line)
+			}
 			if (badge && typeof args[0] !== 'string') {
 				return [args[0], { ...props, source: { uri: badge.url } }, ...args.slice(2)]
 			}
