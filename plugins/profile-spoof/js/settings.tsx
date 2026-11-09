@@ -7,7 +7,7 @@ import { Animated, Image, Pressable, ScrollView, Text, View } from 'react-native
 import { getConnections, platformLabel, PLATFORMS, type Connection } from './connections'
 import { parseDate } from './identity'
 
-import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, hiddenTiles, levelChoices, type Settings } from './state'
+import { BADGES, LEVEL_KEYS, SMALL_MARK, NITRO_LEVELS, TEXT_FIELDS, getLevel, levelChoices, type Settings } from './state'
 
 import type { PluginSettingsComponent } from '@valenced/plugins/types'
 
@@ -540,17 +540,6 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						{fieldsFor(badge.key)}
 					</View>
 				))}
-
-				{hiddenTiles.length > 0 && (
-					<>
-						{levelHeading('DEBUG: HIDDEN TILES')}
-						<Design.TableRowGroup>
-							{hiddenTiles.map(line => (
-								<Design.TableRow key={line} label={line} />
-							))}
-						</Design.TableRowGroup>
-					</>
-				)}
 
 				{levelHeading('ORDER')}
 				<Design.TableRowGroup>

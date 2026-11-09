@@ -400,6 +400,17 @@ export function withCatalog(original: unknown[], includeHidden: boolean): unknow
 	})
 }
 
+// The list without our hidden badges. Same list back when none are hidden, so Discord sees no change.
+export function withoutHidden(list: unknown[]): unknown[] {
+	return cached(list, 'visible', () => {
+		const kept = list.filter(item => {
+			const found = isRecord(item) && isOurId(item.badge_id ?? item.id) ? findBadge(item.badge_id ?? item.id) : undefined
+			return !(found && isHidden(found.key))
+		})
+		return kept.length === list.length ? list : kept
+	})
+}
+
 // Keeps Discord's own levels of the badges ours replace, for their animated pictures.
 export function learnFrom(list: unknown[]) {
 	for (const item of list) {
