@@ -46,13 +46,17 @@ export async function pickImage(): Promise<string | undefined> {
 
 		toast('Uploading...')
 		const name = asset.fileName ?? asset.name ?? 'image.jpg'
-		const form = new FormData()
-		form.append('reqtype', 'fileupload')
-		form.append('fileToUpload', { uri, name, type: asset.type ?? asset.mimeType ?? 'image/jpeg' } as any)
-
-		const response = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: form })
-		const text = (await response.text()).trim()
-		if (!response.ok || !/^https?:\/\//.test(text)) throw new Error(text || `HTTP ${response.status}`)
+		// catbox sometimes answers with an empty reply (HTTP 200, no link), so try a few times before giving up.
+		let text = ''
+		for (let attempt = 0; attempt < 3 && !/^https?:\/\//.test(text); attempt++) {
+			if (attempt) await new Promise(done => setTimeout(done, 1500))
+			const form = new FormData()
+			form.append('reqtype', 'fileupload')
+			form.append('fileToUpload', { uri, name, type: asset.type ?? asset.mimeType ?? 'image/jpeg' } as any)
+			const response = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: form })
+			text = (await response.text()).trim()
+		}
+		if (!/^https?:\/\//.test(text)) throw new Error(text || 'catbox.moe sent an empty reply three times. Try again in a minute.')
 		return text
 	} catch (e: any) {
 		Alert.alert('Upload failed', String(e?.message ?? e))
