@@ -1,0 +1,23 @@
+{
+	"format": 1,
+	"id": "dxckie.giphy-gif-fix",
+	"name": "Giphy Gif Fix",
+	"description": "Saves and shares Giphy GIFs as .gif instead of .mp4.",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"contributors": [
+		"nexpid (https://github.com/nexpid \"GitHub\")"
+	],
+	"icon": "GifIcon",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}

@@ -1,6 +1,6 @@
 # dxckie-cell plugins for Valenced
 
-Sixteen Valenced plugins in one repository.
+Seventeen Valenced plugins in one repository.
 
 ## Install
 
@@ -31,6 +31,7 @@ Then install the plugins you want and reload Valenced.
 | No Compression | `dxckie.no-compression` | Stops Discord from compressing images and files when you upload them. Port of MSMA's Vendetta plugin. |
 | Picture Links+ | `dxckie.picture-links` | Tap profile pictures, profile banners, and server icons and banners to view them full size. Long-press a profile picture to open its server avatar. Port of dxckie-cell's Vendetta plugin Picture Links+, based on Picture Links by redstonekasi and Rico040 (CC0). |
 | Klipy Gif Fix | `dxckie.klipy-gif-fix` | Saves and shares Klipy GIFs as `.gif` instead of `.mp4`. Works out of the box, with no setup or API key needed. Port of dxckie-cell's Vendetta plugin Klipy Gif Fix, inspired by Tenor Gif Fix by nexpid. |
+| Giphy Gif Fix | `dxckie.giphy-gif-fix` | Saves and shares Giphy GIFs as `.gif` instead of `.mp4`. Works out of the box, with no API key. Inspired by Tenor Gif Fix by nexpid. |
 
 ## Development
 
