@@ -521,6 +521,33 @@
         }
       }
     },
+    "dxckie.klipy-gif-fix": {
+      "name": "Klipy Gif Fix",
+      "description": "Saves and shares Klipy GIFs as .gif instead of .mp4.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "contributors": [
+        "nexpid (https://github.com/nexpid \"GitHub\")"
+      ],
+      "icon": "ImageIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.klipy-gif-fix@1.0.0.zip",
+          "sha256": "6f436f34e9d58d64076c7bf198ab127984a1b6c21ca251fe6d0440dd63f911f7",
+          "size": 3381,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
     "dxckie.local-pins": {
       "name": "Local Pins",
       "description": "Pin messages locally and browse them in a channel's Pins tab.",
