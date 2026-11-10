@@ -530,7 +530,7 @@
       ],
       "icon": "GifIcon",
       "channels": {
-        "latest": "1.1.2"
+        "latest": "1.2.0"
       },
       "versions": {
         "1.0.0": {
@@ -576,6 +576,19 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.klipy-gif-fix@1.1.2.zip",
           "sha256": "6fe1730127ed2bce44a36ef004f805f7a1faf17b77152af861ab1aefc5035eb6",
           "size": 2873,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.2.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.klipy-gif-fix@1.2.0.zip",
+          "sha256": "2975bdbbd0f4e16f2c0601923bc0001e01d0f823326292017eaebc8f9dd62794",
+          "size": 3063,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
