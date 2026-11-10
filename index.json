@@ -253,6 +253,33 @@
         }
       }
     },
+    "dxckie.giphy-gif-fix": {
+      "name": "Giphy Gif Fix",
+      "description": "Saves and shares Giphy GIFs as .gif instead of .mp4.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "contributors": [
+        "nexpid (https://github.com/nexpid \"GitHub\")"
+      ],
+      "icon": "GifIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.giphy-gif-fix@1.0.0.zip",
+          "sha256": "4da217b6283529cdd9f296fff6244b461d45f44b13a3b516bddafbe55e6fedd4",
+          "size": 2049,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
     "dxckie.hide-messages": {
       "name": "HideMessages",
       "description": "Temporarily hide messages until you restart.",
