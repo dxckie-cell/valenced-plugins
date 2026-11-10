@@ -28,18 +28,18 @@ export const SettingsComponent: PluginSettingsComponent<{
 	return (
 		<ScrollView keyboardShouldPersistTaps="handled">
 			<Page>
-				<Design.TableRowGroup title="Klipy API key">
+				<Design.TableRowGroup title="Klipy API key (optional)">
 					<Design.TextInput
 						label="API key"
-						placeholder="paste your key here"
+						placeholder="leave empty to use the built-in key"
 						value={apiKey}
 						onChange={change}
 					/>
 				</Design.TableRowGroup>
 
 				<Design.TableRowGroup title="Notes">
-					<Design.TableRow label="Get a free key at klipy.com/developers. It is stored only on this device and sent only to api.klipy.com." />
-					<Design.TableRow label="Without a key, or if Klipy has no GIF for an item, the .mp4 is saved as usual." />
+					<Design.TableRow label="The plugin works out of the box with a shared key. To use your own, get a free one at klipy.com/developers. It is stored only on this device and sent only to api.klipy.com." />
+					<Design.TableRow label="If Klipy has no GIF for an item, or the key stops working, the .mp4 is saved as usual." />
 				</Design.TableRowGroup>
 			</Page>
 		</ScrollView>
