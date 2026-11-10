@@ -30,7 +30,7 @@ Then install the plugins you want and reload Valenced.
 | BioEmojiContext | `dxckie.bio-emoji-context` | Tap a custom emoji in someone's profile bio to open Discord's emoji sheet, like tapping one in chat. Plugins that add to that sheet, such as Expression Utils, show their buttons here too. |
 | No Compression | `dxckie.no-compression` | Stops Discord from compressing images and files when you upload them. Port of MSMA's Vendetta plugin. |
 | Picture Links+ | `dxckie.picture-links` | Tap profile pictures, profile banners, and server icons and banners to view them full size. Long-press a profile picture to open its server avatar. Port of dxckie-cell's Vendetta plugin Picture Links+, based on Picture Links by redstonekasi and Rico040 (CC0). |
-| Klipy Gif Fix | `dxckie.klipy-gif-fix` | Saves and shares Klipy GIFs as `.gif` instead of `.mp4`. Works out of the box with a built-in Klipy API key; you can paste your own in the plugin's settings. Port of dxckie-cell's Vendetta plugin Klipy Gif Fix, inspired by Tenor Gif Fix by nexpid. |
+| Klipy Gif Fix | `dxckie.klipy-gif-fix` | Saves and shares Klipy GIFs as `.gif` instead of `.mp4`. Works out of the box, with no setup or API key needed. Port of dxckie-cell's Vendetta plugin Klipy Gif Fix, inspired by Tenor Gif Fix by nexpid. |
 
 ## Development
 

@@ -17,8 +17,7 @@ import {
 import { isModuleExportBad } from '@valenced/modules/metro'
 import { instead } from '@valenced/patcher'
 import { NativeModules } from 'react-native'
-import { SettingsComponent } from './settings'
-import { DEFAULT_SETTINGS, getKey, type Settings, setStorage } from './state'
+import { API_KEY } from './state'
 
 type Cleanup = () => void
 type Fn = (...args: any[]) => any
@@ -132,14 +131,12 @@ function probe(url: string): Promise<boolean> {
 }
 
 async function resolveGif(mp4: string): Promise<string | null> {
-	const key = getKey()
-	if (!key) return null
 	const name = fname(mp4)
 	if (!pages.has(name)) scanCurrentChannel()
 	const page = pages.get(name)
 	if (!page) return null
 	const dir = (unwrap(mp4).split('klipy.com/')[1] || '').replace(/[^/]+$/, '')
-	const urls = await apiGifs(page, dir, key)
+	const urls = await apiGifs(page, dir, API_KEY)
 	const ok = await Promise.all(urls.map(probe))
 	for (let i = 0; i < urls.length; i++) if (ok[i]) return urls[i]
 	return null
@@ -292,21 +289,9 @@ function watchMessages(cleanup: (fn: Cleanup) => void) {
 	}
 }
 
-export default plugin<{ jsonStorage: Settings }>({
-	// The Klipy API key is kept on this device, in the plugin's own storage.
-	jsonStorage: { default: DEFAULT_SETTINGS, load: true },
-
-	SettingsComponent,
-
-	start({ jsonStorage, cleanup, plugin }) {
-		setStorage(jsonStorage)
-		cleanup(() => {
-			setStorage(undefined)
-			pages.clear()
-		})
-		jsonStorage
-			.get()
-			.catch(e => console.log('[klipy-gif-fix] could not read settings', e))
+export default plugin({
+	start({ cleanup, plugin }) {
+		cleanup(() => pages.clear())
 
 		// a failing step (Discord changed something) must not stop the other
 		for (const step of [watchMessages, scanCurrentChannel, patchSaves]) {
