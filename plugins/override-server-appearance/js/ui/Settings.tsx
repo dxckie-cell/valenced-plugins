@@ -51,14 +51,14 @@ export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storag
 						value={entry.icon}
 						onChange={(v: string) => edit(index, { icon: v })}
 					/>
-					<Upload onPick={url => edit(index, { icon: url })} text="Upload icon from my photos" />
+					<Upload onPick={url => edit(index, { icon: url })} text="Upload icon from my device" />
 					<TextInput
 						label="Banner URL"
 						placeholder="https://... (optional)"
 						value={entry.banner}
 						onChange={(v: string) => edit(index, { banner: v })}
 					/>
-					<Upload onPick={url => edit(index, { banner: url })} text="Upload banner from my photos" />
+					<Upload onPick={url => edit(index, { banner: url })} text="Upload banner from my device" />
 					<View style={{ padding: 16 }}>
 						<Button
 							variant="destructive"

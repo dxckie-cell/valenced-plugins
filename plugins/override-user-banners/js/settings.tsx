@@ -48,7 +48,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 							onChange={url => edit(index, { url })}
 						/>
 						<Design.TableRow
-							label="Upload banner from my photos"
+							label="Upload banner from my device"
 							onPress={async () => {
 								const url = await pickImage()
 								if (url) edit(index, { url })

@@ -48,7 +48,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 							onChange={url => edit(index, { url })}
 						/>
 						<Design.TableRow
-							label="Upload avatar from my photos"
+							label="Upload avatar from my device"
 							onPress={async () => {
 								const url = await pickImage()
 								if (url) edit(index, { url })
