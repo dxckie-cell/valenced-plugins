@@ -7,6 +7,7 @@
  * If anything fails, the call goes through unchanged, so a save is never blocked.
  */
 
+import { ToastActionCreators } from '@valenced/discord/actions'
 import { Stores } from '@valenced/discord/flux'
 import { getModules, lookupModule } from '@valenced/modules/finders'
 import {
@@ -130,6 +131,10 @@ function probe(url: string): Promise<boolean> {
 	return withTimeout(req, 6000, false)
 }
 
+/** When a Klipy video was last swapped for its GIF: the "saved" toast that follows is for a GIF. */
+let lastSwap = 0
+const TOAST_WINDOW = 30_000
+
 async function resolveGif(mp4: string): Promise<string | null> {
 	const name = fname(mp4)
 	if (!pages.has(name)) scanCurrentChannel()
@@ -138,7 +143,12 @@ async function resolveGif(mp4: string): Promise<string | null> {
 	const dir = (unwrap(mp4).split('klipy.com/')[1] || '').replace(/[^/]+$/, '')
 	const urls = await apiGifs(page, dir, API_KEY)
 	const ok = await Promise.all(urls.map(probe))
-	for (let i = 0; i < urls.length; i++) if (ok[i]) return urls[i]
+	for (let i = 0; i < urls.length; i++) {
+		if (ok[i]) {
+			lastSwap = Date.now()
+			return urls[i]
+		}
+	}
 	return null
 }
 
@@ -268,6 +278,36 @@ function patchSaves(cleanup: (fn: Cleanup) => void) {
 	} catch {}
 }
 
+// ---------- "Image Saved" -> "Gif Saved" ----------
+
+const SAVED_TOAST = /saved/i
+const TEXT_KEYS = ['text', 'content', 'message', 'title']
+
+/** Rewords "Image Saved" to "Gif Saved" in a toast's options, if a GIF was just saved. */
+function rewordToast(options: unknown): unknown {
+	if (Date.now() - lastSwap > TOAST_WINDOW) return options
+	if (!options || typeof options !== 'object') return options
+	const out: Record<string, unknown> = { ...options }
+	for (const k of TEXT_KEYS) {
+		const v = out[k]
+		if (typeof v === 'string' && SAVED_TOAST.test(v) && /image/i.test(v))
+			out[k] = v.replace(/image/gi, 'Gif')
+	}
+	return out
+}
+
+function patchToast(cleanup: (fn: Cleanup) => void) {
+	cleanup(
+		instead(ToastActionCreators, 'open', function (args: any[], original: Fn) {
+			try {
+				if (args.length > 1)
+					args = [args[0], rewordToast(args[1]), ...args.slice(2)]
+			} catch {}
+			return Reflect.apply(original, this, args)
+		}),
+	)
+}
+
 // ---------- remember Klipy pages from incoming messages ----------
 
 function watchMessages(cleanup: (fn: Cleanup) => void) {
@@ -294,7 +334,12 @@ export default plugin({
 		cleanup(() => pages.clear())
 
 		// a failing step (Discord changed something) must not stop the other
-		for (const step of [watchMessages, scanCurrentChannel, patchSaves]) {
+		for (const step of [
+			watchMessages,
+			scanCurrentChannel,
+			patchSaves,
+			patchToast,
+		]) {
 			try {
 				step(cleanup)
 			} catch (e) {

@@ -8,7 +8,7 @@
 		"nexpid (https://github.com/nexpid \"GitHub\")"
 	],
 	"icon": "GifIcon",
-	"version": "1.1.2",
+	"version": "1.2.0",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"
