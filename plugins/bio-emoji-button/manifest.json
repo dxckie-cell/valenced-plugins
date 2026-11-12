@@ -5,7 +5,7 @@
 	"description": "Adds an emoji button to the bio box when editing your profile.",
 	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
 	"icon": "ReactionIcon",
-	"version": "1.8.6",
+	"version": "1.8.7",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"

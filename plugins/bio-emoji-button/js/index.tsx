@@ -14,14 +14,15 @@ const BIO = /\b(bio|about me)\b/i
 const handlerOf = (props: any) => (typeof props.onChangeText === 'function' ? props.onChangeText : props.onChange)
 
 // The bio box: a multiline field with a length limit. Its label sits outside the box, so
-// the text check is only a bonus. Other multiline fields with a limit would match too.
+// the text check is only a bonus.
 function isBioInput(props: any) {
 	if (!props || props[DONE] || typeof handlerOf(props) !== 'function') return false
 	if (!('value' in props) || !(props.multiline || props.isMultiline)) return false
 	const named = [props.label, props.placeholder, props.accessibilityLabel, props.nativeID, props.testID].some(
 		v => typeof v === 'string' && BIO.test(v),
 	)
-	return named || typeof props.maxLength === 'number'
+	// The custom status box is multiline too but stops at 128, the bio allows 190.
+	return named || (typeof props.maxLength === 'number' && props.maxLength > 150)
 }
 
 function BioField({ Original, ...props }: Record<string, any>) {
