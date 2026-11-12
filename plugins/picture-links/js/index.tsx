@@ -94,6 +94,7 @@ const getMediaModal = () =>
 const triedModules = new Set<number>()
 let viewerSlice = 0
 let viewerSearchDone = false
+let loadErrorReported = false
 
 const withViewerModule = createFilterGenerator<[deadline: number]>(
 	([deadline], id, exports, initialized) => {
@@ -119,8 +120,14 @@ function loadViewerSlice(budget: number): boolean {
 	try {
 		mediaModal = lookupModule(withViewerModule(Date.now() + budget))[0]
 	} catch (e) {
-		reportError(`loading the viewer failed: ${getErrorStack(e)}`)
-		viewerSearchDone = true
+		// A module that throws while it initializes is already marked as tried,
+		// so the next slice carries on after it instead of giving up.
+		if (!loadErrorReported) {
+			loadErrorReported = true
+			reportError(
+				`a module failed to load while looking for the viewer: ${getErrorStack(e)}`,
+			)
+		}
 		return false
 	}
 	// nothing new was tried: every module has been looked at
