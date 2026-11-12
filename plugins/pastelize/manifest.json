@@ -3,9 +3,12 @@
 	"id": "dxckie.pastelize",
 	"name": "Pastelize",
 	"description": "Pastelize (uncolored) names based on user ID.",
-	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\"), Cynosphere (https://github.com/Cynosphere \"GitHub\")",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"contributors": [
+		"Cynosphere <150745989836308480> (https://github.com/Cynosphere \"GitHub\")"
+	],
 	"icon": "PaintPaletteIcon",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"
