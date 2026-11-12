@@ -1246,6 +1246,30 @@
         }
       }
     },
+    "dxckie.pastelize": {
+      "name": "Pastelize",
+      "description": "Pastelize (uncolored) names based on user ID.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\"), Cynosphere (https://github.com/Cynosphere \"GitHub\")",
+      "icon": "PaintPaletteIcon",
+      "channels": {
+        "latest": "1.0.2"
+      },
+      "versions": {
+        "1.0.2": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.pastelize@1.0.2.zip",
+          "sha256": "b928b370e6c0a46f660345ce210fc066e1a1a53896b76bbf856d73a6fe504aca",
+          "size": 2165,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
     "dxckie.picture-links": {
       "name": "Picture Links+",
       "description": "Tap profile pictures, profile banners, and server icons and banners to view them full size.",
