@@ -1249,16 +1249,32 @@
     "dxckie.pastelize": {
       "name": "Pastelize",
       "description": "Pastelize (uncolored) names based on user ID.",
-      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\"), Cynosphere (https://github.com/Cynosphere \"GitHub\")",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "contributors": [
+        "Cynosphere <150745989836308480> (https://github.com/Cynosphere \"GitHub\")"
+      ],
       "icon": "PaintPaletteIcon",
       "channels": {
-        "latest": "1.0.2"
+        "latest": "1.0.3"
       },
       "versions": {
         "1.0.2": {
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.pastelize@1.0.2.zip",
           "sha256": "b928b370e6c0a46f660345ce210fc066e1a1a53896b76bbf856d73a6fe504aca",
           "size": 2165,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.0.3": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.pastelize@1.0.3.zip",
+          "sha256": "c4960d4e3239d7e9d32f5eeff66dbd0c2e9f66dc1f862913aa0b4b56cfd558b9",
+          "size": 2204,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
