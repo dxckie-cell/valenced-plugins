@@ -46,13 +46,26 @@
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "ReactionIcon",
       "channels": {
-        "latest": "1.8.6"
+        "latest": "1.8.7"
       },
       "versions": {
         "1.8.6": {
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.bio-emoji-button@1.8.6.zip",
           "sha256": "ba1373b6d2fb0ad9af112f13681960b8eec2910b009b8ad4c48c36f0b05ca1f5",
           "size": 4132,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.8.7": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.bio-emoji-button@1.8.7.zip",
+          "sha256": "dec44b1f7d431ab5c02917f544aaa8d6f983f6b14262539160683472a40f4997",
+          "size": 4138,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
