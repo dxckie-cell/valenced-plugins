@@ -715,7 +715,7 @@ export function notifyChange() {
 	}
 }
 
-export const PLUGIN_VERSION = '1.50.8'
+export const PLUGIN_VERSION = '1.50.9'
 
 // The Nitro badge's icon follows the level chosen in settings.
 const nitroBadge = BADGES.find(badge => badge.key === 'nitro')

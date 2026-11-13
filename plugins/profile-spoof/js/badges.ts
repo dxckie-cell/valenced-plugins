@@ -403,6 +403,8 @@ export function withCatalog(original: unknown[], includeHidden: boolean): unknow
 // The list without our hidden badges (and without the real ones when those are hidden). Same list back when none are hidden, so Discord sees no change.
 export function withoutHidden(list: unknown[]): unknown[] {
 	return cached(list, 'visible', () => {
+		// Only your own list has ours in it. Anyone else's is left alone.
+		if (!list.some(item => isRecord(item) && isOurId(item.badge_id ?? item.id))) return list
 		const kept = list.filter(item => {
 			const ours = isRecord(item) && isOurId(item.badge_id ?? item.id)
 			// "Hide my real badges" drops Discord's own from this list too.
