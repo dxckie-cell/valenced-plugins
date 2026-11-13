@@ -5,6 +5,10 @@ import { getOverrideUrl, PLACEHOLDER_HASH, status } from './state'
 
 type Cleanup = () => unknown
 
+// Runs before other plugins' hooks on the same function (such as Nitro-Profiles' UserBG),
+// so an override here wins whichever plugin starts first.
+const HIGHEST = 1000
+
 // Display profiles already patched, so each is only changed once.
 const patchedProfiles = new WeakSet<object>()
 
@@ -135,11 +139,33 @@ function patchProfileStore(
 	cleanup(unsubscribe)
 }
 
+// The plain banner helper, which Nitro-Profiles also hooks, so an override is answered here first.
+function patchBannerUrl(cleanup: (...fns: Cleanup[]) => void) {
+	cleanup(
+		getModules(withProps<Record<string, any>>('getUserBannerURL'), exports => {
+			try {
+				cleanup(
+					instead(
+						exports,
+						'getUserBannerURL',
+						(args: any[], original: (...a: any[]) => any) =>
+							getOverrideUrl(args[0]?.id) ?? original(...args),
+						{ priority: HIGHEST },
+					),
+				)
+			} catch {
+				// Missing in this Discord version.
+			}
+		}),
+	)
+}
+
 export function applyPatches(
 	getStore: (name: string, callback: (store: any) => void) => () => void,
 	cleanup: (...fns: Cleanup[]) => void,
 ) {
 	patchBannerHook(cleanup)
+	patchBannerUrl(cleanup)
 	patchProfileStore(getStore, cleanup)
 
 	cleanup(() => {

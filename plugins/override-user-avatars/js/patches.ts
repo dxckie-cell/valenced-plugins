@@ -5,6 +5,10 @@ import { getOverrideUrl, status } from './state'
 
 type Cleanup = () => unknown
 
+// Runs before other plugins' hooks on the same function (such as Nitro-Profiles' UserPFP),
+// so an override here wins whichever plugin starts first.
+const HIGHEST = 1000
+
 const AVATAR_PATH = 'utils/AvatarUtils.tsx'
 
 // Modules already patched, so one module reached two ways is only changed once.
@@ -32,6 +36,7 @@ function patchModule(exports: any, label: string, cleanup: (...fns: Cleanup[]) =
 								? { ...(typeof result === 'object' ? result : {}), uri }
 								: result
 						},
+						{ priority: HIGHEST },
 					),
 				)
 				patched.push('getUserAvatarSource')
@@ -45,6 +50,7 @@ function patchModule(exports: any, label: string, cleanup: (...fns: Cleanup[]) =
 						function (this: any, args: any[], original: any) {
 							return getOverrideUrl(args[0]?.id) ?? Reflect.apply(original, this, args)
 						},
+						{ priority: HIGHEST },
 					),
 				)
 				patched.push('getUserAvatarURL')
