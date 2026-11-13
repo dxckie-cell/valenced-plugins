@@ -18,10 +18,22 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 		storage.get().then(value => setSettings({ ...DEFAULT_SETTINGS, ...value }))
 	}, [storage])
 
-	const change = (field: keyof Settings) => (value: boolean) => {
-		const merged = { ...settings, [field]: value }
+	const save = (merged: Settings) => {
 		setSettings(merged)
 		storage.set(merged, true)
+	}
+	const change = (field: 'pastelizeAll' | 'webhookName') => (value: boolean) =>
+		save({ ...settings, [field]: value })
+
+	// Typed text stays as typed. Only a number from 0 to 100 is saved.
+	const [typed, setTyped] = useState<Record<'saturation' | 'lightness', string | undefined>>({
+		saturation: undefined,
+		lightness: undefined,
+	})
+	const percent = (field: 'saturation' | 'lightness') => (text: string) => {
+		setTyped(t => ({ ...t, [field]: text }))
+		const n = Number(text)
+		if (text.trim() !== '' && Number.isFinite(n) && n >= 0 && n <= 100) save({ ...settings, [field]: n })
 	}
 
 	return (
@@ -39,6 +51,20 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						subLabel="Otherwise uses the webhook ID"
 						value={settings.webhookName}
 						onValueChange={change('webhookName')}
+					/>
+				</Design.TableRowGroup>
+				<Design.TableRowGroup title="Color">
+					<Design.TextInput
+						label="Lightness"
+						placeholder="60"
+						value={typed.lightness ?? String(settings.lightness)}
+						onChange={percent('lightness')}
+					/>
+					<Design.TextInput
+						label="Saturation"
+						placeholder="75"
+						value={typed.saturation ?? String(settings.saturation)}
+						onChange={percent('saturation')}
 					/>
 				</Design.TableRowGroup>
 			</Page>

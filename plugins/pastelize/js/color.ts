@@ -1,6 +1,7 @@
 import { lookupModule } from '@valenced/modules/finders'
 import { withName } from '@valenced/modules/finders/filters'
 import { processColor } from 'react-native'
+import { getSettings } from './state'
 
 // MurmurHash3 (x86, 32 bit, seed 0), used only if Discord's own copy can't be found.
 function murmur3(key: string): number {
@@ -72,10 +73,11 @@ function hslToHex(h: number, s: number, l: number): string {
 }
 
 /** "#rrggbb" for an ID. */
-export function pastelHex(id: string, saturation = 0.75, lightness = 0.6): string {
+export function pastelHex(id: string): string {
+	const { saturation, lightness } = getSettings()
 	// This account has a hand-picked hue.
 	const hue = id === '641375574631383051' ? 325 : ((hash(id) % 360) + 360) % 360
-	return hslToHex(hue, saturation, lightness)
+	return hslToHex(hue, saturation / 100, lightness / 100)
 }
 
 /** The same color as a native color number, which is what message rows hold. */

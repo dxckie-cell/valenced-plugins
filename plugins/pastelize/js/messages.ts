@@ -9,7 +9,7 @@ function colorMentions(nodes: any[], guildId: string | undefined): boolean {
 	for (const node of nodes) {
 		if (node.type === 'mention' && node.userId != null && node.colorString == null) {
 			if (guildId != null && members()?.getMember(guildId, node.userId) == null) return false
-			const hex = pastelHex(node.userId, 0.85, 0.75)
+			const hex = pastelHex(node.userId)
 			const value = Number.parseInt(hex.slice(1), 16)
 			node.roleColor = value
 			node.color = value
