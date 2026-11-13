@@ -2,6 +2,7 @@ import { lookupModule } from '@valenced/modules/finders'
 import { withProps } from '@valenced/modules/finders/filters'
 import { patchMenu } from './menu'
 import { applyPatches } from './patches'
+import { patchSelf, refreshSelf } from './self'
 import { SettingsComponent } from './settings'
 import { DEFAULT_SETTINGS, resetStatus, type Settings, setStorage, status } from './state'
 
@@ -22,12 +23,15 @@ export default plugin<{ jsonStorage: Settings }>({
 		// Reads the overrides from disk if they are not in memory yet.
 		jsonStorage
 			.get()
+			.then(refreshSelf)
 			.catch(e => status('settings', `could not read settings: ${(e as Error)?.message}`))
 
 		applyPatches(
 			(unscoped.discord as any).utils?.modules?.finders?.getModuleWithImportedPath,
 			cleanup,
 		)
+
+		patchSelf(unscoped.discord.flux.getStore, cleanup)
 
 		cleanup(
 			patchMenu(jsonStorage, () => {

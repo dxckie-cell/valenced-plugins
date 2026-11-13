@@ -1,6 +1,7 @@
 import { getModules } from '@valenced/modules/finders'
 import { withProps } from '@valenced/modules/finders/filters'
 import { instead } from '@valenced/patcher'
+import { refreshSelf } from './self'
 import { getOverrideUrl, status } from './state'
 
 type Cleanup = () => unknown
@@ -61,7 +62,10 @@ function patchModule(exports: any, label: string, cleanup: (...fns: Cleanup[]) =
 		}
 	}
 
-	if (patched.length) status(label, `${label}: patched (${patched.join(', ')})`)
+	if (patched.length) {
+		status(label, `${label}: patched (${patched.join(', ')})`)
+		refreshSelf()
+	}
 }
 
 // The avatar helpers Discord uses for chat, member lists, DMs and calls. They are found
