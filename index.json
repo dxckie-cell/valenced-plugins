@@ -1036,7 +1036,7 @@
       "description": "Allows you to set a custom profile picture for any Discord user.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.1.2"
+        "latest": "1.2.0"
       },
       "versions": {
         "1.0.3": {
@@ -1109,6 +1109,21 @@
             "valenced.settings": {},
             "valenced.settings.plugins": {}
           }
+        },
+        "1.2.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-user-avatars@1.2.0.zip",
+          "sha256": "6b2f1d4427d551c4ddd050fb1a8f82b277e38c0b1dc144bdd1969fdcef37df47",
+          "size": 3319,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            },
+            "valenced.settings": {},
+            "valenced.settings.plugins": {}
+          }
         }
       }
     },
@@ -1117,7 +1132,7 @@
       "description": "Allows you to set a custom profile banner for any Discord user.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.2.2"
+        "latest": "1.3.0"
       },
       "versions": {
         "1.0.1": {
@@ -1206,6 +1221,21 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-user-banners@1.2.2.zip",
           "sha256": "97fe589f9c7c92bd8034463efddc696d36436409ec3ac9aeef9dc371c6647db8",
           "size": 3421,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            },
+            "valenced.settings": {},
+            "valenced.settings.plugins": {}
+          }
+        },
+        "1.3.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-user-banners@1.3.0.zip",
+          "sha256": "52dd2ac18b77caf2a64d7b90ac9d6efe42610f1c955ca738bb23cbfed4aca7c5",
+          "size": 3477,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
