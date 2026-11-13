@@ -3,7 +3,7 @@ import { withModule } from '../lib/modules'
 import type { JsonStorage } from '@valenced/json-storage'
 import type { Storage } from '../lib/storage'
 
-/** Adds "Override Icon" to the menu that opens when you long-press a server in the server bar. */
+/** Adds "Override Appearance" to the menu that opens when you long-press a server in the server bar. */
 export function patchMenu(storage: JsonStorage<Storage>, openSettings: () => void): () => void {
 	let unpatch: (() => void) | undefined
 	const g = globalThis as any
@@ -25,7 +25,7 @@ export function patchMenu(storage: JsonStorage<Storage>, openSettings: () => voi
 						{
 							// Discord's own icon component, like the other rows, so the size and spacing match.
 							IconComponent: icon,
-							label: 'Override Icon',
+							label: 'Override Appearance',
 							async action() {
 								const overrides = storage.cache?.overrides ?? []
 								// The server's ID goes first in the list, so it is the first thing in settings.
