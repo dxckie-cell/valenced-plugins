@@ -706,7 +706,7 @@
       "description": "Set a custom icon and banner for any Discord server, only on your device.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "2.2.8"
+        "latest": "2.2.9"
       },
       "versions": {
         "2.0.9": {
@@ -1018,6 +1018,21 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-server-appearance@2.2.8.zip",
           "sha256": "13a34894c7e9c0596babc5c6b8f9dc366f807a4eaf3672c33d7504ad5a81c4ea",
           "size": 3298,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            },
+            "valenced.settings": {},
+            "valenced.settings.plugins": {}
+          }
+        },
+        "2.2.9": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.override-server-appearance@2.2.9.zip",
+          "sha256": "4c40ae375ab3756eee912b88547fddac64e54c5ac20dcdf44664e680b41f36d3",
+          "size": 3299,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
