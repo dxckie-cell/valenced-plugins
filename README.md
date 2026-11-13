@@ -1,6 +1,6 @@
 # dxckie-cell plugins for Valenced
 
-Eighteen Valenced plugins in one repository.
+Nineteen Valenced plugins in one repository.
 
 ## Install
 
@@ -32,6 +32,7 @@ Then install the plugins you want and reload Valenced.
 | Klipy Gif Fix | `dxckie.klipy-gif-fix` | Saves and shares Klipy GIFs as `.gif` instead of `.mp4`. Works out of the box, with no setup or API key needed. Port of dxckie-cell's Vendetta plugin Klipy Gif Fix, inspired by Tenor Gif Fix by nexpid. |
 | Giphy Gif Fix | `dxckie.giphy-gif-fix` | Saves and shares Giphy GIFs as `.gif` instead of `.mp4`. Works out of the box, with no API key. Inspired by Tenor Gif Fix by nexpid. |
 | Pastelize | `dxckie.pastelize` | Gives names without a role color a pastel color picked from the user ID. Port of Cynosphere's Vendetta plugin Pastelize, using the fixed copy from EKSIF. |
+| Capri Pet | `dxckie.capri-pet` | A neon cyber-kitten pet that floats over the app and chases your finger. Drag her to move her home, tap to pat, long-press to feed or nap. Port of choccychan's Capri Pet from chocos-plugins. |
 
 ## Development
 
