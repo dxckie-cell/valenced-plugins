@@ -8,7 +8,7 @@
 		"Cynosphere <150745989836308480> (https://github.com/Cynosphere \"GitHub\")"
 	],
 	"icon": "PaintPaletteIcon",
-	"version": "1.2.1",
+	"version": "1.2.2",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"
