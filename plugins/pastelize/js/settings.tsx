@@ -22,7 +22,7 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 		setSettings(merged)
 		storage.set(merged, true)
 	}
-	const change = (field: 'pastelizeAll' | 'webhookName') => (value: boolean) =>
+	const change = (field: 'pastelizeAll' | 'webhookName' | 'memberListColors') => (value: boolean) =>
 		save({ ...settings, [field]: value })
 
 	// Typed text stays as typed. Only a number from 0 to 100 is saved.
@@ -51,6 +51,12 @@ export const SettingsComponent: PluginSettingsComponent<{ jsonStorage: Settings 
 						subLabel="Otherwise uses the webhook ID"
 						value={settings.webhookName}
 						onValueChange={change('webhookName')}
+					/>
+					<Design.TableSwitchRow
+						label="Member list colors"
+						subLabel="Replace role colors in the member list"
+						value={settings.memberListColors}
+						onValueChange={change('memberListColors')}
 					/>
 				</Design.TableRowGroup>
 				<Design.TableRowGroup title="Color">

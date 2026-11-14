@@ -4,6 +4,7 @@
 import { getModules } from '@valenced/modules/finders'
 import { withName } from '@valenced/modules/finders/filters'
 import { instead } from '@valenced/patcher'
+import { patchMemberList } from './memberList'
 import { pastelizeRow } from './messages'
 import { SettingsComponent } from './settings'
 import { DEFAULT_SETTINGS, type Settings, setStorage } from './state'
@@ -17,6 +18,8 @@ export default plugin<{ jsonStorage: Settings }>({
 		setStorage(api.jsonStorage)
 		api.cleanup(() => setStorage(undefined))
 		api.jsonStorage.get().catch(e => api.plugin.reportError(e))
+
+		patchMemberList(api.cleanup, e => api.plugin.reportError(e))
 
 		// Patched once Discord loads the row renderer, as Discord builds every chat row with it.
 		api.cleanup(

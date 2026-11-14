@@ -3,6 +3,7 @@ import type { JsonStorage } from '@valenced/json-storage'
 export interface Settings {
 	pastelizeAll: boolean
 	webhookName: boolean
+	memberListColors: boolean
 	/** Percent, 0-100. */
 	saturation: number
 	/** Percent, 0-100. */
@@ -12,6 +13,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
 	pastelizeAll: false,
 	webhookName: true,
+	memberListColors: true,
 	saturation: 75,
 	lightness: 60,
 }
