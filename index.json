@@ -1288,7 +1288,7 @@
       ],
       "icon": "PaintPaletteIcon",
       "channels": {
-        "latest": "1.1.0"
+        "latest": "1.2.0"
       },
       "versions": {
         "1.0.2": {
@@ -1321,6 +1321,19 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.pastelize@1.1.0.zip",
           "sha256": "abbb531019de2b7e765587907b9ff16d99cd44761377b5c967c23f094c9fb4e1",
           "size": 2403,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.2.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.pastelize@1.2.0.zip",
+          "sha256": "02e6ef5fdd739dd1be93a1d1955702e2a5b0d65e892e842146f5a667fe68c37f",
+          "size": 2630,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
