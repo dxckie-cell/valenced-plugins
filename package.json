@@ -3,11 +3,11 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "valenced-plugin build",
-		"build:dev": "valenced-plugin build --dev",
+		"build": "valenced-plugin build --plugins-dir plugins --plugins-dir themes",
+		"build:dev": "valenced-plugin build --dev --plugins-dir plugins --plugins-dir themes",
 		"generate-index": "valenced-plugin generate-index",
-		"plan-releases": "valenced-plugin plan-releases",
-		"serve": "valenced-plugin serve",
+		"plan-releases": "valenced-plugin plan-releases --plugins-dir plugins --plugins-dir themes",
+		"serve": "valenced-plugin serve --plugins-dir plugins --plugins-dir themes",
 		"lint": "biome check",
 		"lint:types": "tsc --noEmit",
 		"package": "bun run build && bun scripts/package.mjs"

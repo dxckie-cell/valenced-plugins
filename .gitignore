@@ -1,6 +1,7 @@
 # Build output
 build/
 plugins/*/build/
+themes/*/build/
 
 # JS
 node_modules/

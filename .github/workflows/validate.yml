@@ -16,7 +16,7 @@ jobs:
 
       - run: bun install
       - run: bun run lint:types
-      - run: bunx biome check plugins scripts
+      - run: bunx biome check plugins themes scripts
       - run: shellcheck --shell=bash .github/scripts/*.sh
       - run: bun run package
       - run: bun run generate-index --dist build/dist --base-url https://dxckie-cell.github.io/valenced-plugins --out /tmp/index.json

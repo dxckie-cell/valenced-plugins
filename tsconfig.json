@@ -10,6 +10,6 @@
 		"resolveJsonModule": true,
 		"types": ["@valenced/types"]
 	},
-	"include": ["plugins", "types"],
-	"exclude": ["plugins/*/build"]
+	"include": ["plugins", "themes", "shared", "types"],
+	"exclude": ["plugins/*/build", "themes/*/build"]
 }

@@ -45,7 +45,7 @@ Add the repository URL printed by the server to Valenced on your device. The dev
 
 ```sh
 bun run lint:types
-bunx biome check plugins scripts
+bunx biome check plugins themes scripts
 ```
 
 ## Releasing
