@@ -2324,6 +2324,32 @@
           }
         }
       }
+    },
+    "dxckie.theme.periwinkle": {
+      "name": "Periwinkle",
+      "description": "Soft violet-blue theme built around #9595FF, with a deep indigo night and a lavender day.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.periwinkle@1.0.0.zip",
+          "sha256": "32dc3f36d86fa05671bc2aa924bc31326691894fed2c6cc4bab740974b65c1a8",
+          "size": 10267,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
+            }
+          }
+        }
+      }
     }
   }
 }
