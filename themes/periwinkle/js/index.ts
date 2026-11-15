@@ -140,9 +140,9 @@ const day: Palette = {
 	scrim: '#15152a59',
 }
 
-// Success text and icons (playing timers, activity icons) follow the primary. The online dot stays green.
-const dark: Look = { palette: night, extra: { STATUS_POSITIVE: '#3fb98a' } }
-const light: Look = { palette: day, extra: { STATUS_POSITIVE: '#1f8a5e' } }
+// Success text and icons (playing timers, activity icons) follow the primary. The online dot too.
+const dark: Look = { palette: night, extra: { STATUS_POSITIVE: primary } }
+const light: Look = { palette: day, extra: { STATUS_POSITIVE: primary } }
 
 export default plugin({
 	preInit({ themes }) {
