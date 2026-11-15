@@ -3,156 +3,122 @@
 import { lazyColors } from '../../../shared/theme-kit'
 import type { Look, Palette, Tone } from '../../../shared/theme-kit'
 
-// Primary colour. Buttons, toggles and highlights are this exact colour on both Dark and Light.
+// The chat background is the primary colour itself. Everything else is a lighter or darker shade of
+// it, with deep indigo ink for text and buttons. Dark text on #9595ff reaches 7.6:1.
 const primary = '#9595ff'
-// Dark text on the primary colour: 7.3:1, where white would only reach 2.6:1.
-const onPrimary = '#0d0d1f'
 
-// Discord's greys become indigo-tinted: deep navy-violet for the dark bases, periwinkle-tinted white for Light.
+// Discord's dark greys (surfaces) become shades of the primary, and its light greys (text) become
+// indigo ink, so any colour this theme does not set by name still reads on the periwinkle.
 const tone: Tone = {
 	greys: [
-		['#000000', '#010007'],
-		['#2c2d32', '#090623'],
-		['#323339', '#100d31'],
-		['#393a41', '#1c1a40'],
-		['#41434a', '#292850'],
-		['#595a63', '#4a4b75'],
-		['#81828a', '#76788f'],
-		['#97979f', '#9a9cb4'],
-		['#abacb2', '#b4b6d4'],
-		['#c5c6ca', '#cdd0ea'],
-		['#efeff1', '#e4e7fb'],
-		['#f3f3f4', '#eff0ff'],
-		['#fbfbfb', '#f7f8ff'],
-		['#ffffff', '#ffffff'],
+		['#000000', '#7a78da'],
+		['#2c2d32', '#8281ea'],
+		['#323339', primary],
+		['#393a41', '#aaadff'],
+		['#41434a', '#b1b4ff'],
+		['#595a63', '#6a6ad0'],
+		['#81828a', '#4a4aa8'],
+		['#97979f', '#38388f'],
+		['#abacb2', '#2a2a70'],
+		['#c5c6ca', '#1e1e55'],
+		['#efeff1', '#10103a'],
+		['#f3f3f4', '#0c0c2a'],
+		['#fbfbfb', '#08081e'],
+		['#ffffff', '#05051a'],
 	],
-	// Status colours are tuned to sit next to the periwinkle without clashing.
+	// Darkened so they stay readable on the periwinkle.
 	hues: {
-		red: '#e0556a',
-		orange: '#ee8a4a',
-		yellow: '#eebb4a',
-		green: '#3fb98a',
-		teal: '#45b5c8',
-		blue: '#5a8ff0',
-		blurple: '#8585fa',
-		purple: '#b078f0',
-		pink: '#e670c0',
+		red: '#c2183f',
+		orange: '#b4540a',
+		yellow: '#8a6400',
+		green: '#0f7a46',
+		teal: '#0b6f80',
+		blue: '#1f4fc2',
+		blurple: '#23237a',
+		purple: '#6a2cc2',
+		pink: '#b8247f',
 	},
 }
 
-const night: Palette = {
-	rail: '#090623',
-	floor: '#100d31',
-	panel: '#0c092a',
-	page: '#141237',
-	card: '#1c1a43',
-	popup: '#23214b',
-	input: '#120f34',
-	control: '#272653',
-	pressed: '#323162',
-
-	heading: '#ffffff',
-	strong: '#f0f1fa',
-	text: '#d4d6e8',
-	subtle: '#abaed1',
-	muted: '#898bb3',
-	faint: '#5d5f85',
-
-	divider: '#c8c8ff14',
-	border: '#c8c8ff24',
-	borderStrong: '#c8c8ff40',
-
-	accent: primary,
-	accentPress: '#8383f0',
-	onAccent: onPrimary,
-	accentSoft: '#9595ff26',
-	accentText: '#b8b8ff',
-	// Sits under Discord's white icons, so it is a deeper shade of the primary.
-	brand: '#5c5ce0',
-	rowIcon: '#b8b8ff',
-	selection: '#9595ff1f',
-
-	link: '#b0b0ff',
-	mentionText: '#d8d8ff',
-	mentionPill: '#9595ff33',
-	mentionBg: '#9595ff14',
-	replyBg: '#ffffff0d',
-	keyword: '#9595ff40',
-	code: '#070421',
-	codeText: '#b8b8ff',
-	spoiler: '#303058',
-	spoilerRevealed: '#1c1a43',
-
-	positive: '#7fd9b0',
-	warning: '#f0d28a',
-	danger: '#f59aa8',
-	dangerFill: '#c2405a',
-	scrim: '#050317cc',
+// Light is the same look, but Discord's light greys are its surfaces and its dark greys its text.
+const lightTone: Tone = {
+	greys: [
+		['#000000', '#05051a'],
+		['#31333b', '#14143a'],
+		['#5c5e66', '#25255a'],
+		['#80848e', '#38388f'],
+		['#a8abb2', '#6a6ad0'],
+		['#d4d7dc', '#8281ea'],
+		['#e3e5e8', primary],
+		['#f2f3f5', '#a3a5ff'],
+		['#ffffff', '#b1b4ff'],
+	],
+	hues: tone.hues,
 }
 
-const day: Palette = {
-	rail: '#dadcf5',
-	floor: '#f5f6ff',
-	panel: '#e8eafc',
-	page: '#e8eafc',
-	card: '#ffffff',
-	popup: '#ffffff',
-	input: '#dfe1fa',
-	control: '#d5d8f9',
-	pressed: '#c4c7ee',
+const periwinkle: Palette = {
+	rail: '#8281ea',
+	floor: primary,
+	panel: '#8887ed',
+	page: '#9d9eff',
+	card: '#aaadff',
+	popup: '#c2c6ff',
+	input: '#b1b4ff',
+	control: '#a3a5ff',
+	pressed: '#7472d3',
 
-	heading: '#0f0f1f',
-	strong: '#15152a',
-	text: '#2d2d48',
-	subtle: '#51516e',
-	muted: '#6b6b88',
-	faint: '#9a9ab3',
+	heading: '#07071a',
+	strong: '#0c0c26',
+	text: '#12122f',
+	subtle: '#1e1e55',
+	muted: '#2a2a70',
+	faint: '#3b3b86',
 
-	divider: '#1a1a3314',
-	border: '#1a1a3321',
-	borderStrong: '#1a1a3340',
+	divider: '#0d0d2a1a',
+	border: '#0d0d2a2e',
+	borderStrong: '#0d0d2a52',
 
-	accent: primary,
-	accentPress: '#8383f0',
-	onAccent: onPrimary,
-	accentSoft: '#9595ff33',
-	// The primary is too light for text on white, so text and links use a deeper shade.
-	accentText: '#4a4ad0',
-	brand: '#5c5ce0',
-	rowIcon: '#5c5ce0',
-	selection: '#9595ff26',
+	// The primary is the background, so buttons and toggles are deep indigo with white on top.
+	accent: '#23237a',
+	accentPress: '#1a1a5e',
+	onAccent: '#ffffff',
+	accentSoft: '#23237a2e',
+	accentText: '#1a1a70',
+	brand: '#23237a',
+	rowIcon: '#1a1a70',
+	selection: '#23237a26',
 
-	link: '#4343c8',
-	mentionText: '#3a3ab8',
-	mentionPill: '#9595ff40',
-	mentionBg: '#9595ff1f',
-	replyBg: '#15152a0a',
-	keyword: '#9595ff59',
-	code: '#e2e4fa',
-	codeText: '#4343c8',
-	spoiler: '#b8b8d4',
-	spoilerRevealed: '#d5d8f9',
+	link: '#14147a',
+	mentionText: '#0d0d5a',
+	mentionPill: '#23237a33',
+	mentionBg: '#23237a1f',
+	replyBg: '#ffffff26',
+	keyword: '#ffffff40',
+	code: '#8585e8',
+	codeText: '#0d0d4a',
+	spoiler: '#2a2a6a',
+	spoilerRevealed: '#9191f5',
 
-	positive: '#1f8a5e',
-	warning: '#a07a1c',
-	danger: '#c0394f',
-	dangerFill: '#c2405a',
-	scrim: '#15152a59',
+	positive: '#04401f',
+	warning: '#463000',
+	danger: '#650a1f',
+	dangerFill: '#c2183f',
+	scrim: '#0a0a2acc',
 }
 
-const dark: Look = { palette: night }
-const light: Look = { palette: day }
+const dark: Look = { palette: periwinkle }
+const light: Look = { palette: periwinkle, tone: lightTone }
 
 export default plugin({
 	preInit({ themes }) {
 		themes.registerGroup('periwinkle', {
 			name: 'Periwinkle',
-			description: 'Soft violet-blue built around #9595FF.',
+			description: 'A #9595FF background with deep indigo ink.',
 		})
 		themes.registerTheme('periwinkle', 'periwinkle', {
 			name: 'Periwinkle',
 			description:
-				'Deep indigo surfaces with #9595FF accents, or a lavender day on Light.',
+				'The whole app on #9595FF, with indigo text and buttons. Looks the same on every base.',
 			getColors: lazyColors(tone, {
 				dark,
 				darker: dark,
