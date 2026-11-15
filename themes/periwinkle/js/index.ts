@@ -83,7 +83,7 @@ const night: Palette = {
 	spoiler: '#303058',
 	spoilerRevealed: '#1c1a43',
 
-	positive: '#7fd9b0',
+	positive: '#9595ff',
 	warning: '#f0d28a',
 	danger: '#f59aa8',
 	dangerFill: '#c2405a',
@@ -133,15 +133,16 @@ const day: Palette = {
 	spoiler: '#b8b8d4',
 	spoilerRevealed: '#d5d8f9',
 
-	positive: '#1f8a5e',
+	positive: '#4a4ad0',
 	warning: '#a07a1c',
 	danger: '#c0394f',
 	dangerFill: '#c2405a',
 	scrim: '#15152a59',
 }
 
-const dark: Look = { palette: night }
-const light: Look = { palette: day }
+// Success text and icons (playing timers, activity icons) follow the primary. The online dot stays green.
+const dark: Look = { palette: night, extra: { STATUS_POSITIVE: '#3fb98a' } }
+const light: Look = { palette: day, extra: { STATUS_POSITIVE: '#1f8a5e' } }
 
 export default plugin({
 	preInit({ themes }) {
