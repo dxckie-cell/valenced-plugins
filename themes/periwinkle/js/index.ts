@@ -26,12 +26,12 @@ const tone: Tone = {
 		['#fbfbfb', '#f7f8ff'],
 		['#ffffff', '#ffffff'],
 	],
-	// Status colours are tuned to sit next to the periwinkle without clashing.
+	// Red and green are the primary too, so errors, badges, voice and online states all match.
 	hues: {
-		red: '#e0556a',
+		red: primary,
 		orange: '#ee8a4a',
 		yellow: '#eebb4a',
-		green: '#3fb98a',
+		green: primary,
 		teal: '#45b5c8',
 		blue: '#5a8ff0',
 		blurple: '#8585fa',
@@ -85,8 +85,8 @@ const night: Palette = {
 
 	positive: '#9595ff',
 	warning: '#f0d28a',
-	danger: '#f59aa8',
-	dangerFill: '#c2405a',
+	danger: '#9595ff',
+	dangerFill: primary,
 	scrim: '#050317cc',
 }
 
@@ -135,14 +135,40 @@ const day: Palette = {
 
 	positive: '#4a4ad0',
 	warning: '#a07a1c',
-	danger: '#c0394f',
-	dangerFill: '#c2405a',
+	danger: '#4a4ad0',
+	dangerFill: primary,
 	scrim: '#15152a59',
 }
 
-// Success text and icons (playing timers, activity icons) follow the primary. The online dot too.
-const dark: Look = { palette: night, extra: { STATUS_POSITIVE: primary } }
-const light: Look = { palette: day, extra: { STATUS_POSITIVE: primary } }
+// Green and red states all use the primary, with dark text on top. Do-not-disturb stays red so it
+// still differs from online.
+const states = {
+	STATUS_POSITIVE: primary,
+	STATUS_ONLINE: primary,
+	STATUS_SPEAKING: primary,
+	STATUS_DANGER: primary,
+	STATUS_POSITIVE_BACKGROUND: primary,
+	STATUS_POSITIVE_TEXT: onPrimary,
+	ICON_STATUS_ONLINE: primary,
+	TEXT_STATUS_ONLINE: primary,
+	ICON_VOICE_CONNECTED: primary,
+	ICON_VOICE_SPEAKING: primary,
+	ICON_VOICE_MUTED: primary,
+	ICON_VOICE_DISCONNECTED: primary,
+	ICON_FEEDBACK_NOTIFICATION: primary,
+	BADGE_SUCCESS_BACKGROUND: primary,
+	BADGE_SUCCESS_TEXT: onPrimary,
+	BADGE_NOTIFICATION_BACKGROUND: primary,
+	BADGE_NOTIFICATION_TEXT: onPrimary,
+	BADGE_CRITICAL_BACKGROUND: primary,
+	BADGE_CRITICAL_TEXT: onPrimary,
+	CONTROL_CRITICAL_PRIMARY_TEXT_DEFAULT: onPrimary,
+	ICON_STATUS_DND: '#e0556a',
+	TEXT_STATUS_DND: '#e0556a',
+}
+
+const dark: Look = { palette: night, extra: states }
+const light: Look = { palette: day, extra: states }
 
 export default plugin({
 	preInit({ themes }) {
