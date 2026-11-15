@@ -2327,10 +2327,10 @@
     },
     "dxckie.theme.periwinkle": {
       "name": "Periwinkle",
-      "description": "Deep navy-violet theme with #9595FF as the main accent, plus a periwinkle-tinted Light.",
+      "description": "Deep indigo surfaces with soft periwinkle accents.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.4.0"
+        "latest": "1.4.1"
       },
       "versions": {
         "1.0.0": {
@@ -2433,6 +2433,22 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.periwinkle@1.4.0.zip",
           "sha256": "e7745fba644db553329fdcb199cf93502d5e8714b5eefd678f93da3d1920b828",
           "size": 10341,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
+            }
+          }
+        },
+        "1.4.1": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.periwinkle@1.4.1.zip",
+          "sha256": "066a9c6e00db5148cfd20bbfc2729aeb0f0c8ca0e26e8b2bde9b8ca6b757e6d8",
+          "size": 10288,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
