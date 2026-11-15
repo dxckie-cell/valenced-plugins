@@ -174,12 +174,11 @@ export default plugin({
 	preInit({ themes }) {
 		themes.registerGroup('periwinkle', {
 			name: 'Periwinkle',
-			description: 'Soft violet-blue built around #9595FF.',
+			description: 'Soft violet-blue and deep indigo.',
 		})
 		themes.registerTheme('periwinkle', 'periwinkle', {
 			name: 'Periwinkle',
-			description:
-				'Deep indigo surfaces with #9595FF accents, or a lavender day on Light.',
+			description: 'Deep indigo surfaces with soft periwinkle accents.',
 			getColors: lazyColors(tone, {
 				dark,
 				darker: dark,
