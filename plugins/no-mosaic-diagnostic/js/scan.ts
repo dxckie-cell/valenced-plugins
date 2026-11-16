@@ -4,7 +4,7 @@
 const NAME = /mosaic|media.?grid|image.?grid|collage|visual.?media|media.?layout|attachment/i
 const MAX_LINES = 200
 
-type Before = (parent: any, key: string, hook: (args: any[]) => void) => () => void
+type Before = (parent: any, key: string, hook: (args: any[]) => any[]) => () => void
 
 export const report: string[] = []
 const seen = new WeakSet<object>()
@@ -75,10 +75,13 @@ export function scanModule(id: number | string, exports: any, before: Before, cl
 			let done = false
 			try {
 				cleanup(
-					before(target[0], target[1], ([props]) => {
-						if (done) return
-						done = true
-						add(`CALL ${label}: ${shape(props)}`)
+					// A before hook must hand the arguments back, or the original function is called with none.
+					before(target[0], target[1], args => {
+						if (!done) {
+							done = true
+							add(`CALL ${label}: ${shape(args[0])}`)
+						}
+						return args
 					}),
 				)
 			} catch {}
