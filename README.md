@@ -32,6 +32,7 @@ Then install the plugins you want and reload Valenced.
 | Klipy Gif Fix | `dxckie.klipy-gif-fix` | Saves and shares Klipy GIFs as `.gif` instead of `.mp4`. Works out of the box, with no setup or API key needed. Port of dxckie-cell's Vendetta plugin Klipy Gif Fix, inspired by Tenor Gif Fix by nexpid. |
 | Giphy Gif Fix | `dxckie.giphy-gif-fix` | Saves and shares Giphy GIFs as `.gif` instead of `.mp4`. Works out of the box, with no API key. Inspired by Tenor Gif Fix by nexpid. |
 | Pastelize | `dxckie.pastelize` | Gives names without a role color a pastel color picked from the user ID. Port of Cynosphere's Vendetta plugin Pastelize, using the fixed copy from EKSIF. |
+| NoMosaic | `dxckie.no-mosaic` | Shows message images and videos one under another instead of in a grid. Port of the NoMosaic plugin from Vencord and Equicord. |
 
 ## Development
 
