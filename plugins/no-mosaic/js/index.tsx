@@ -14,7 +14,7 @@ const status = { patched: 0, rows: 0, changed: 0, error: '', sample: '', hits: [
 const urls = new Set<string>()
 
 const findUrl = (v: any, path: string, depth: number): string | undefined => {
-	if (typeof v === 'string') return urls.has(v) ? path : undefined
+	if (typeof v === 'string') return v.length > 20 && v.length < 600 && [...urls].some(u => v.includes(u)) ? path : undefined
 	if (!v || typeof v !== 'object' || depth > 5 || v.$$typeof) return
 	for (const k of Object.keys(v).slice(0, 40)) {
 		try {
@@ -74,7 +74,7 @@ export default plugin({
 						if (had === true) status.changed++
 						if (content?.attachments?.length > 1) {
 							try {
-								for (const item of content.attachments.slice(0, 20)) if (typeof item?.url === 'string') urls.add(item.url)
+								for (const item of content.attachments.slice(0, 20)) if (typeof item?.url === 'string') urls.add(item.url.split('?')[0].split('/').slice(-2).join('/'))
 								status.sample ||= `grid=${had} n=${content.attachments.length} keys=${Object.keys(content.attachments[0]).join(',')}`
 							} catch {}
 						}
@@ -101,11 +101,11 @@ export default plugin({
 					after(parent, key, (el: any) => {
 						try {
 							const n = el?.type?.displayName || el?.type?.name || el?.type?.type?.name || el?.type?.render?.name
-							if (n && status.names.length < 25 && /media|attach|grid|mosaic|gallery|image|video/i.test(n)) {
+							if (n && status.names.length < 0 && /media|attach|grid|mosaic|gallery|image|video/i.test(n)) {
 								const label = `${n}(${Object.keys(el.props ?? {}).slice(0, 8).join(',')})`
 								if (!status.names.includes(label)) status.names.push(label)
 							}
-							if (urls.size && status.hits.length < 8 && el?.props) {
+							if (urls.size && status.hits.length < 15 && el?.props) {
 								const type = el.type
 								const name = type?.displayName || type?.name || type?.type?.name || type?.render?.name
 								const at = findUrl(el.props, 'props', 0)
