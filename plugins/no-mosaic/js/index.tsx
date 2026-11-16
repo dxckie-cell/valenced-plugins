@@ -73,7 +73,8 @@ export default plugin({
 						status.rows++
 						const had = content?.useAttachmentGridLayout
 						if (had === true) status.changed++
-						if (content?.attachments?.length > 1) {
+						const list = content?.attachments
+						if (list?.length > 1) {
 							// Record who reads the grid flag: the stack names the component that decides the layout.
 							for (const key of ['useAttachmentGridLayout', 'attachments']) {
 								try {
@@ -96,8 +97,8 @@ export default plugin({
 								} catch {}
 							}
 							try {
-								for (const item of content.attachments.slice(0, 20)) if (typeof item?.url === 'string') urls.add(item.url.split('?')[0].split('/').slice(-2).join('/'))
-								status.sample ||= `grid=${had} n=${content.attachments.length} keys=${Object.keys(content.attachments[0]).join(',')}`
+								for (const item of list.slice(0, 20)) if (typeof item?.url === 'string') urls.add(item.url.split('?')[0].split('/').slice(-2).join('/'))
+								status.sample ||= `grid=${had} n=${list.length} keys=${Object.keys(list[0]).join(',')}`
 							} catch {}
 						}
 						return content
