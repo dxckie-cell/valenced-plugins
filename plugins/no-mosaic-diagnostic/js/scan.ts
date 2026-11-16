@@ -1,16 +1,24 @@
-// Finds Discord modules that look related to the media grid ("mosaic") and records which props they
-// are called with. The report holds key names only, never prop values, so it is safe to paste.
+// Finds Discord modules that look related to the media grid ("mosaic") and records what they are called
+// with and what they return. The report holds key names only, plus short values of keys like `type`,
+// never message content, so it is safe to paste.
 
 const NAME = /mosaic|media.?grid|image.?grid|collage|visual.?media|media.?layout|attachment/i
-const MAX_LINES = 200
+const LAYOUT =
+	/media.{0,12}(item|row|group|layout|gallery|list|wrapper|container|pool|cell|tile)|(gallery|layout|tile|pool|row|group).{0,12}media|multi.?(image|media|photo)|image.?(row|list|gallery|group)|message.?(media|image|video)/i
+const ENUM_KEY = /^(type|kind|layout|variant|mode|content_type)$/
+const MAX_LINES = 300
+const MAX_LINE = 1500
 
-type Before = (parent: any, key: string, hook: (args: any[]) => any[]) => () => void
+type Patcher = {
+	before: (parent: any, key: string, hook: (args: any[]) => any[]) => () => void
+	after: (parent: any, key: string, hook: (result: any) => any) => () => void
+}
 
 export const report: string[] = []
 const seen = new WeakSet<object>()
 
 const add = (line: string) => {
-	if (report.length < MAX_LINES) report.push(line.slice(0, 300))
+	if (report.length < MAX_LINES) report.push(line.slice(0, MAX_LINE))
 }
 
 const keys = (o: any, limit: number): string[] => {
@@ -21,18 +29,24 @@ const keys = (o: any, limit: number): string[] => {
 	}
 }
 
-// The prop names, plus the names one level down: `item{type,uniqueId}`.
-const shape = (props: any): string => {
-	if (!props || typeof props !== 'object') return typeof props
-	return keys(props, 30)
-		.map(k => {
-			try {
-				const v = props[k]
-				return v && typeof v === 'object' && !Array.isArray(v) ? `${k}{${keys(v, 8)}}` : k
-			} catch {
-				return k
-			}
-		})
+// One key of an object: `name`, `name{inner keys}`, or `type=IMAGE` for the few keys whose value is a short label.
+const part = (v: any, k: string, depth: number): string => {
+	try {
+		const x = v[k]
+		if (typeof x === 'string' && ENUM_KEY.test(k) && x.length <= 24 && /^[\w/.-]+$/.test(x)) return `${k}=${x}`
+		return x && typeof x === 'object' ? `${k}{${shape(x, depth - 1)}}` : k
+	} catch {
+		return k
+	}
+}
+
+// Key names, three levels deep. Arrays show their length and the shape of the first item.
+const shape = (v: any, depth = 3): string => {
+	if (Array.isArray(v)) return `[${v.length}]${v.length && depth > 0 ? shape(v[0], depth - 1) : ''}`
+	if (!v || typeof v !== 'object') return typeof v
+	if (depth <= 0) return ''
+	return keys(v, 30)
+		.map(k => part(v, k, depth))
 		.join(',')
 }
 
@@ -44,7 +58,9 @@ const nameOf = (v: any): string => {
 	}
 }
 
-export function scanModule(id: number | string, exports: any, before: Before, cleanup: (fn: () => void) => void) {
+const interesting = (s: string) => NAME.test(s) || LAYOUT.test(s)
+
+export function scanModule(id: number | string, exports: any, patcher: Patcher, cleanup: (fn: () => void) => void) {
 	for (const [prefix, root] of [['', exports], ['default.', exports?.default]] as const) {
 		if (!root || (typeof root !== 'object' && typeof root !== 'function') || seen.has(root)) continue
 		seen.add(root)
@@ -57,7 +73,7 @@ export function scanModule(id: number | string, exports: any, before: Before, cl
 				continue
 			}
 			const name = nameOf(value)
-			if (!NAME.test(key) && !NAME.test(name)) continue
+			if (!interesting(key) && !interesting(name)) continue
 
 			const label = `#${id} ${prefix}${key}${name && name !== key ? ` (${name})` : ''}`
 			// Plain functions are hooked directly. Memo and forwardRef components hold the function in `type` or `render`.
@@ -69,19 +85,30 @@ export function scanModule(id: number | string, exports: any, before: Before, cl
 						: typeof value?.render === 'function'
 							? [value, 'render']
 							: undefined
-			add(`FOUND ${label} ${typeof value}${target ? '' : ' (not hooked)'}`)
+			const note = target ? '' : value && typeof value === 'object' ? ` (not hooked) {${keys(value, 15)}}` : ' (not hooked)'
+			add(`FOUND ${label} ${typeof value}${note}`)
 			if (!target) continue
 
-			let done = false
+			let calledOnce = false
+			let returnedOnce = false
 			try {
+				// Both hooks must hand their value back unchanged, or the real function breaks.
 				cleanup(
-					// A before hook must hand the arguments back, or the original function is called with none.
-					before(target[0], target[1], args => {
-						if (!done) {
-							done = true
+					patcher.before(target[0], target[1], args => {
+						if (!calledOnce) {
+							calledOnce = true
 							add(`CALL ${label}: ${shape(args[0])}`)
 						}
 						return args
+					}),
+				)
+				cleanup(
+					patcher.after(target[0], target[1], result => {
+						if (!returnedOnce) {
+							returnedOnce = true
+							add(`RETURN ${label}: ${shape(result)}`)
+						}
+						return result
 					}),
 				)
 			} catch {}

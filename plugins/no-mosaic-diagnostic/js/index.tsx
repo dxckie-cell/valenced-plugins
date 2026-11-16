@@ -36,8 +36,8 @@ export default plugin({
 	start({ cleanup, plugin }) {
 		report.length = 0
 		const metro = valenced.modules.metro as any
-		const before = valenced.patcher.before as any
-		const scan = (id: number | string, exports: any) => scanModule(id, exports, before, cleanup)
+		const patcher = valenced.patcher as any
+		const scan = (id: number | string, exports: any) => scanModule(id, exports, patcher, cleanup)
 
 		// Modules load lazily (the chat's media code loads when a chat opens), so scan now and keep scanning.
 		const walk = () => {
