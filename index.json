@@ -706,13 +706,26 @@
       "description": "Temporary helper: lists Discord's media grid modules so NoMosaic can be ported.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "0.0.1"
+        "latest": "0.0.2"
       },
       "versions": {
         "0.0.1": {
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.no-mosaic-diagnostic@0.0.1.zip",
           "sha256": "54591661fbc11590899de849cba1267a8ca12f0bd4707a0fd20f02d3f3fd5152",
           "size": 1689,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "0.0.2": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.no-mosaic-diagnostic@0.0.2.zip",
+          "sha256": "fda7754e2a6967d4f5f4c0ea080cabef2bb25112682a7225dbe3a85f61b48233",
+          "size": 1692,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
