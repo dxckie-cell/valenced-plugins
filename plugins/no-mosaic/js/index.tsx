@@ -8,7 +8,7 @@ import { ScrollView } from 'react-native'
 
 
 // Shown on the settings page so a missing patch is visible on the phone.
-const status = { patched: 0, rows: 0, changed: 0, error: '', sample: '', hits: [] as string[], names: [] as string[] }
+const status = { patched: 0, rows: 0, changed: 0, error: '', sample: '', hits: [] as string[], names: [] as string[], reads: [] as string[] }
 
 // Observe-only for now: URLs of grouped attachments, used to find the component that draws them.
 const urls = new Set<string>()
@@ -42,8 +42,9 @@ const SettingsComponent = () => {
 					<Design.TableRow label={`Message builder patched: ${status.patched}`} />
 					<Design.TableRow label={`Messages seen: ${status.rows}, changed: ${status.changed}`} />
 					<Design.TableRow label={`Drawn by: ${status.hits.join(' | ') || 'not found yet'}`} />
+					<Design.TableRow label={`Read by: ${status.reads.join(' || ') || 'nothing yet'}`} />
 					<Design.TableRow label={`Seen: ${status.names.join(' | ') || 'none'}`} />
-					<Design.TableRow label="Copy sample" onPress={() => Clipboard.setString(`${status.sample}\nDRAWN ${status.hits.join(' | ')}\nSEEN ${status.names.join(' | ')}`)} />
+					<Design.TableRow label="Copy sample" onPress={() => Clipboard.setString(`${status.sample}\nDRAWN ${status.hits.join(' | ')}\nREAD ${status.reads.join('\n')}`)} />
 					<Design.TableRow label={status.sample || 'No sample yet'} />
 					{status.error ? <Design.TableRow label={`Error: ${status.error}`} /> : null}
 					<Design.TableRow label="Refresh" onPress={() => refresh(n => n + 1)} />
@@ -73,6 +74,27 @@ export default plugin({
 						const had = content?.useAttachmentGridLayout
 						if (had === true) status.changed++
 						if (content?.attachments?.length > 1) {
+							// Record who reads the grid flag: the stack names the component that decides the layout.
+							for (const key of ['useAttachmentGridLayout', 'attachments']) {
+								try {
+									let value = content[key]
+									Object.defineProperty(content, key, {
+										configurable: true,
+										enumerable: true,
+										get() {
+											if (status.reads.length < 6) {
+												const frames = (new Error().stack ?? '').split('\n').slice(2, 9).map(f => f.trim().replace(/(\(|^)[^()\s]*[\\/]/, '$1').replace(/^at /, ''))
+												const line = `${key}: ${frames.join(' < ')}`
+												if (!status.reads.some(r => r.slice(0, 160) === line.slice(0, 160))) status.reads.push(line)
+											}
+											return value
+										},
+										set(v) {
+											value = v
+										},
+									})
+								} catch {}
+							}
 							try {
 								for (const item of content.attachments.slice(0, 20)) if (typeof item?.url === 'string') urls.add(item.url.split('?')[0].split('/').slice(-2).join('/'))
 								status.sample ||= `grid=${had} n=${content.attachments.length} keys=${Object.keys(content.attachments[0]).join(',')}`
