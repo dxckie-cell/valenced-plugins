@@ -13,7 +13,7 @@ const NEIGHBORS = /mosaic|media.?item|transform.?message|gap.?width/i
 const KNOWN =
 	/^(messageHasExpiredAttachmentUrl|hasAttachmentsEmbedsComponentsOrSnapshots|hasMessageSnapshotsWithAttachmentsOrEmbeds|useInputAttachments|getAttachmentImageLadderConfig|snapAttachmentDimensions|getAttachmentObscurityProps)$/
 const MAX_LINES = 500
-const MAX_LINE = 1500
+const MAX_LINE = 4000
 // Per function: record up to 4 different shapes, and only while the first 300 calls are happening.
 const MAX_SHAPES = 4
 const STACKED = /^transformMessageAttachments$/
@@ -38,7 +38,7 @@ type Patcher = {
 }
 
 // Keep in step with manifest.json. Shown in the report so it is clear which build produced it.
-const VERSION = '0.0.7'
+const VERSION = '0.0.8'
 
 // Proof the probe is alive: hooks installed, elements seen, elements searched, lists remembered.
 const stats = { hooks: 0, seen: 0, examined: 0, lists: 0 }
@@ -79,7 +79,7 @@ const shape = (v: any, depth = 3): string => {
 	if (Array.isArray(v)) return `[${v.length}]${v.length && depth > 0 ? shape(v[0], depth - 1) : ''}`
 	if (!v || typeof v !== 'object') return typeof v
 	if (depth <= 0) return ''
-	return keys(v, 30)
+	return keys(v, 80)
 		.map(k => part(v, k, depth))
 		.join(',')
 }
@@ -144,6 +144,19 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 
 			let calls = 0
 			let stacked = false
+			const searched = { HOLDS: 0, TAKES: 0 }
+			const found = { HOLDS: false, TAKES: false }
+			// After transformMessageAttachments has run, does this function take in or hand back those items?
+			const holds = (kind: 'HOLDS' | 'TAKES', value: any) => {
+				if (found[kind] || !trackedCount || searched[kind]++ >= 50) return
+				try {
+					const f = findMedia(value)
+					if (f?.path) {
+						found[kind] = true
+						add(`${kind} ${label} at=${f.path}`)
+					}
+				} catch {}
+			}
 			const seenShapes = { CALL: new Set<string>(), RETURN: new Set<string>() }
 			// Many calls look alike (a message with no attachments), so keep a few different shapes, not just the first.
 			const record = (kind: 'CALL' | 'RETURN', value: any) => {
@@ -161,6 +174,7 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 					patcher.before(target[0], target[1], args => {
 						calls++
 						record('CALL', args[0])
+						holds('TAKES', args[0])
 						if (!stacked && STACKED.test(name) && args[0]?.attachments?.length > 1) {
 							stacked = true
 							add(`STACK ${label}: ${callers()}`)
@@ -172,6 +186,7 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 					patcher.after(target[0], target[1], result => {
 						record('RETURN', result)
 						trackResult(result)
+						holds('HOLDS', result)
 						return result
 					}),
 				)
@@ -188,7 +203,7 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 
 const MAX_HITS = 8
 const MAX_ELEMENTS = 60000 // elements examined once items exist, then the probe stops itself
-const NODE_BUDGET = 120 // objects visited per element
+const NODE_BUDGET = 250 // objects visited per element
 const MAX_DEPTH = 6
 
 const tracked = new WeakSet<object>()
@@ -223,7 +238,7 @@ const findMedia = (props: any): { path: string; value: any } | undefined => {
 		visited.add(v)
 		if (tracked.has(v) || isItem(v)) return { path, value: v }
 		if (depth <= 0 || '$$typeof' in v) return
-		const ks = Array.isArray(v) ? [0, 1, 2].filter(i => i < v.length).map(String) : keys(v, 20)
+		const ks = Array.isArray(v) ? [0, 1, 2].filter(i => i < v.length).map(String) : keys(v, 80)
 		for (const k of ks) {
 			if (k === 'style') continue
 			let child: any
