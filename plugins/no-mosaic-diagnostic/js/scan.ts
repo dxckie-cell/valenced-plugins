@@ -6,6 +6,8 @@ const NAME =
 	/mosaic|media.?grid|image.?grid|collage|visual.?media|media.?layout|attachment|generate.?message.?row|create.?message.?content|message.?row.?data/i
 const LAYOUT =
 	/media.{0,12}(item|row|group|layout|gallery|list|wrapper|container|pool|cell|tile)|(gallery|layout|tile|pool|row|group).{0,12}media|multi.?(image|media|photo)|image.?(row|list|gallery|group)|message.?(media|image|video)/i
+// Layout switches on the message content. Their value is shown, because it is the thing being investigated.
+const FLAG_KEY = /^use(Attachment|Media)\w*$/
 const ENUM_KEY = /^(type|kind|layout|variant|mode|content_type|attachmentType)$/
 // A module with one of these exports gets all of its export names listed, to find its neighbours.
 const NEIGHBORS = /mosaic|media.?item|transform.?message|gap.?width/i
@@ -38,7 +40,7 @@ type Patcher = {
 }
 
 // Keep in step with manifest.json. Shown in the report so it is clear which build produced it.
-const VERSION = '0.0.8'
+const VERSION = '0.0.9'
 
 // Proof the probe is alive: hooks installed, elements seen, elements searched, lists remembered.
 const stats = { hooks: 0, seen: 0, examined: 0, lists: 0 }
@@ -48,6 +50,12 @@ export const header = () => [
 ]
 
 export const report: string[] = []
+
+const KEY_LINE = /^(VERSION|PROBE|JSX|LOCATE|HOLDS|TAKES|STACK) |^RETURN #\d+ .*?(createMessageContent|generateMessageRowData)/
+export const output = (): string[] => {
+	const all = [...header(), ...report]
+	return [...all.filter(l => KEY_LINE.test(l)), ...all.filter(l => !KEY_LINE.test(l))]
+}
 const seen = new WeakSet<object>()
 
 export const add = (line: string) => {
@@ -66,6 +74,7 @@ const keys = (o: any, limit: number): string[] => {
 const part = (v: any, k: string, depth: number): string => {
 	try {
 		const x = v[k]
+		if (FLAG_KEY.test(k) && typeof x === 'boolean') return `${k}=${x}`
 		if (ENUM_KEY.test(k) && typeof x === 'number') return `${k}=${x}`
 		if (typeof x === 'string' && ENUM_KEY.test(k) && x.length <= 24 && /^[\w/.-]+$/.test(x)) return `${k}=${x}`
 		return x && typeof x === 'object' ? `${k}{${shape(x, depth - 1)}}` : k
@@ -209,6 +218,14 @@ const MAX_DEPTH = 6
 const tracked = new WeakSet<object>()
 let trackedCount = 0
 
+const hasGridFlag = (v: any): boolean => {
+	try {
+		return 'useAttachmentGridLayout' in v
+	} catch {
+		return false
+	}
+}
+
 // A media item as transformMessageAttachments returns it. Also matches copies of the real ones.
 const isItem = (v: any): boolean => {
 	try {
@@ -236,7 +253,7 @@ const findMedia = (props: any): { path: string; value: any } | undefined => {
 	const walk = (v: any, path: string, depth: number): { path: string; value: any } | undefined => {
 		if (!v || typeof v !== 'object' || visited.has(v) || --budget < 0) return
 		visited.add(v)
-		if (tracked.has(v) || isItem(v)) return { path, value: v }
+		if (hasGridFlag(v) || tracked.has(v) || isItem(v)) return { path, value: v }
 		if (depth <= 0 || '$$typeof' in v) return
 		const ks = Array.isArray(v) ? [0, 1, 2].filter(i => i < v.length).map(String) : keys(v, 80)
 		for (const k of ks) {
@@ -273,7 +290,7 @@ export function probeElement(el: any, onHit: (type: any, line: string) => void) 
 		if (!type || typeof type === 'string' || !props || typeof props !== 'object') return
 		const found = findMedia(props)
 		if (!found) return
-		onHit(type, `${nameOf(type) || '(anonymous)'}${where(type)} at=${found.path} found{${shape(found.value, 2)}} props{${shape(props, 2)}}`)
+		onHit(type, `${nameOf(type) || '(anonymous)'}${where(type)} at=${found.path || '(props)'} found{${shape(found.value, 2)}} props{${shape(props, 2)}}`)
 	} catch {}
 }
 
