@@ -8,7 +8,7 @@ import { ScrollView } from 'react-native'
 
 
 // Shown on the settings page so a missing patch is visible on the phone.
-const status = { patched: 0, rows: 0, changed: 0, error: '', sample: '', hits: [] as string[] }
+const status = { patched: 0, rows: 0, changed: 0, error: '', sample: '', hits: [] as string[], names: [] as string[] }
 
 // Observe-only for now: URLs of grouped attachments, used to find the component that draws them.
 const urls = new Set<string>()
@@ -42,7 +42,8 @@ const SettingsComponent = () => {
 					<Design.TableRow label={`Message builder patched: ${status.patched}`} />
 					<Design.TableRow label={`Messages seen: ${status.rows}, changed: ${status.changed}`} />
 					<Design.TableRow label={`Drawn by: ${status.hits.join(' | ') || 'not found yet'}`} />
-					<Design.TableRow label="Copy sample" onPress={() => Clipboard.setString(`${status.sample}\nDRAWN ${status.hits.join(' | ')}`)} />
+					<Design.TableRow label={`Seen: ${status.names.join(' | ') || 'none'}`} />
+					<Design.TableRow label="Copy sample" onPress={() => Clipboard.setString(`${status.sample}\nDRAWN ${status.hits.join(' | ')}\nSEEN ${status.names.join(' | ')}`)} />
 					<Design.TableRow label={status.sample || 'No sample yet'} />
 					{status.error ? <Design.TableRow label={`Error: ${status.error}`} /> : null}
 					<Design.TableRow label="Refresh" onPress={() => refresh(n => n + 1)} />
@@ -99,6 +100,11 @@ export default plugin({
 				cleanup(
 					after(parent, key, (el: any) => {
 						try {
+							const n = el?.type?.displayName || el?.type?.name || el?.type?.type?.name || el?.type?.render?.name
+							if (n && status.names.length < 25 && /media|attach|grid|mosaic|gallery|image|video/i.test(n)) {
+								const label = `${n}(${Object.keys(el.props ?? {}).slice(0, 8).join(',')})`
+								if (!status.names.includes(label)) status.names.push(label)
+							}
 							if (urls.size && status.hits.length < 8 && el?.props) {
 								const type = el.type
 								const name = type?.displayName || type?.name || type?.type?.name || type?.render?.name
