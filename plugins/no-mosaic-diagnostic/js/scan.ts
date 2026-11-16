@@ -6,8 +6,13 @@ const NAME = /mosaic|media.?grid|image.?grid|collage|visual.?media|media.?layout
 const LAYOUT =
 	/media.{0,12}(item|row|group|layout|gallery|list|wrapper|container|pool|cell|tile)|(gallery|layout|tile|pool|row|group).{0,12}media|multi.?(image|media|photo)|image.?(row|list|gallery|group)|message.?(media|image|video)/i
 const ENUM_KEY = /^(type|kind|layout|variant|mode|content_type)$/
+// A module with one of these exports gets all of its export names listed, to find its neighbours.
+const NEIGHBORS = /mosaic|media.?item|transform.?message|gap.?width/i
 const MAX_LINES = 300
 const MAX_LINE = 1500
+// Per function: record up to 4 different shapes, and only while the first 300 calls are happening.
+const MAX_SHAPES = 4
+const MAX_CALLS = 300
 
 type Patcher = {
 	before: (parent: any, key: string, hook: (args: any[]) => any[]) => () => void
@@ -60,6 +65,21 @@ const nameOf = (v: any): string => {
 
 const interesting = (s: string) => NAME.test(s) || LAYOUT.test(s)
 
+// Export names with their kind: `fn()`, `obj{}`, or `name:n` for number, string, boolean.
+const listExports = (root: any): string =>
+	keys(root, 60)
+		.map(k => {
+			try {
+				const t = typeof root[k]
+				return t === 'function' ? `${k}()` : t === 'object' ? `${k}{}` : `${k}:${t[0]}`
+			} catch {
+				return k
+			}
+		})
+		.join(',')
+
+const dumped = new Set<string>()
+
 export function scanModule(id: number | string, exports: any, patcher: Patcher, cleanup: (fn: () => void) => void) {
 	for (const [prefix, root] of [['', exports], ['default.', exports?.default]] as const) {
 		if (!root || (typeof root !== 'object' && typeof root !== 'function') || seen.has(root)) continue
@@ -71,6 +91,10 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 				value = root[key]
 			} catch {
 				continue
+			}
+			if (NEIGHBORS.test(key) && !dumped.has(`${id}${prefix}`)) {
+				dumped.add(`${id}${prefix}`)
+				add(`MODULE #${id} ${prefix || 'exports'}: ${listExports(root)}`)
 			}
 			const name = nameOf(value)
 			if (!interesting(key) && !interesting(name)) continue
@@ -89,25 +113,30 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 			add(`FOUND ${label} ${typeof value}${note}`)
 			if (!target) continue
 
-			let calledOnce = false
-			let returnedOnce = false
+			let calls = 0
+			const seenShapes = { CALL: new Set<string>(), RETURN: new Set<string>() }
+			// Many calls look alike (a message with no attachments), so keep a few different shapes, not just the first.
+			const record = (kind: 'CALL' | 'RETURN', value: any) => {
+				try {
+					if (calls > MAX_CALLS || seenShapes[kind].size >= MAX_SHAPES) return
+					const s = shape(value)
+					if (seenShapes[kind].has(s)) return
+					seenShapes[kind].add(s)
+					add(`${kind} ${label}: ${s}`)
+				} catch {}
+			}
 			try {
 				// Both hooks must hand their value back unchanged, or the real function breaks.
 				cleanup(
 					patcher.before(target[0], target[1], args => {
-						if (!calledOnce) {
-							calledOnce = true
-							add(`CALL ${label}: ${shape(args[0])}`)
-						}
+						calls++
+						record('CALL', args[0])
 						return args
 					}),
 				)
 				cleanup(
 					patcher.after(target[0], target[1], result => {
-						if (!returnedOnce) {
-							returnedOnce = true
-							add(`RETURN ${label}: ${shape(result)}`)
-						}
+						record('RETURN', result)
 						return result
 					}),
 				)
