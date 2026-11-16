@@ -5,10 +5,11 @@
 import Page from '@valenced/components/Page'
 import { Design } from '@valenced/discord/design'
 import { Clipboard } from '@valenced/externals/react-native-clipboard'
+import { React, ReactJSXRuntime } from '@valenced/react'
 import { useState } from 'react'
 import { ScrollView } from 'react-native'
 
-import { report, scanModule } from './scan'
+import { report, scanModule, startElementProbe } from './scan'
 
 const SettingsComponent = () => {
 	const [, refresh] = useState(0)
@@ -49,6 +50,17 @@ export default plugin({
 		}
 
 		try {
+			// Names the component that is handed the list of media items. It removes itself after a few hits.
+			startElementProbe(
+				[
+					[ReactJSXRuntime, 'jsx'],
+					[ReactJSXRuntime, 'jsxs'],
+					[React, 'createElement'],
+				],
+				patcher,
+				metro,
+				cleanup,
+			)
 			walk()
 			const stop = metro.onAnyModuleInitialized((id: any, exports: any) => scan(id, exports))
 			if (typeof stop === 'function') cleanup(stop)
