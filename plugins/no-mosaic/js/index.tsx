@@ -2,13 +2,27 @@ import Page from '@valenced/components/Page'
 import { Design } from '@valenced/discord/design'
 import { Clipboard } from '@valenced/externals/react-native-clipboard'
 import { after } from '@valenced/patcher'
+import { React, ReactJSXRuntime } from '@valenced/react'
 import { useState } from 'react'
 import { ScrollView } from 'react-native'
 
-import { disableGrid } from './grid'
 
 // Shown on the settings page so a missing patch is visible on the phone.
-const status = { patched: 0, rows: 0, changed: 0, error: '', sample: '' }
+const status = { patched: 0, rows: 0, changed: 0, error: '', sample: '', hits: [] as string[] }
+
+// Observe-only for now: URLs of grouped attachments, used to find the component that draws them.
+const urls = new Set<string>()
+
+const findUrl = (v: any, path: string, depth: number): string | undefined => {
+	if (typeof v === 'string') return urls.has(v) ? path : undefined
+	if (!v || typeof v !== 'object' || depth > 5 || v.$$typeof) return
+	for (const k of Object.keys(v).slice(0, 40)) {
+		try {
+			const hit = findUrl(v[k], `${path}.${k}`, depth + 1)
+			if (hit) return hit
+		} catch {}
+	}
+}
 
 // Short, depth-limited dump of one message so we can see why the stacked layout renders nothing.
 const brief = (v: any, depth = 0): string => {
@@ -27,7 +41,8 @@ const SettingsComponent = () => {
 				<Design.TableRowGroup title="Status">
 					<Design.TableRow label={`Message builder patched: ${status.patched}`} />
 					<Design.TableRow label={`Messages seen: ${status.rows}, changed: ${status.changed}`} />
-					<Design.TableRow label="Copy sample" onPress={() => Clipboard.setString(status.sample)} />
+					<Design.TableRow label={`Drawn by: ${status.hits.join(' | ') || 'not found yet'}`} />
+					<Design.TableRow label="Copy sample" onPress={() => Clipboard.setString(`${status.sample}\nDRAWN ${status.hits.join(' | ')}`)} />
 					<Design.TableRow label={status.sample || 'No sample yet'} />
 					{status.error ? <Design.TableRow label={`Error: ${status.error}`} /> : null}
 					<Design.TableRow label="Refresh" onPress={() => refresh(n => n + 1)} />
@@ -55,16 +70,14 @@ export default plugin({
 					after(exports, 'default', (content: any) => {
 						status.rows++
 						const had = content?.useAttachmentGridLayout
-						const out = disableGrid(content)
-						if (had === true) {
-							status.changed++
-							if (!status.sample && content.attachments?.length > 1) {
-								try {
-									status.sample = `grid=${had} attachments=${brief(content.attachments)} opacity=${brief(content.attachmentsOpacity)} keys=${Object.keys(content).filter(k => /attach|media|grid|layout|image|video/i.test(k)).join(',')}`
-								} catch {}
-							}
+						if (had === true) status.changed++
+						if (content?.attachments?.length > 1) {
+							try {
+								for (const item of content.attachments.slice(0, 20)) if (typeof item?.url === 'string') urls.add(item.url)
+								status.sample ||= `grid=${had} n=${content.attachments.length} keys=${Object.keys(content.attachments[0]).join(',')}`
+							} catch {}
 						}
-						return out
+						return content
 					}),
 				)
 			} catch (e) {
@@ -80,6 +93,30 @@ export default plugin({
 				} catch {}
 			}
 		}
+
+		const probe = (parent: any, key: string) => {
+			try {
+				cleanup(
+					after(parent, key, (el: any) => {
+						try {
+							if (urls.size && status.hits.length < 8 && el?.props) {
+								const type = el.type
+								const name = type?.displayName || type?.name || type?.type?.name || type?.render?.name
+								const at = findUrl(el.props, 'props', 0)
+								const label = at && `${name ?? typeof type}${at.slice(5)}`
+								if (label && !status.hits.includes(label)) status.hits.push(label)
+							}
+						} catch {}
+						return el
+					}),
+				)
+			} catch (e) {
+				status.error = String(e)
+			}
+		}
+		probe(ReactJSXRuntime, 'jsx')
+		probe(ReactJSXRuntime, 'jsxs')
+		probe(React, 'createElement')
 
 		walk()
 		const stop = metro.onAnyModuleInitialized((_id: any, exports: any) => check(exports))
