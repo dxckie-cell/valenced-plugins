@@ -19,6 +19,7 @@ const MAX_LINE = 4000
 // Per function: record up to 4 different shapes, and only while the first 300 calls are happening.
 const MAX_SHAPES = 4
 const STACKED = /^transformMessageAttachments$/
+const ROWFN = /^(createMessageContent|generateMessageRowData)$/
 
 // Who called us: function names and bundle line:column only, with the file paths cut off.
 const callers = (): string => {
@@ -40,7 +41,7 @@ type Patcher = {
 }
 
 // Keep in step with manifest.json. Shown in the report so it is clear which build produced it.
-const VERSION = '0.0.9'
+const VERSION = '0.0.10'
 
 // Proof the probe is alive: hooks installed, elements seen, elements searched, lists remembered.
 const stats = { hooks: 0, seen: 0, examined: 0, lists: 0 }
@@ -51,7 +52,7 @@ export const header = () => [
 
 export const report: string[] = []
 
-const KEY_LINE = /^(VERSION|PROBE|JSX|LOCATE|HOLDS|TAKES|STACK) |^RETURN #\d+ .*?(createMessageContent|generateMessageRowData)/
+const KEY_LINE = /^(VERSION|PROBE|ROW|JSX|LOCATE|HOLDS|TAKES|STACK) /
 export const output = (): string[] => {
 	const all = [...header(), ...report]
 	return [...all.filter(l => KEY_LINE.test(l)), ...all.filter(l => !KEY_LINE.test(l))]
@@ -153,6 +154,7 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 
 			let calls = 0
 			let stacked = false
+			let rowLines = 0
 			const searched = { HOLDS: 0, TAKES: 0 }
 			const found = { HOLDS: false, TAKES: false }
 			// After transformMessageAttachments has run, does this function take in or hand back those items?
@@ -196,6 +198,18 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 						record('RETURN', result)
 						trackResult(result)
 						holds('HOLDS', result)
+						// What the grid flag is on a message with several attachments, once the row builders are done with it.
+						if ((ROWFN.test(name) || ROWFN.test(key)) && rowLines < 3) {
+							try {
+								const row = result?.message ?? result
+								const n = row?.attachments?.length
+								if (n > 1) {
+									rowLines++
+									const flag = row.useAttachmentGridLayout
+									add(`ROW ${label}: useAttachmentGridLayout=${typeof flag === 'boolean' ? flag : typeof flag} attachments=${n}`)
+								}
+							} catch {}
+						}
 						return result
 					}),
 				)
@@ -218,9 +232,18 @@ const MAX_DEPTH = 6
 const tracked = new WeakSet<object>()
 let trackedCount = 0
 
+// Own properties only: a proxy (Valenced's plugin API is one) answers `in` with true for any name.
+const own = (v: any, k: string): boolean => {
+	try {
+		return Object.prototype.hasOwnProperty.call(v, k)
+	} catch {
+		return false
+	}
+}
+
 const hasGridFlag = (v: any): boolean => {
 	try {
-		return 'useAttachmentGridLayout' in v
+		return own(v, 'useAttachmentGridLayout') && typeof v.useAttachmentGridLayout === 'boolean'
 	} catch {
 		return false
 	}
@@ -229,7 +252,7 @@ const hasGridFlag = (v: any): boolean => {
 // A media item as transformMessageAttachments returns it. Also matches copies of the real ones.
 const isItem = (v: any): boolean => {
 	try {
-		return !!v && typeof v === 'object' && 'attachmentType' in v && 'url' in v
+		return !!v && typeof v === 'object' && own(v, 'attachmentType') && own(v, 'url')
 	} catch {
 		return false
 	}
