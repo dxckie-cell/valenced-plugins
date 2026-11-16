@@ -2,7 +2,8 @@
 // with and what they return. The report holds key names only, plus short values of keys like `type`,
 // never message content, so it is safe to paste.
 
-const NAME = /mosaic|media.?grid|image.?grid|collage|visual.?media|media.?layout|attachment/i
+const NAME =
+	/mosaic|media.?grid|image.?grid|collage|visual.?media|media.?layout|attachment|generate.?message.?row|create.?message.?content|message.?row.?data/i
 const LAYOUT =
 	/media.{0,12}(item|row|group|layout|gallery|list|wrapper|container|pool|cell|tile)|(gallery|layout|tile|pool|row|group).{0,12}media|multi.?(image|media|photo)|image.?(row|list|gallery|group)|message.?(media|image|video)/i
 const ENUM_KEY = /^(type|kind|layout|variant|mode|content_type|attachmentType)$/
@@ -11,16 +12,40 @@ const NEIGHBORS = /mosaic|media.?item|transform.?message|gap.?width/i
 // Already understood from earlier reports. Still listed, no longer hooked, to keep the report short.
 const KNOWN =
 	/^(messageHasExpiredAttachmentUrl|hasAttachmentsEmbedsComponentsOrSnapshots|hasMessageSnapshotsWithAttachmentsOrEmbeds|useInputAttachments|getAttachmentImageLadderConfig|snapAttachmentDimensions|getAttachmentObscurityProps)$/
-const MAX_LINES = 300
+const MAX_LINES = 500
 const MAX_LINE = 1500
 // Per function: record up to 4 different shapes, and only while the first 300 calls are happening.
 const MAX_SHAPES = 4
+const STACKED = /^transformMessageAttachments$/
+
+// Who called us: function names and bundle line:column only, with the file paths cut off.
+const callers = (): string => {
+	try {
+		return String(new Error().stack)
+			.split('\n')
+			.slice(2, 12)
+			.map(l => l.trim().replace(/^at /, '').replace(/(\(|^)[^()\s]*[\\/]/, '$1'))
+			.join(' < ')
+	} catch {
+		return ''
+	}
+}
 const MAX_CALLS = 300
 
 type Patcher = {
 	before: (parent: any, key: string, hook: (args: any[]) => any[]) => () => void
 	after: (parent: any, key: string, hook: (result: any) => any) => () => void
 }
+
+// Keep in step with manifest.json. Shown in the report so it is clear which build produced it.
+const VERSION = '0.0.7'
+
+// Proof the probe is alive: hooks installed, elements seen, elements searched, lists remembered.
+const stats = { hooks: 0, seen: 0, examined: 0, lists: 0 }
+export const header = () => [
+	`VERSION ${VERSION}`,
+	`PROBE hooks=${stats.hooks} seen=${stats.seen} examined=${stats.examined} lists=${stats.lists}`,
+]
 
 export const report: string[] = []
 const seen = new WeakSet<object>()
@@ -118,6 +143,7 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 			if (!target || KNOWN.test(key)) continue
 
 			let calls = 0
+			let stacked = false
 			const seenShapes = { CALL: new Set<string>(), RETURN: new Set<string>() }
 			// Many calls look alike (a message with no attachments), so keep a few different shapes, not just the first.
 			const record = (kind: 'CALL' | 'RETURN', value: any) => {
@@ -135,6 +161,10 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 					patcher.before(target[0], target[1], args => {
 						calls++
 						record('CALL', args[0])
+						if (!stacked && STACKED.test(name) && args[0]?.attachments?.length > 1) {
+							stacked = true
+							add(`STACK ${label}: ${callers()}`)
+						}
 						return args
 					}),
 				)
@@ -178,12 +208,13 @@ export function trackResult(result: any) {
 		if (!Array.isArray(result) || !isItem(result[0])) return
 		tracked.add(result)
 		trackedCount++
+		stats.lists++
 		for (const item of result) if (item && typeof item === 'object') tracked.add(item)
 	} catch {}
 }
 
 // Looks for a remembered object, or one shaped like a media item, in an element's props.
-// Skips style and children, and does not enter nested React elements, which report themselves.
+// Skips style and does not enter nested React elements, which report themselves.
 const findMedia = (props: any): { path: string; value: any } | undefined => {
 	let budget = NODE_BUDGET
 	const visited = new WeakSet<object>()
@@ -194,7 +225,7 @@ const findMedia = (props: any): { path: string; value: any } | undefined => {
 		if (depth <= 0 || '$$typeof' in v) return
 		const ks = Array.isArray(v) ? [0, 1, 2].filter(i => i < v.length).map(String) : keys(v, 20)
 		for (const k of ks) {
-			if (k === 'style' || k === 'children') continue
+			if (k === 'style') continue
 			let child: any
 			try {
 				child = v[k]
@@ -259,7 +290,6 @@ export function startElementProbe(
 ) {
 	const hits = new Set<string>()
 	const stops: (() => void)[] = []
-	let examined = 0
 	const stopAll = () => {
 		for (const stop of stops) {
 			try {
@@ -269,7 +299,8 @@ export function startElementProbe(
 	}
 	// This runs for every element React creates, so it must return the element untouched and never throw.
 	const onElement = (el: any) => {
-		if (trackedCount && ++examined > MAX_ELEMENTS) {
+		stats.seen++
+		if (trackedCount && ++stats.examined > MAX_ELEMENTS) {
 			setTimeout(stopAll, 0)
 			return el
 		}
@@ -287,6 +318,7 @@ export function startElementProbe(
 	for (const [parent, key] of targets) {
 		try {
 			const stop = patcher.after(parent, key, onElement)
+			stats.hooks++
 			stops.push(stop)
 			cleanup(stop)
 		} catch {}

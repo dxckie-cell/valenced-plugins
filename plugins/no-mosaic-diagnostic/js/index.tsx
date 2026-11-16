@@ -9,7 +9,7 @@ import { React, ReactJSXRuntime } from '@valenced/react'
 import { useState } from 'react'
 import { ScrollView } from 'react-native'
 
-import { report, scanModule, startElementProbe } from './scan'
+import { header, report, scanModule, startElementProbe } from './scan'
 
 const SettingsComponent = () => {
 	const [, refresh] = useState(0)
@@ -19,10 +19,10 @@ const SettingsComponent = () => {
 				<Design.TableRowGroup title="Report">
 					<Design.TableRow label="Open a chat with several images, then tap Refresh" />
 					<Design.TableRow label="Refresh" onPress={() => refresh(n => n + 1)} />
-					<Design.TableRow label="Copy report" onPress={() => Clipboard.setString(report.join('\n'))} />
+					<Design.TableRow label="Copy report" onPress={() => Clipboard.setString([...header(), ...report].join('\n'))} />
 				</Design.TableRowGroup>
 				<Design.TableRowGroup title={`Findings (${report.length})`}>
-					{report.map((line, index) => (
+					{[...header(), ...report].map((line, index) => (
 						<Design.TableRow key={index} label={line} />
 					))}
 				</Design.TableRowGroup>

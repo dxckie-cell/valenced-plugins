@@ -4,7 +4,7 @@
 	"name": "NoMosaic Diagnostic",
 	"description": "Temporary helper: lists Discord's media grid modules so NoMosaic can be ported.",
 	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"
