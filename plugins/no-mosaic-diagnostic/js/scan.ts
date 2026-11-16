@@ -141,6 +141,7 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 				cleanup(
 					patcher.after(target[0], target[1], result => {
 						record('RETURN', result)
+						trackResult(result)
 						return result
 					}),
 				)
@@ -150,38 +151,61 @@ export function scanModule(id: number | string, exports: any, patcher: Patcher, 
 }
 
 // ---------------------------------------------------------------------------------------------
-// Element probe: finds the React component that is handed the list of media items
-// (the items transformMessageAttachments returns), which is where the grid gets built.
+// Element probe: finds the React component that is handed the media items returned by
+// transformMessageAttachments. That list sits inside a message row, several levels down, so the
+// probe remembers the returned objects by identity and searches element props for them.
 // ---------------------------------------------------------------------------------------------
 
 const MAX_HITS = 8
-const isMediaList = (v: any): boolean => {
+const MAX_ELEMENTS = 60000 // elements examined once items exist, then the probe stops itself
+const NODE_BUDGET = 120 // objects visited per element
+const MAX_DEPTH = 6
+
+const tracked = new WeakSet<object>()
+let trackedCount = 0
+
+// A media item as transformMessageAttachments returns it. Also matches copies of the real ones.
+const isItem = (v: any): boolean => {
 	try {
-		return Array.isArray(v) && v.length > 0 && !!v[0] && typeof v[0] === 'object' && 'attachmentType' in v[0]
+		return !!v && typeof v === 'object' && 'attachmentType' in v && 'url' in v
 	} catch {
 		return false
 	}
 }
 
-// The prop that carries the list, directly (`items`) or one object down (`content.items`).
-const findMediaProp = (props: any): string | undefined => {
-	for (const k of keys(props, 30)) {
-		if (k === 'style' || k === 'children') continue
-		let v: any
-		try {
-			v = props[k]
-		} catch {
-			continue
-		}
-		if (isMediaList(v)) return k
-		if (v && typeof v === 'object' && !Array.isArray(v)) {
-			for (const k2 of keys(v, 10)) {
-				try {
-					if (isMediaList(v[k2])) return `${k}.${k2}`
-				} catch {}
+export function trackResult(result: any) {
+	try {
+		if (!Array.isArray(result) || !isItem(result[0])) return
+		tracked.add(result)
+		trackedCount++
+		for (const item of result) if (item && typeof item === 'object') tracked.add(item)
+	} catch {}
+}
+
+// Looks for a remembered object, or one shaped like a media item, in an element's props.
+// Skips style and children, and does not enter nested React elements, which report themselves.
+const findMedia = (props: any): { path: string; value: any } | undefined => {
+	let budget = NODE_BUDGET
+	const visited = new WeakSet<object>()
+	const walk = (v: any, path: string, depth: number): { path: string; value: any } | undefined => {
+		if (!v || typeof v !== 'object' || visited.has(v) || --budget < 0) return
+		visited.add(v)
+		if (tracked.has(v) || isItem(v)) return { path, value: v }
+		if (depth <= 0 || '$$typeof' in v) return
+		const ks = Array.isArray(v) ? [0, 1, 2].filter(i => i < v.length).map(String) : keys(v, 20)
+		for (const k of ks) {
+			if (k === 'style' || k === 'children') continue
+			let child: any
+			try {
+				child = v[k]
+			} catch {
+				continue
 			}
+			const found = walk(child, Array.isArray(v) ? `${path}[${k}]` : path ? `${path}.${k}` : k, depth - 1)
+			if (found) return found
 		}
 	}
+	return walk(props, '', MAX_DEPTH)
 }
 
 // Where the component's code is in the bundle, like the line:column in a stack trace.
@@ -197,14 +221,13 @@ const where = (type: any): string => {
 
 export function probeElement(el: any, onHit: (type: any, line: string) => void) {
 	try {
+		if (!trackedCount) return
 		const type = el?.type
 		const props = el?.props
 		if (!type || typeof type === 'string' || !props || typeof props !== 'object') return
-		const prop = findMediaProp(props)
-		if (!prop) return
-		const [a, b] = prop.split('.')
-		const list = b ? props[a][b] : props[a]
-		onHit(type, `${nameOf(type) || '(anonymous)'}${where(type)} prop=${prop}[${list.length}] item{${shape(list[0], 1)}} props{${shape(props, 2)}}`)
+		const found = findMedia(props)
+		if (!found) return
+		onHit(type, `${nameOf(type) || '(anonymous)'}${where(type)} at=${found.path} found{${shape(found.value, 2)}} props{${shape(props, 2)}}`)
 	} catch {}
 }
 
@@ -236,6 +259,7 @@ export function startElementProbe(
 ) {
 	const hits = new Set<string>()
 	const stops: (() => void)[] = []
+	let examined = 0
 	const stopAll = () => {
 		for (const stop of stops) {
 			try {
@@ -245,8 +269,12 @@ export function startElementProbe(
 	}
 	// This runs for every element React creates, so it must return the element untouched and never throw.
 	const onElement = (el: any) => {
+		if (trackedCount && ++examined > MAX_ELEMENTS) {
+			setTimeout(stopAll, 0)
+			return el
+		}
 		probeElement(el, (type, line) => {
-			const id = line.split(' item{')[0]
+			const id = line.split(' found{')[0]
 			// The stop below runs on a timer, so a burst of renders could pass the cap before it fires.
 			if (hits.has(id) || hits.size >= MAX_HITS) return
 			hits.add(id)
