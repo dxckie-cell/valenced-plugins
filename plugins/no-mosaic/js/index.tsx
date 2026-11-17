@@ -1,6 +1,5 @@
 import Page from '@valenced/components/Page'
 import { Design } from '@valenced/discord/design'
-import { Clipboard } from '@valenced/externals/react-native-clipboard'
 import { before } from '@valenced/patcher'
 import { useState } from 'react'
 import { ScrollView } from 'react-native'
@@ -8,7 +7,7 @@ import { ScrollView } from 'react-native'
 // The grid is drawn natively from the rows that updateRows serializes, and a one-image grid is drawn
 // as a plain full-width image. So a message with N images is sent as N rows with one image each.
 // Experimental: both switches reset on restart and default to on (the list runs bottom-up on Android).
-const state = { split: true, reversed: true, realIds: true, rows: 0, error: '', diff: '' }
+const state = { split: true, reversed: true, realIds: true, rows: 0, error: '' }
 
 type Row = { message?: any; index?: number; separatorBefore?: boolean }
 
@@ -30,7 +29,14 @@ export function splitRows(rows: Row[], reversed: boolean, realIds = false): Row[
 				// Fake ids keep rows unique but make the native menus fail; real ids may collide in the list.
 				id: realIds ? row.message.id : `${row.message.id}-${i + 1}`,
 				attachments: [item],
+				// What a follow-up message from the same author carries, so the list draws no name header.
 				isFirst: false,
+				avatarURL: undefined,
+				avatarDecorationURL: null,
+				timestamp: undefined,
+				timestampTooltip: undefined,
+				timestampColor: undefined,
+				timestampAccessibilityLabel: undefined,
 				content: undefined,
 				reactions: [],
 				embeds: [],
@@ -43,18 +49,6 @@ export function splitRows(rows: Row[], reversed: boolean, realIds = false): Row[
 	}
 	// The native list also reads each row's position.
 	return out.map((r, i) => (r && 'index' in r && r.index !== i ? { ...r, index: i } : r))
-}
-
-// What differs between a message that shows the name header and a follow-up from the same author.
-const diffHeaders = (rows: Row[]) => {
-	const first = rows.find(r => r?.message?.isFirst === true)
-	const next = rows.find(r => r?.message?.isFirst === false && r.message.authorId === first?.message.authorId)
-	if (!first || !next) return
-	const line = (a: any, b: any, scope: string) =>
-		[...new Set([...Object.keys(a), ...Object.keys(b)])]
-			.filter(k => k !== 'message' && String(a[k]) !== String(b[k]))
-			.map(k => `${scope}${k}: ${String(a[k]).slice(0, 30)} -> ${String(b[k]).slice(0, 30)}`)
-	state.diff = [...line(first, next, 'row.'), ...line(first.message, next.message, '')].join('\n')
 }
 
 const SettingsComponent = () => {
@@ -70,8 +64,6 @@ const SettingsComponent = () => {
 					<Design.TableRow label={`Split grouped images into rows: ${state.split ? 'ON' : 'OFF'}`} onPress={() => flip('split')} />
 					<Design.TableRow label={`Reverse order: ${state.reversed ? 'ON' : 'OFF'}`} onPress={() => flip('reversed')} />
 					<Design.TableRow label={`Real message ids on extra rows (so press and hold works): ${state.realIds ? 'ON' : 'OFF'}`} onPress={() => flip('realIds')} />
-					<Design.TableRow label="Copy header diff" onPress={() => Clipboard.setString(state.diff)} />
-					<Design.TableRow label={state.diff || 'No diff yet'} />
 					<Design.TableRow label={`Messages split: ${state.rows}`} />
 					{state.error ? <Design.TableRow label={`Error: ${state.error}`} /> : null}
 					<Design.TableRow label="Reopen the chat after changing a switch" />
@@ -91,7 +83,6 @@ export default plugin({
 					const a = args[0]
 					// Any array holding a grouped message row; batches can start with date separators, so check every item.
 					if (!Array.isArray(a) || a.length > 500) return args
-					if (!state.diff) diffHeaders(a)
 					if (!state.split || !a.some(r => r?.message?.attachments?.length > 1)) return args
 					return [splitRows(a, state.reversed, state.realIds), ...args.slice(1)]
 				} catch (e) {
