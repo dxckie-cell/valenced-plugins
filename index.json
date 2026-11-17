@@ -847,7 +847,7 @@
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "ImageIcon",
       "channels": {
-        "latest": "1.0.7"
+        "latest": "1.0.8"
       },
       "versions": {
         "1.0.0": {
@@ -945,6 +945,19 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.no-mosaic@1.0.7.zip",
           "sha256": "c5c469f8c79b747be615f591529baf3bbd13813f3bb99257518b15701b3ea47a",
           "size": 2085,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "1.0.8": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.no-mosaic@1.0.8.zip",
+          "sha256": "1a1f077d633589b2bfa328b38abda5458d28b4d332cd467efe42152f4ed418eb",
+          "size": 1252,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
