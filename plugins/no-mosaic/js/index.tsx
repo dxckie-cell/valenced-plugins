@@ -9,7 +9,7 @@ import { ScrollView } from 'react-native'
 // The grid is drawn natively from the rows that updateRows serializes, and a one-image grid is drawn
 // as a plain full-width image. So a message with N images is sent as N rows with one image each.
 // Experimental: both switches reset on restart and default to on (the list runs bottom-up on Android).
-const state = { split: true, reversed: true, realIds: true, rows: 0, error: '', record: false, hooked: 0, log: [] as string[] }
+const state = { split: true, reversed: true, realIds: true, rows: 0, error: '', record: false, hooked: 0, log: [] as string[], sizes: new Map<string, number[][]>() }
 
 type Row = { message?: any; index?: number; separatorBefore?: boolean }
 
@@ -22,6 +22,7 @@ export function splitRows(rows: Row[], reversed: boolean, realIds = false): Row[
 			continue
 		}
 		state.rows++
+		state.sizes.set(String(row.message.id), list.map((i: any) => [i.width, i.height]))
 		const head = { ...row, message: { ...row.message, attachments: [list[0]] } }
 		const rest = list.slice(1).map((item: any, i: number) => ({
 			...row,
@@ -51,6 +52,23 @@ export function splitRows(rows: Row[], reversed: boolean, realIds = false): Row[
 	}
 	// The native list also reads each row's position.
 	return out.map((r, i) => (r && 'index' in r && r.index !== i ? { ...r, index: i } : r))
+}
+
+// The tap event reports the tapped rectangle but only the index inside its own one-image row, so the
+// real position is recovered by matching the rectangle's aspect ratio to the message's images.
+// shortcut: images with the same aspect ratio can't be told apart (first one wins), fine until the event carries more.
+export function pickIndex(sizes: number[][], layout: { width: number; height: number }): number {
+	const ratio = layout.width / layout.height
+	let best = -1
+	let bestDiff = Infinity
+	sizes.forEach(([w, h], i) => {
+		const diff = Math.abs(Math.log(w / h / ratio))
+		if (diff < bestDiff) {
+			bestDiff = diff
+			best = i
+		}
+	})
+	return best
 }
 
 // Temporary: shows what a tap on an image carries, so the viewer can open on the tapped image.
@@ -105,7 +123,14 @@ export default plugin({
 								if (!wrapper) {
 									wrapper = function (this: any, ...args: any[]) {
 										try {
-											if (state.record && state.log.length < 10) state.log.push(`${fn.name} prop=${k} args=${args.map(x => brief(x, 0, 4)).join(' ; ')}`)
+											const ev = args[0]
+											const ne = ev?.nativeEvent
+											const sizes = state.split && ne?.type === 'attachment' ? state.sizes.get(String(ne.id)) : undefined
+											if (sizes && ne.layout?.width > 0 && ne.layout?.height > 0) {
+												const index = pickIndex(sizes, ne.layout)
+												if (state.record && state.log.length < 10) state.log.push(`tap id=${ne.id} index ${ne.index} -> ${index} layout=${brief(ne.layout)} sizes=${JSON.stringify(sizes)}`)
+												if (index >= 0 && index !== ne.index) args = [Object.create(ev, { nativeEvent: { value: { ...ne, index } } }), ...args.slice(1)]
+											}
 										} catch {}
 										return fn.apply(this, args)
 									}
