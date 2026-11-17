@@ -9,7 +9,7 @@ import { ScrollView } from 'react-native'
 // Experimental: both switches reset on restart and default to on (the list runs bottom-up on Android).
 const state = { split: true, reversed: true, realIds: true, rows: 0, error: '' }
 
-type Row = { message?: any; index?: number; separatorBefore?: boolean }
+type Row = { message?: any; index?: number; separatorBefore?: boolean; renderContentOnly?: boolean }
 
 export function splitRows(rows: Row[], reversed: boolean, realIds = false): Row[] {
 	const out: Row[] = []
@@ -24,12 +24,15 @@ export function splitRows(rows: Row[], reversed: boolean, realIds = false): Row[
 		const rest = list.slice(1).map((item: any, i: number) => ({
 			...row,
 			separatorBefore: false,
+			// Content-only rows are how the list draws a follow-up message without the name header.
+			renderContentOnly: true,
 			message: {
 				...row.message,
 				// Fake ids keep rows unique but make the native menus fail; real ids may collide in the list.
 				id: realIds ? row.message.id : `${row.message.id}-${i + 1}`,
 				attachments: [item],
 				isFirst: false,
+				renderContentOnly: true,
 				content: undefined,
 				reactions: [],
 				embeds: [],
