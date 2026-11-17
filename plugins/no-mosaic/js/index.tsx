@@ -72,9 +72,8 @@ export default plugin({
 			before(JSON, 'stringify', (args: any[]) => {
 				try {
 					const a = args[0]
-					// Only the chat's row list: an array whose first items wrap a message.
-					if (!state.split || !Array.isArray(a) || !a.slice(0, 3).some(r => r && typeof r === 'object' && 'message' in r)) return args
-					if (!a.some(r => r?.message?.attachments?.length > 1)) return args
+					// Any array holding a grouped message row; batches can start with date separators, so check every item.
+					if (!state.split || !Array.isArray(a) || a.length > 500 || !a.some(r => r?.message?.attachments?.length > 1)) return args
 					return [splitRows(a, state.reversed), ...args.slice(1)]
 				} catch (e) {
 					state.error = String(e)
