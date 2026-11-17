@@ -7,7 +7,11 @@ import { ScrollView } from 'react-native'
 
 // Observe-only: the grid is drawn natively from the JSON that updateRows sends, so we capture one
 // grouped message row as it is serialized to learn what shape the native list expects.
-const status = { sample: '', calls: 0, tops: [] as string[] }
+const status = { sample: '', single: '', calls: 0, tops: [] as string[] }
+
+// Fields after the first 55 keys, plus every field of the wrapper around the message.
+const tail = (v: any) => Object.keys(v).slice(55).map(k => `${k}:${brief(v[k], 1)}`).join(', ')
+const wrapper = (v: any) => Object.keys(v).filter(k => k !== 'message').map(k => `${k}:${brief(v[k], 1)}`).join(', ')
 
 const brief = (v: any, depth = 0): string => {
 	if (v === null || typeof v !== 'object') return typeof v === 'function' ? 'fn' : String(v).slice(0, 50)
@@ -23,8 +27,8 @@ const SettingsComponent = () => {
 			<Page>
 				<Design.TableRowGroup title="Status">
 					<Design.TableRow label={`Serialize calls checked: ${status.calls}`} />
-					<Design.TableRow label={`Payloads: ${status.tops.join(' || ') || 'none'}`} />
-					<Design.TableRow label="Copy sample" onPress={() => Clipboard.setString(`${status.sample}\nTOPS ${status.tops.join(' || ')}`)} />
+					<Design.TableRow label={`Single: ${status.single || 'none yet'}`} />
+					<Design.TableRow label="Copy sample" onPress={() => Clipboard.setString(`${status.sample}\nSINGLE ${status.single}`)} />
 					<Design.TableRow label={status.sample || 'No sample yet: open a chat with several images, then Refresh'} />
 					<Design.TableRow label="Refresh" onPress={() => refresh(n => n + 1)} />
 				</Design.TableRowGroup>
@@ -41,23 +45,25 @@ export default plugin({
 		cleanup(
 			before(JSON, 'stringify', (args: any[]) => {
 				// Cheap exit once we have the sample; hooks must always hand the arguments back.
-				if (status.sample || busy) return args
+				if ((status.sample && status.single) || busy) return args
 				busy = true
 				try {
 					status.calls++
 					const a = args[0]
-					if (status.tops.length < 5 && a && typeof a === 'object') status.tops.push(brief(a).slice(0, 200))
-					// Find the object holding a grouped attachment list, wherever it sits in the payload.
+					// Find a message with a grouped attachment list (and one with a single attachment, to compare).
 					let budget = 400
-					const find = (v: any, path: string, depth: number): void => {
-						if (status.sample || !v || typeof v !== 'object' || depth > 5 || budget-- < 0) return
-						if (Array.isArray(v.attachments) && v.attachments.length > 1 && 'useAttachmentGridLayout' in v) {
-							status.sample = `at=${path || 'root'} ${brief(v)}`
+					const find = (v: any, path: string, parent: any, depth: number): void => {
+						if (!v || typeof v !== 'object' || depth > 5 || budget-- < 0) return
+						const n = Array.isArray(v.attachments) ? v.attachments.length : 0
+						if (n > 0 && 'useAttachmentGridLayout' in v) {
+							const text = `at=${path || 'root'} n=${n} grid=${v.useAttachmentGridLayout} opacity=${v.attachmentsOpacity} wrapper={${parent ? wrapper(parent) : ''}} tail={${tail(v)}}`
+							if (n > 1 && !status.sample) status.sample = text
+							if (n === 1 && !status.single) status.single = text
 							return
 						}
-						for (const k of Object.keys(v).slice(0, 60)) find(v[k], `${path}.${k}`, depth + 1)
+						for (const k of Object.keys(v).slice(0, 60)) find(v[k], `${path}.${k}`, v, depth + 1)
 					}
-					find(a, '', 0)
+					find(a, '', null, 0)
 				} catch {}
 				busy = false
 				return args
