@@ -7,7 +7,7 @@ import { ScrollView } from 'react-native'
 // The grid is drawn natively from the rows that updateRows serializes, and a one-image grid is drawn
 // as a plain full-width image. So a message with N images is sent as N rows with one image each.
 // Experimental: both switches reset on restart and default to on (the list runs bottom-up on Android).
-const state = { split: true, reversed: true, realIds: false, rows: 0, error: '' }
+const state = { split: true, reversed: true, realIds: true, rows: 0, error: '' }
 
 type Row = { message?: any; index?: number; separatorBefore?: boolean }
 
