@@ -133,7 +133,7 @@ const day: Palette = {
 	spoilerRevealed: '#f1d3dd',
 
 	positive: '#ad356f',
-	warning: '#8a6310',
+	warning: '#a8365f',
 	danger: '#ad356f',
 	dangerFill: primary,
 	scrim: '#2a0c1c59',
