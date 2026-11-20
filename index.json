@@ -2775,6 +2775,32 @@
         }
       }
     },
+    "dxckie.theme.cocoa": {
+      "name": "Cocoa",
+      "description": "Warm cocoa-brown surfaces with a caramel accent, or a cream day on Light.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.cocoa@1.0.0.zip",
+          "sha256": "6d75acda28c86f3b06a506ad92e355667e8c4b6ebb7906026adadf6609ba350c",
+          "size": 10188,
+          "dependencies": {
+            "valenced.api": {
+              "version": "1.0.0"
+            },
+            "discord": {
+              "version": "1.0.0"
+            },
+            "valenced.api.themes": {
+              "version": "1.0.0"
+            }
+          }
+        }
+      }
+    },
     "dxckie.theme.periwinkle": {
       "name": "Periwinkle",
       "description": "Deep indigo surfaces with soft periwinkle accents.",
