@@ -1,0 +1,22 @@
+{
+	"format": 1,
+	"id": "dxckie.theme.rose",
+	"name": "Rose",
+	"description": "Deep plum surfaces with a rose accent, or a blush day on Light.",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": ">=352.2"
+		},
+		"valenced.api.themes": {
+			"version": ">=1.0.1 <2"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}
