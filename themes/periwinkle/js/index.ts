@@ -167,13 +167,13 @@ const states = {
 	TEXT_STATUS_DND: '#e0556a',
 }
 
-// Usernames without a role colour, and the white server-list dots, read Discord's strong-text colour.
+// Usernames without a role colour read Discord's heading colour. The active icon colour covers the server-list dots.
 // Light uses a deeper shade, since the primary is too pale on white.
 const dark: Look = {
 	palette: night,
 	extra: {
 		...states,
-		TEXT_STRONG: primary,
+		MOBILE_TEXT_HEADING_PRIMARY: primary,
 		INTERACTIVE_ICON_ACTIVE: primary,
 		INTERACTIVE_ICON_HOVER: primary,
 	},
@@ -182,7 +182,7 @@ const light: Look = {
 	palette: day,
 	extra: {
 		...states,
-		TEXT_STRONG: '#4a4ad0',
+		MOBILE_TEXT_HEADING_PRIMARY: '#4a4ad0',
 		INTERACTIVE_ICON_ACTIVE: '#4a4ad0',
 		INTERACTIVE_ICON_HOVER: '#4a4ad0',
 	},
