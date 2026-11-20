@@ -167,8 +167,26 @@ const states = {
 	TEXT_STATUS_DND: '#e0556a',
 }
 
-const dark: Look = { palette: night, extra: states }
-const light: Look = { palette: day, extra: states }
+// Usernames without a role colour, and the white server-list dots, read Discord's strong-text colour.
+// Light uses a deeper shade, since the primary is too pale on white.
+const dark: Look = {
+	palette: night,
+	extra: {
+		...states,
+		TEXT_STRONG: primary,
+		INTERACTIVE_ICON_ACTIVE: primary,
+		INTERACTIVE_ICON_HOVER: primary,
+	},
+}
+const light: Look = {
+	palette: day,
+	extra: {
+		...states,
+		TEXT_STRONG: '#4a4ad0',
+		INTERACTIVE_ICON_ACTIVE: '#4a4ad0',
+		INTERACTIVE_ICON_HOVER: '#4a4ad0',
+	},
+}
 
 export default plugin({
 	preInit({ themes }) {
