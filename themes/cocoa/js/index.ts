@@ -3,23 +3,23 @@
 import { lazyColors } from '../../../shared/theme-kit'
 import type { Look, Palette, Tone } from '../../../shared/theme-kit'
 
-// Caramel brown sampled from warm skin tones. Dark text on it reaches 5.4:1.
-const primary = '#ba7e5a'
+// Caramel brown sampled from warm skin tones, over deep chocolate surfaces. Dark text on it reaches 5.4:1.
+const primary = '#bb7a55'
 const onPrimary = '#1d0f08'
 
 // Discord's greys become cocoa browns: near-black espresso for the dark bases, cream for Light.
 const tone: Tone = {
 	greys: [
-		['#000000', '#0f0805'],
-		['#2c2d32', '#150c08'],
-		['#323339', '#1d120d'],
-		['#393a41', '#2a1b14'],
-		['#41434a', '#37241b'],
-		['#595a63', '#5a4034'],
-		['#81828a', '#8a7061'],
-		['#97979f', '#a68c7c'],
-		['#abacb2', '#bfa795'],
-		['#c5c6ca', '#d6c2b3'],
+		['#000000', '#100806'],
+		['#2c2d32', '#170d0a'],
+		['#323339', '#1f1210'],
+		['#393a41', '#2d1b17'],
+		['#41434a', '#3a2520'],
+		['#595a63', '#5f4137'],
+		['#81828a', '#8c7063'],
+		['#97979f', '#a98d80'],
+		['#abacb2', '#c2a898'],
+		['#c5c6ca', '#d8c3b6'],
 		['#efeff1', '#f1e5db'],
 		['#f3f3f4', '#f6ede5'],
 		['#fbfbfb', '#fbf5f0'],
@@ -40,15 +40,15 @@ const tone: Tone = {
 }
 
 const night: Palette = {
-	rail: '#150c08',
-	floor: '#1d120d',
-	panel: '#190f0a',
-	page: '#22150f',
-	card: '#2a1b14',
-	popup: '#33211a',
-	input: '#1b100b',
-	control: '#3a261d',
-	pressed: '#47302a',
+	rail: '#170d0a',
+	floor: '#1f1210',
+	panel: '#1b0f0c',
+	page: '#251612',
+	card: '#2d1b17',
+	popup: '#372420',
+	input: '#1c100d',
+	control: '#3d2823',
+	pressed: '#4a312b',
 
 	heading: '#fff7f1',
 	strong: '#f6ebe3',
@@ -57,30 +57,30 @@ const night: Palette = {
 	muted: '#977f70',
 	faint: '#6e594d',
 
-	divider: '#ba7e5a1a',
-	border: '#ba7e5a33',
-	borderStrong: '#ba7e5a59',
+	divider: '#bb7a551a',
+	border: '#bb7a5533',
+	borderStrong: '#bb7a5559',
 
 	accent: primary,
 	accentPress: '#a8693f',
 	onAccent: onPrimary,
-	accentSoft: '#ba7e5a26',
+	accentSoft: '#bb7a5526',
 	accentText: '#e0b090',
 	// Sits under Discord's white icons, so it is a deeper shade of the primary.
 	brand: '#a8693f',
 	rowIcon: primary,
-	selection: '#ba7e5a26',
+	selection: '#bb7a5526',
 
 	link: '#e0b090',
 	mentionText: '#f0d2bc',
-	mentionPill: '#ba7e5a33',
-	mentionBg: '#ba7e5a14',
+	mentionPill: '#bb7a5533',
+	mentionBg: '#bb7a5514',
 	replyBg: '#ffffff0d',
-	keyword: '#ba7e5a40',
-	code: '#120a06',
+	keyword: '#bb7a5540',
+	code: '#130a07',
 	codeText: '#e0b090',
-	spoiler: '#3d2a21',
-	spoilerRevealed: '#2a1b14',
+	spoiler: '#412b25',
+	spoilerRevealed: '#2d1b17',
 
 	positive: '#8cc58a',
 	warning: '#f0d28a',
@@ -114,19 +114,19 @@ const day: Palette = {
 	accent: primary,
 	accentPress: '#a8693f',
 	onAccent: onPrimary,
-	accentSoft: '#ba7e5a33',
+	accentSoft: '#bb7a5533',
 	// The primary is too light for text on cream, so text and links use a deeper shade.
 	accentText: '#8a4f2c',
 	brand: '#a8693f',
 	rowIcon: '#a8693f',
-	selection: '#ba7e5a26',
+	selection: '#bb7a5526',
 
 	link: '#7a4222',
 	mentionText: '#7a4222',
-	mentionPill: '#ba7e5a40',
-	mentionBg: '#ba7e5a1f',
+	mentionPill: '#bb7a5540',
+	mentionBg: '#bb7a551f',
 	replyBg: '#2a150c0a',
-	keyword: '#ba7e5a59',
+	keyword: '#bb7a5559',
 	code: '#efe2d6',
 	codeText: '#7a4222',
 	spoiler: '#c9b2a2',
