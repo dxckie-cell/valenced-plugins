@@ -2780,7 +2780,7 @@
       "description": "Warm cocoa-brown surfaces with a caramel accent, or a cream day on Light.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.0.0"
+        "latest": "1.0.1"
       },
       "versions": {
         "1.0.0": {
@@ -2796,6 +2796,22 @@
             },
             "valenced.api.themes": {
               "version": "1.0.0"
+            }
+          }
+        },
+        "1.0.1": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.cocoa@1.0.1.zip",
+          "sha256": "dbbfa89e2706a8096a73ccd86cb652160654b919d116fdd32d6c029329617169",
+          "size": 10205,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
             }
           }
         }
