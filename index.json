@@ -3040,7 +3040,7 @@
       "description": "Deep plum surfaces with a rose accent, or a blush day on Light.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.1.2"
+        "latest": "1.2.0"
       },
       "versions": {
         "1.0.0": {
@@ -3095,6 +3095,22 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.rose@1.1.2.zip",
           "sha256": "f54e9309d795bb1e9aa81b45a52f237fe740fac95fa8afd98951e7fbe84f3ed6",
           "size": 10336,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
+            }
+          }
+        },
+        "1.2.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.rose@1.2.0.zip",
+          "sha256": "103e6c94232392963d2a60b8810a15cf281948460df0e7fa8a25d0eb1a09ec99",
+          "size": 10341,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
