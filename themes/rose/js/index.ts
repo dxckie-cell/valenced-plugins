@@ -28,8 +28,8 @@ const tone: Tone = {
 	// Red and green are the primary too, so errors, badges, voice and online states all match.
 	hues: {
 		red: primary,
-		orange: '#f0907a',
-		yellow: '#f0b8a0',
+		orange: '#f29ab8',
+		yellow: '#f7c1d4',
 		green: primary,
 		teal: '#d98ac0',
 		blue: '#d078b8',
@@ -83,7 +83,7 @@ const night: Palette = {
 	spoilerRevealed: '#391927',
 
 	positive: primary,
-	warning: '#f6c4a8',
+	warning: '#f7c1d4',
 	danger: primary,
 	dangerFill: primary,
 	scrim: '#0a0307cc',
@@ -162,8 +162,8 @@ const states = {
 	BADGE_CRITICAL_BACKGROUND: primary,
 	BADGE_CRITICAL_TEXT: onPrimary,
 	CONTROL_CRITICAL_PRIMARY_TEXT_DEFAULT: onPrimary,
-	ICON_STATUS_DND: '#e8453c',
-	TEXT_STATUS_DND: '#e8453c',
+	ICON_STATUS_DND: '#e0386a',
+	TEXT_STATUS_DND: '#e0386a',
 }
 
 // Usernames without a role colour read Discord's heading colour. The active icon colour covers the server-list dots.
