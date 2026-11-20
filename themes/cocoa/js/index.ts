@@ -25,12 +25,12 @@ const tone: Tone = {
 		['#fbfbfb', '#fcf5f0'],
 		['#ffffff', '#ffffff'],
 	],
-	// Status colours are warmed so they sit next to the brown without clashing.
+	// Red and green are the primary too, so errors, badges, voice and online states all match.
 	hues: {
-		red: '#e0584f',
+		red: primary,
 		orange: '#e8873a',
 		yellow: '#e8b84a',
-		green: '#6fae6a',
+		green: primary,
 		teal: '#4aa8a0',
 		blue: '#5a8fd0',
 		blurple: '#9b6f4f',
@@ -82,10 +82,10 @@ const night: Palette = {
 	spoiler: '#443429',
 	spoilerRevealed: '#312319',
 
-	positive: '#8cc58a',
+	positive: primary,
 	warning: '#f0d28a',
-	danger: '#f0958c',
-	dangerFill: '#c2483f',
+	danger: primary,
+	dangerFill: primary,
 	scrim: '#0a0503cc',
 }
 
@@ -132,15 +132,60 @@ const day: Palette = {
 	spoiler: '#c7bbb3',
 	spoilerRevealed: '#e2d7cf',
 
-	positive: '#2f7a3a',
+	positive: '#865734',
 	warning: '#8a6310',
-	danger: '#b3382f',
-	dangerFill: '#c2483f',
+	danger: '#865734',
+	dangerFill: primary,
 	scrim: '#2a150c59',
 }
 
-const dark: Look = { palette: night }
-const light: Look = { palette: day }
+// Green and red states all use the primary, with dark text on top. Do-not-disturb stays red so it
+// still differs from online.
+const states = {
+	STATUS_POSITIVE: primary,
+	STATUS_ONLINE: primary,
+	STATUS_SPEAKING: primary,
+	STATUS_DANGER: primary,
+	STATUS_POSITIVE_BACKGROUND: primary,
+	STATUS_POSITIVE_TEXT: onPrimary,
+	ICON_STATUS_ONLINE: primary,
+	TEXT_STATUS_ONLINE: primary,
+	ICON_VOICE_CONNECTED: primary,
+	ICON_VOICE_SPEAKING: primary,
+	ICON_VOICE_MUTED: primary,
+	ICON_VOICE_DISCONNECTED: primary,
+	ICON_FEEDBACK_NOTIFICATION: primary,
+	BADGE_SUCCESS_BACKGROUND: primary,
+	BADGE_SUCCESS_TEXT: onPrimary,
+	BADGE_NOTIFICATION_BACKGROUND: primary,
+	BADGE_NOTIFICATION_TEXT: onPrimary,
+	BADGE_CRITICAL_BACKGROUND: primary,
+	BADGE_CRITICAL_TEXT: onPrimary,
+	CONTROL_CRITICAL_PRIMARY_TEXT_DEFAULT: onPrimary,
+	ICON_STATUS_DND: '#e0584f',
+	TEXT_STATUS_DND: '#e0584f',
+}
+
+// Usernames without a role colour read Discord's heading colour. The active icon colour covers the server-list dots.
+// Light uses a deeper shade, since the primary is too pale on cream.
+const dark: Look = {
+	palette: night,
+	extra: {
+		...states,
+		MOBILE_TEXT_HEADING_PRIMARY: primary,
+		INTERACTIVE_ICON_ACTIVE: primary,
+		INTERACTIVE_ICON_HOVER: primary,
+	},
+}
+const light: Look = {
+	palette: day,
+	extra: {
+		...states,
+		MOBILE_TEXT_HEADING_PRIMARY: '#865734',
+		INTERACTIVE_ICON_ACTIVE: '#865734',
+		INTERACTIVE_ICON_HOVER: '#865734',
+	},
+}
 
 export default plugin({
 	preInit({ themes }) {
