@@ -28,7 +28,7 @@ const tone: Tone = {
 	// Red and green are the primary too, so errors, badges, voice and online states all match.
 	hues: {
 		red: primary,
-		orange: '#ff9aa5',
+		orange: '#e63946',
 		yellow: '#ffc0c5',
 		green: primary,
 		teal: '#fc909b',
@@ -139,8 +139,7 @@ const day: Palette = {
 	scrim: '#2a0c1c59',
 }
 
-// Green and red states all use the primary, with dark text on top. Do-not-disturb is a pale rose so it
-// still differs from online.
+// Green and red states all use the primary, with dark text on top. Do-not-disturb is the primary too.
 const states = {
 	STATUS_POSITIVE: primary,
 	STATUS_ONLINE: primary,
@@ -162,8 +161,8 @@ const states = {
 	BADGE_CRITICAL_BACKGROUND: primary,
 	BADGE_CRITICAL_TEXT: onPrimary,
 	CONTROL_CRITICAL_PRIMARY_TEXT_DEFAULT: onPrimary,
-	ICON_STATUS_DND: '#ff9aa5',
-	TEXT_STATUS_DND: '#ff9aa5',
+	ICON_STATUS_DND: '#e63946',
+	TEXT_STATUS_DND: '#e63946',
 }
 
 // Usernames without a role colour read Discord's heading colour. The active icon colour covers the server-list dots.
