@@ -5,7 +5,7 @@
 	"description": "Tap a custom emoji in someone's profile bio to open Discord's emoji sheet, like tapping one in chat.",
 	"author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
 	"icon": "ReactionIcon",
-	"version": "1.2.3",
+	"version": "1.2.4",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"

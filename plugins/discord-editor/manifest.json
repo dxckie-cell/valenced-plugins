@@ -5,7 +5,7 @@
 	"description": "Change the official Discord account's name, picture, banner, name color and bot badge.",
 	"author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
 	"icon": "ClydeIcon",
-	"version": "1.1.2",
+	"version": "1.1.3",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"

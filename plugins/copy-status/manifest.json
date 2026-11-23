@@ -5,7 +5,7 @@
 	"description": "Long-press a user's custom status on their profile to select and copy the text.",
 	"author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
 	"icon": "PencilIcon",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"

@@ -5,7 +5,7 @@
 	"description": "Adds an eye button to the guild bar that marks unread servers and DMs as read.",
 	"author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
 	"icon": "EyeIcon",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"
