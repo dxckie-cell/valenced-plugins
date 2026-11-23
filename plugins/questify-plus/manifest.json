@@ -1,0 +1,24 @@
+{
+	"format": 1,
+	"id": "dxckie.questify-plus",
+	"name": "Questify+",
+	"description": "Browse Discord quests, track progress, and auto-complete supported quests from their menus.",
+	"author": "Wolfie <347096063569559553> (https://wolfies.org/ \"Website\") (https://github.com/Wolfkid200444 \"GitHub\"), dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"icon": "QuestsIcon",
+	"version": "2.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js",
+		"android": {
+			"path": "plugin.jar",
+			"class": "org.wolfies.questify.Questify"
+		}
+	}
+}

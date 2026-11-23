@@ -16,10 +16,19 @@ for (const root of ['plugins', 'themes']) {
 		const manifestBytes = readFileSync(`${directory}/manifest.json`)
 		const manifest = JSON.parse(manifestBytes.toString())
 		const files = { 'manifest.json': manifestBytes }
+		// Prebuilt plugins ship an already-bundled script and jar in prebuilt/.
+		const prebuilt = `${directory}/prebuilt`
 		if (manifest.dist.script) {
+			const built = `${prebuilt}/${manifest.dist.script}`
 			files[manifest.dist.script] = readFileSync(
-				`${directory}/build/js/${manifest.dist.script}`,
+				existsSync(built)
+					? built
+					: `${directory}/build/js/${manifest.dist.script}`,
 			)
+		}
+		if (manifest.dist.android) {
+			const { path } = manifest.dist.android
+			files[path] = readFileSync(`${prebuilt}/${path}`)
 		}
 		const output = `build/dist/${manifest.id}@${manifest.version}.zip`
 		writeFileSync(output, zipSync(files))
