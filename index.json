@@ -3230,13 +3230,29 @@
       "description": "Burgundy surfaces with a scarlet accent, or a rose-white day on Light.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.0.0"
+        "latest": "1.1.0"
       },
       "versions": {
         "1.0.0": {
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.scarlet@1.0.0.zip",
           "sha256": "8708084e1d1585e9456db191bb237f7723b0c4c5899837a5b5cadd80eb3e9bd0",
           "size": 10347,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
+            }
+          }
+        },
+        "1.1.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.scarlet@1.1.0.zip",
+          "sha256": "f67ee837fc7c21e815752a917c94e543a199f141c00955cd722af38faeaa32c6",
+          "size": 10337,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
