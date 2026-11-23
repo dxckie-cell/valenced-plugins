@@ -191,11 +191,11 @@ export default plugin({
 	preInit({ themes }) {
 		themes.registerGroup('champagne', {
 			name: 'Champagne',
-			description: 'Dark umber with a pale pale-gold accent.',
+			description: 'Dark umber with a pale blonde accent.',
 		})
 		themes.registerTheme('champagne', 'champagne', {
 			name: 'Champagne',
-			description: 'Olive-umber surfaces with a blonde-gold accent, or an ivory day on Light.',
+			description: 'Warm umber surfaces with a pale blonde accent, or an ivory day on Light.',
 			getColors: lazyColors(tone, {
 				dark,
 				darker: dark,
