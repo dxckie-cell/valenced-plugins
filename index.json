@@ -3146,13 +3146,29 @@
       "description": "Burnt-umber surfaces with a tangerine accent, or a cream day on Light.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.0.0"
+        "latest": "1.1.0"
       },
       "versions": {
         "1.0.0": {
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.tangerine@1.0.0.zip",
           "sha256": "cc5e1742d9fd9ab0bb79a8d319af0496daaeab4d98e41c34ce538a789873dcd6",
           "size": 10328,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
+            }
+          }
+        },
+        "1.1.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.tangerine@1.1.0.zip",
+          "sha256": "cd9792e082046ffd243c94a879d67520b4a46a89dfd78f953a68fb46ecac699a",
+          "size": 10345,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
