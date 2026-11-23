@@ -4,7 +4,7 @@
 	"name": "Scarlet",
 	"description": "Burgundy surfaces with a scarlet accent, or a rose-white day on Light.",
 	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"
