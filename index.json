@@ -3330,13 +3330,29 @@
       "description": "Forest surfaces with a fresh green accent, or a mint-white day on Light.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.0.0"
+        "latest": "1.1.0"
       },
       "versions": {
         "1.0.0": {
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.verdant@1.0.0.zip",
           "sha256": "258755c6d730fc2da695502ca7db240eadc92219a98592874856f88e2c687fd0",
           "size": 10349,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
+            }
+          }
+        },
+        "1.1.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.verdant@1.1.0.zip",
+          "sha256": "a143aadbeeb127f9b9faf360b6f87c14b56afabeccd56d585496b52b894aaa3e",
+          "size": 10339,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
