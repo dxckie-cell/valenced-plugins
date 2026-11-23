@@ -2775,6 +2775,32 @@
         }
       }
     },
+    "dxckie.theme.champagne": {
+      "name": "Champagne",
+      "description": "Olive-umber surfaces with a blonde-gold accent, or an ivory day on Light.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "channels": {
+        "latest": "1.1.1"
+      },
+      "versions": {
+        "1.1.1": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.champagne@1.1.1.zip",
+          "sha256": "7ae9cc384f29bead9b5d2bd6d39a2c246a48632fc90ae251495245b56e949d3f",
+          "size": 10361,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
+            }
+          }
+        }
+      }
+    },
     "dxckie.theme.cocoa": {
       "name": "Cocoa",
       "description": "Warm cocoa-brown surfaces with a caramel accent, or a cream day on Light.",
