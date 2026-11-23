@@ -2646,6 +2646,30 @@
         }
       }
     },
+    "dxckie.questify-plus": {
+      "name": "Questify+",
+      "description": "Browse Discord quests, track progress, and auto-complete supported quests from their menus.",
+      "author": "Wolfie <347096063569559553> (https://wolfies.org/ \"Website\") (https://github.com/Wolfkid200444 \"GitHub\"), dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "icon": "QuestsIcon",
+      "channels": {
+        "latest": "2.0.0"
+      },
+      "versions": {
+        "2.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.questify-plus@2.0.0.zip",
+          "sha256": "7c6d073a8385c537a97d80f179496d3fd0a9e40f64cb67ee79c0ef8ea9419c18",
+          "size": 25808,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
     "dxckie.read-all-plus": {
       "name": "Read All+",
       "description": "Adds an eye button to the guild bar that marks unread servers and DMs as read.",
