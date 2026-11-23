@@ -2881,6 +2881,32 @@
         }
       }
     },
+    "dxckie.theme.honey": {
+      "name": "Honey",
+      "description": "Olive-umber surfaces with a blonde-gold accent, or an ivory day on Light.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.honey@1.0.0.zip",
+          "sha256": "68724bb97b28e10722db4662e9c54b8dadf302a499366dd698e30159269f2228",
+          "size": 10346,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
+            }
+          }
+        }
+      }
+    },
     "dxckie.theme.periwinkle": {
       "name": "Periwinkle",
       "description": "Deep indigo surfaces with soft periwinkle accents.",
