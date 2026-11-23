@@ -2891,10 +2891,13 @@
     "dxckie.questify-plus": {
       "name": "Questify+",
       "description": "Browse Discord quests, track progress, and auto-complete supported quests from their menus.",
-      "author": "Wolfie <347096063569559553> (https://wolfies.org/ \"Website\") (https://github.com/Wolfkid200444 \"GitHub\"), dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
+      "author": "Wolfie <347096063569559553> (https://wolfies.org/ \"Website\") (https://github.com/Wolfkid200444 \"GitHub\")",
+      "contributors": [
+        "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")"
+      ],
       "icon": "QuestsIcon",
       "channels": {
-        "latest": "2.0.1"
+        "latest": "2.0.2"
       },
       "versions": {
         "2.0.0": {
@@ -2914,6 +2917,19 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.questify-plus@2.0.1.zip",
           "sha256": "1b3be5770db30e540de40b27cb5f9747724b57862b53fd3743c5f820cd78e2a1",
           "size": 25828,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        },
+        "2.0.2": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.questify-plus@2.0.2.zip",
+          "sha256": "5d3ca6f764e246895c30b78aa311aecc092b273713b60efa57fed9f58f9e66ad",
+          "size": 25845,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
