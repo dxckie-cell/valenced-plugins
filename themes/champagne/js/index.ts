@@ -189,12 +189,12 @@ const light: Look = {
 
 export default plugin({
 	preInit({ themes }) {
-		themes.registerGroup('honey', {
-			name: 'Honey',
-			description: 'Dark umber with a pale honey-gold accent.',
+		themes.registerGroup('champagne', {
+			name: 'Champagne',
+			description: 'Dark umber with a pale pale-gold accent.',
 		})
-		themes.registerTheme('honey', 'honey', {
-			name: 'Honey',
+		themes.registerTheme('champagne', 'champagne', {
+			name: 'Champagne',
 			description: 'Olive-umber surfaces with a blonde-gold accent, or an ivory day on Light.',
 			getColors: lazyColors(tone, {
 				dark,
