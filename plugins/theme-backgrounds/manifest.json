@@ -1,0 +1,23 @@
+{
+	"format": 1,
+	"id": "dxckie.theme-backgrounds",
+	"name": "Backgrounds",
+	"description": "Use your own images as the Discord background. Crop, zoom, dim and blur them with a live preview.",
+	"author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
+	"icon": "ImageIcon",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": ">=352.2"
+		},
+		"valenced.api.themes": {
+			"version": ">=1.0.1 <2"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}

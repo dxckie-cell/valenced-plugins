@@ -31,6 +31,7 @@ Then install the plugins you want and reload Valenced.
 | Picture Links+ | `dxckie.picture-links` | Tap profile pictures, profile banners, and server icons and banners to view them full size. Long-press a profile picture to open its server avatar. Port of dxckie-cell's Vendetta plugin Picture Links+, based on Picture Links by redstonekasi and Rico040 (CC0). |
 | Klipy Gif Fix | `dxckie.klipy-gif-fix` | Saves and shares Klipy GIFs as `.gif` instead of `.mp4`. Works out of the box, with no setup or API key needed. Port of dxckie-cell's Vendetta plugin Klipy Gif Fix, inspired by Tenor Gif Fix by nexpid. |
 | Giphy Gif Fix | `dxckie.giphy-gif-fix` | Saves and shares Giphy GIFs as `.gif` instead of `.mp4`. Works out of the box, with no API key. Inspired by Tenor Gif Fix by nexpid. |
+| Backgrounds                | `dxckie.theme-backgrounds`          | Use your own images as the Discord background. Crop, zoom, dim and blur them, with a live preview in settings. Pick one in Settings, Themes, Colors, under Backgrounds. |
 | Pastelize | `dxckie.pastelize` | Gives names without a role color a pastel color picked from the user ID. Port of Cynosphere's Vendetta plugin Pastelize, using the fixed copy from EKSIF. |
 | NoMosaic | `dxckie.no-mosaic` | Shows message images and videos one under another instead of in a grid. Port of the NoMosaic plugin from Vencord and Equicord. |
 | Questify+ | `dxckie.questify-plus` | Browse Discord quests, track progress, and auto-complete supported quests from their menus. Based on Questify by Wolfie. |
