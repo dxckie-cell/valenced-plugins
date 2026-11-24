@@ -1,0 +1,22 @@
+{
+	"format": 1,
+	"id": "dxckie.theme.amethyst",
+	"name": "Amethyst",
+	"description": "Aubergine surfaces with an amethyst accent, or a lilac-white day on Light.",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": ">=352.2"
+		},
+		"valenced.api.themes": {
+			"version": ">=1.0.1 <2"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}
