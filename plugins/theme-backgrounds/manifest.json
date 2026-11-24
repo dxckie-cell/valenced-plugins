@@ -2,10 +2,10 @@
 	"format": 1,
 	"id": "dxckie.theme-backgrounds",
 	"name": "Backgrounds",
-	"description": "Use your own images as the Discord background. Crop, zoom, dim and blur them with a live preview.",
+	"description": "Put your own image behind Discord and keep your current theme. Crop, zoom, dim and blur it with a live preview.",
 	"author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
 	"icon": "ImageIcon",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"

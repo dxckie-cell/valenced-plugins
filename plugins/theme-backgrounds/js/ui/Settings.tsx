@@ -1,7 +1,9 @@
 import { Design } from '@valenced/discord/design'
 import type { PluginApi } from '@valenced/plugins/types'
 import { useState } from 'react'
-import { Alert, Image, ScrollView, View } from 'react-native'
+import { Alert, Dimensions, Image, ScrollView, View } from 'react-native'
+import { croppedUrl } from '../lib/crop'
+import { currentBackgroundPath, writeBackground } from '../lib/native'
 import { pickImage } from '../lib/pick'
 import { type Background, newBackground, type Storage } from '../lib/storage'
 import Preview from './Preview'
@@ -9,14 +11,31 @@ import Slider from './Slider'
 
 const percent = (n: number) => `${Math.round(n * 100)}%`
 
-function Editor({ saved, onApply, onRemove }: { saved: Background; onApply: (next: Background) => void; onRemove: () => void }) {
+const urlOf = (bg: Background) => {
+	const { width, height } = Dimensions.get('window')
+	return croppedUrl(bg, width / height)
+}
+
+interface EditorProps {
+	saved: Background
+	/** Whether this image is the background Discord uses right now. */
+	active: boolean
+	onSave: (next: Background) => void
+	onApply: (next: Background) => void
+	onRemove: () => void
+	onClear: () => void
+}
+
+function Editor({ saved, active, onSave, onApply, onRemove, onClear }: EditorProps) {
 	const { Button, TableRowGroup, TextInput, Text } = Design
 	const [draft, setDraft] = useState(saved)
 	const patch = (p: Partial<Background>) => setDraft(d => ({ ...d, ...p }))
 	const changed = JSON.stringify(draft) !== JSON.stringify(saved)
+	// Nothing to apply while the image is in use and no edit is waiting.
+	const applied = active && !changed
 
 	return (
-		<TableRowGroup title={saved.name.toUpperCase()}>
+		<TableRowGroup title={`${saved.name.toUpperCase()}${active ? ' (IN USE)' : ''}`}>
 			<Preview value={draft} onPan={(x, y) => patch({ x, y })} />
 			<Slider label="Zoom" value={draft.zoom} min={1} max={4} step={0.05} format={v => `${v.toFixed(2)}x`} onChange={zoom => patch({ zoom })} />
 			<Slider label="Image opacity" value={draft.opacity} min={0} max={1} step={0.05} format={percent} onChange={opacity => patch({ opacity })} />
@@ -24,12 +43,14 @@ function Editor({ saved, onApply, onRemove }: { saved: Background; onApply: (nex
 			<Slider label="Blur" value={draft.blur} min={0} max={20} step={1} format={v => String(v)} onChange={blur => patch({ blur })} />
 			<TextInput label="Name" placeholder="My background" value={draft.name} onChange={(name: string) => patch({ name })} />
 			<View style={{ padding: 16, gap: 8 }}>
-				<Button variant="primary" text={changed ? 'Apply changes' : 'Applied'} disabled={!changed} onPress={() => onApply(draft)} />
+				<Button variant="primary" text={applied ? 'In use' : 'Use as my background'} disabled={applied} onPress={() => onApply(draft)} />
+				<Button variant="secondary" text="Save without using" disabled={!changed} onPress={() => onSave(draft)} />
 				<Button variant="secondary" text="Reset position and zoom" onPress={() => patch({ zoom: 1, x: 0.5, y: 0.5 })} />
-				<Button variant="destructive" text="Remove this background" onPress={onRemove} />
+				{active && <Button variant="secondary" text="Go back to my theme's background" onPress={onClear} />}
+				<Button variant="destructive" text="Delete this image" onPress={onRemove} />
 			</View>
 			<Text variant="text-xs/medium" color="text-muted" style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
-				Pick it in Settings, Themes, Colors, under Backgrounds. It replaces your current color theme.
+				Your color theme stays as it is. Only its background is replaced. Discord needs a reload to show the change.
 			</Text>
 		</TableRowGroup>
 	)
@@ -39,8 +60,32 @@ export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storag
 	const { Button, TableRowGroup, TextInput } = Design
 	const list: Background[] = api.jsonStorage.use()?.backgrounds ?? []
 	const [link, setLink] = useState('')
+	// Read again after every change; Discord's own copy only updates on reload, so this is the saved one.
+	const [path, setPath] = useState(currentBackgroundPath)
 
 	const save = (next: Background[]) => api.jsonStorage.set({ backgrounds: next }, true)
+	const fail = (e: unknown) => Alert.alert('Could not change the background', String((e as Error)?.message ?? e))
+
+	async function apply(next: Background) {
+		try {
+			await writeBackground({ source: 'custom', path: urlOf(next), opacity: next.opacity, blur: next.blur, dimming: next.dimming })
+			save(list.map(b => (b.id === next.id ? next : b)))
+			setPath(currentBackgroundPath())
+			api.plugin.requireReload()
+		} catch (e) {
+			fail(e)
+		}
+	}
+
+	async function clear() {
+		try {
+			await writeBackground(null)
+			setPath(currentBackgroundPath())
+			api.plugin.requireReload()
+		} catch (e) {
+			fail(e)
+		}
+	}
 
 	// The size is needed to crop, and it also proves the link is an image.
 	const add = (url: string) =>
@@ -55,15 +100,24 @@ export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storag
 
 	return (
 		<ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
-			{list.map(bg => (
-				<Editor
-					key={bg.id}
-					saved={bg}
-					onApply={next => save(list.map(b => (b.id === bg.id ? next : b)))}
-					onRemove={() => save(list.filter(b => b.id !== bg.id))}
-				/>
-			))}
-			<TableRowGroup title="ADD A BACKGROUND">
+			{list.map(bg => {
+				const active = path === urlOf(bg)
+				return (
+					<Editor
+						key={bg.id}
+						saved={bg}
+						active={active}
+						onSave={next => save(list.map(b => (b.id === bg.id ? next : b)))}
+						onApply={apply}
+						onClear={clear}
+						onRemove={async () => {
+							if (active) await clear()
+							save(list.filter(b => b.id !== bg.id))
+						}}
+					/>
+				)
+			})}
+			<TableRowGroup title="ADD AN IMAGE">
 				<TextInput label="Image link" placeholder="https://..." value={link} onChange={setLink} />
 				<View style={{ padding: 16, gap: 8 }}>
 					<Button variant="primary" text="Add from link" disabled={!/^https?:\/\//.test(link.trim())} onPress={() => add(link.trim())} />
