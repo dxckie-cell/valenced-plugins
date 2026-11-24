@@ -2961,13 +2961,29 @@
       "description": "Aubergine surfaces with an amethyst accent, or a lilac-white day on Light.",
       "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.0.0"
+        "latest": "1.1.0"
       },
       "versions": {
         "1.0.0": {
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.amethyst@1.0.0.zip",
           "sha256": "9360cff3c4fa637c8b43c471628d44639bc3957bb3484f979f36c6616c863520",
           "size": 10353,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
+            }
+          }
+        },
+        "1.1.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.amethyst@1.1.0.zip",
+          "sha256": "782fed1cc3529953d78261a0c6bce9c42e8cee5a9d917cfa02a75a9739bdb297",
+          "size": 10347,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
