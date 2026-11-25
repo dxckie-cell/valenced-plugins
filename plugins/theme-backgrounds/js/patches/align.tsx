@@ -35,8 +35,8 @@ function Aligned({ props, Original, debug }: { props: GradientProps; Original: F
 	const [pos, setPos] = useState({ x: 0, y: 0 })
 	const [strip, setStrip] = useState(false)
 	const [size, setSize] = useState('')
-	// shortcut: a screen-sized layer that starts well below the top is taken for the server header's; the chat's starts near the top. Guessed, not measured.
-	const header = !props.mix && (props.wide || props.tall) && pos.y > height * 0.15
+	// shortcut: as in 2.4.1, every screen-sized layer except the dimmed channel-list kind is hidden. This also blanks the chat background on some screens.
+	const header = !props.mix && (props.wide || props.tall) 
 
 	const measure = (e: LayoutChangeEvent) => {
 		setStrip(e.nativeEvent.layout.height < height * MaxStripHeight)
