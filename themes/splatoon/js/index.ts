@@ -206,6 +206,12 @@ export default plugin({
 		themes.registerTheme('splatoon', 'splatoon', {
 			name: 'Splatoon',
 			description: 'Ink-black surfaces with Splatoon violet, hot pink and lime, or a pale violet day on Light.',
+			// Same image, opacity and blur as the original.
+			background: {
+				path: 'https://raw.githubusercontent.com/n0t-a-username/revenge-themes/refs/heads/main/Images/splatoon.jpg',
+				opacity: 0.5,
+				blur: 0.75,
+			},
 			getColors: lazyColors(tone, {
 				dark,
 				darker: dark,
