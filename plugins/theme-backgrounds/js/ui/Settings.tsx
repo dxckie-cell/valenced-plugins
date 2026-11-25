@@ -114,6 +114,20 @@ export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storag
 					/>
 				)
 			})}
+			{list.length > 1 && (
+				<TableRowGroup title="SHUFFLE">
+					<View style={{ padding: 16, gap: 8 }}>
+						<Button
+							variant={shuffle ? 'primary' : 'secondary'}
+							text={shuffle ? 'Shuffle on every start: On' : 'Shuffle on every start: Off'}
+							onPress={() => api.jsonStorage.set({ backgrounds: list, shuffle: !shuffle })}
+						/>
+						<Text variant="text-xs/medium" color="text-muted">
+							Each time Discord starts it picks another saved image for the next start. Use "Go back to my theme's background" to stop it.
+						</Text>
+					</View>
+				</TableRowGroup>
+			)}
 			<TableRowGroup title="ADD AN IMAGE">
 				<TextInput label="Image link" placeholder="https://..." value={link} onChange={setLink} />
 				<View style={{ padding: 16, gap: 8 }}>
