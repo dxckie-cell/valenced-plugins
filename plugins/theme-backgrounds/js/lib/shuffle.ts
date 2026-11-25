@@ -22,7 +22,7 @@ export const settingsOf = (bg: Background) => ({
  * Discord reads the background only at startup, so the new image shows from the next start.
  * Does nothing when the image in use is not one of these, so "Go back to my theme's background" stays.
  */
-export function shuffleBackground(list: Background[]) {
+export async function shuffleBackground(list: Background[]) {
 	const current = currentBackgroundPath()
 	if (list.length < 2 || !list.some(b => urlOf(b) === current)) return
 	const others = list.filter(b => urlOf(b) !== current)
