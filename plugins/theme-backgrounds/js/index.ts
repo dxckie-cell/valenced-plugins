@@ -18,7 +18,7 @@ export default plugin<{ jsonStorage: Storage }>({
 		const saved = (await api.jsonStorage.get().catch(() => undefined)) as Storage | undefined
 		if (saved?.shuffle) await shuffleBackground(saved.backgrounds ?? []).catch(() => {})
 		if (!hasCustomBackground()) return
-		patchAlignment(api.cleanup, saved?.debug)
+		patchAlignment(api.cleanup)
 		patchHeaderSurface(api.cleanup)
 	},
 

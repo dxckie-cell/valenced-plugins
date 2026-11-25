@@ -16,11 +16,7 @@ interface TokensModule {
 /** The server header's surface. Valenced dims it over the image, which leaves a darker slab. */
 const HeaderSurface = 'BACKGROUND_BASE_LOW'
 
-/** Share of the usual dimming the header surface keeps. 0 shows the image undimmed, 1 is Discord's own dark slab. */
-// shortcut: fixed share chosen by eye, make it a setting if it needs tuning per image.
-const KeepShare = 0
-
-/** Makes the server header's surface mostly transparent, so the image shows through. */
+/** Makes the server header's surface fully transparent, so the image shows through. */
 export function patchHeaderSurface(cleanup: (fn: () => void) => void) {
 	cleanup(
 		getModules(
@@ -33,7 +29,7 @@ export function patchHeaderSurface(cleanup: (fn: () => void) => void) {
 						const [, color, context] = args
 						// Only gradient surfaces, which are the ones drawn over the background image.
 						if (context?.gradient && /^#[0-9a-f]{8}$/i.test(result) && internal.getSemanticColorName(color) === HeaderSurface)
-							return result.slice(0, 7) + Math.round(Number.parseInt(result.slice(7), 16) * KeepShare).toString(16).padStart(2, '0')
+							return `${result.slice(0, 7)}00`
 						return result
 					}),
 				)

@@ -22,8 +22,6 @@ export interface Storage {
 	backgrounds: Background[]
 	/** Pick another saved image each time the app starts. */
 	shuffle?: boolean
-	/** Writes each themed layer's flags and size on it, to tell the server header's apart. */
-	debug?: boolean
 }
 
 export const DEFAULTS: Storage = { backgrounds: [], shuffle: false }
