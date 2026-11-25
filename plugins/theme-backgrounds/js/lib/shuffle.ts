@@ -24,7 +24,8 @@ export const settingsOf = (bg: Background) => ({
  */
 export async function shuffleBackground(list: Background[]) {
 	const current = currentBackgroundPath()
-	if (list.length < 2 || !list.some(b => urlOf(b) === current)) return
-	const others = list.filter(b => urlOf(b) !== current)
+	if (!list.some(b => urlOf(b) === current)) return
+	const others = list.filter(b => b.inShuffle !== false && urlOf(b) !== current)
+	if (!others.length) return
 	return writeBackground(settingsOf(others[Math.floor(Math.random() * others.length)]!))
 }

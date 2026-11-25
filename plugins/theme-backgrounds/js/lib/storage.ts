@@ -14,6 +14,8 @@ export interface Background {
 	opacity: number
 	blur: number
 	dimming: number
+	/** Taken by shuffle. Images saved before this option existed count as included. */
+	inShuffle?: boolean
 }
 
 export interface Storage {
@@ -24,6 +26,9 @@ export interface Storage {
 
 export const DEFAULTS: Storage = { backgrounds: [], shuffle: false }
 
+/** The look a new image starts with, and what Reset goes back to. */
+export const DEFAULT_LOOK = { opacity: 1, blur: 0, dimming: 0.7 }
+
 export const newBackground = (url: string, width: number, height: number): Background => ({
 	id: Date.now().toString(36),
 	name: 'My background',
@@ -33,7 +38,5 @@ export const newBackground = (url: string, width: number, height: number): Backg
 	zoom: 1,
 	x: 0.5,
 	y: 0.5,
-	opacity: 1,
-	blur: 0,
-	dimming: 0.7,
+	...DEFAULT_LOOK,
 })
