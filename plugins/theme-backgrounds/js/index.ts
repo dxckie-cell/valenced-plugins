@@ -1,6 +1,7 @@
 import { hasCustomBackground } from './lib/native'
 import { DEFAULTS, type Storage } from './lib/storage'
 import { patchAlignment } from './patches/align'
+import { patchHeaderSurface } from './patches/header'
 import Settings from './ui/Settings'
 
 // Apply in settings writes the background override, which Valenced keeps on its own.
@@ -12,7 +13,9 @@ export default plugin<{ jsonStorage: Storage }>({
 	},
 
 	start(api) {
-		if (hasCustomBackground()) patchAlignment(api.cleanup)
+		if (!hasCustomBackground()) return
+		patchAlignment(api.cleanup)
+		patchHeaderSurface(api.cleanup)
 	},
 
 	SettingsComponent: Settings,
