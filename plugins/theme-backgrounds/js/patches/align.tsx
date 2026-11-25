@@ -34,8 +34,6 @@ function Aligned({ props, Original }: { props: GradientProps; Original: Function
 	const { width, height } = useWindowDimensions()
 	const [pos, setPos] = useState({ x: 0, y: 0 })
 	const [strip, setStrip] = useState(false)
-	// shortcut: guessed from the props, the server header draws this kind of layer; other plain wide or tall layers would go too.
-	const screenAligned = !props.mix && (props.wide || props.tall)
 
 	const measure = (e: LayoutChangeEvent) => {
 		setStrip(e.nativeEvent.layout.height < height * MaxStripHeight)
@@ -52,7 +50,7 @@ function Aligned({ props, Original }: { props: GradientProps; Original: Function
 			pointerEvents="none"
 			style={[props.absolute ? StyleSheet.absoluteFill : props.style, props.wide && { width }, props.tall && { height }, { overflow: 'hidden' }]}
 		>
-			{!strip && !screenAligned && (
+			{!strip && (
 				<View style={{ position: 'absolute', top: -pos.y, left: -pos.x, width, height }}>
 					<Original {...props} absolute wide={false} tall={false} style={undefined} />
 				</View>
