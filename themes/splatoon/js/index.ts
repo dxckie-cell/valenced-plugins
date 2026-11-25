@@ -206,11 +206,12 @@ export default plugin({
 		themes.registerTheme('splatoon', 'splatoon', {
 			name: 'Splatoon',
 			description: 'Ink-black surfaces with Splatoon violet, hot pink and lime, or a pale violet day on Light.',
-			// Same image, opacity and blur as the original.
+			// The original has no dimming layer, so Valenced's 0.7 default hides the image. Lowered to match its look.
 			background: {
 				path: 'https://raw.githubusercontent.com/n0t-a-username/revenge-themes/refs/heads/main/Images/splatoon.jpg',
-				opacity: 0.5,
+				opacity: 0.6,
 				blur: 0.75,
+				dimming: 0.4,
 			},
 			getColors: lazyColors(tone, {
 				dark,
