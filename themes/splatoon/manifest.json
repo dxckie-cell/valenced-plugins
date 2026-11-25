@@ -4,16 +4,16 @@
 	"name": "Splatoon",
 	"description": "Ink-black surfaces with Splatoon violet, hot pink and lime, or a pale violet day on Light.",
 	"author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"dependencies": {
 		"valenced.api": {
-			"version": "1.1.0"
+			"version": ">=1 <2"
 		},
 		"discord": {
-			"version": "1.1.0"
+			"version": ">=352.2"
 		},
 		"valenced.api.themes": {
-			"version": "1.1.0"
+			"version": ">=1.0.1 <2"
 		}
 	},
 	"dist": {
