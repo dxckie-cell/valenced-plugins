@@ -16,9 +16,9 @@ interface TokensModule {
 /** The server header's surface. Valenced dims it over the image, which leaves a darker slab. */
 const HeaderSurface = 'BACKGROUND_BASE_LOW'
 
-/** Header surface keeps this share of its dimming: fully clear shows the image undimmed and the text unreadable. */
+/** Share of the usual dimming the header surface keeps. 0 is fully clear, so the header looks like the channel list. */
 // shortcut: fixed share chosen by eye, make it a setting if it needs tuning per image.
-const KeepShare = 0.35
+const KeepShare = 0
 
 /** Makes the server header's surface mostly transparent, so the image shows through. */
 export function patchHeaderSurface(cleanup: (fn: () => void) => void) {
