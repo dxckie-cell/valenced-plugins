@@ -63,7 +63,7 @@ export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storag
 	// Read again after every change; Discord's own copy only updates on reload, so this is the saved one.
 	const [path, setPath] = useState(currentBackgroundPath)
 
-	const save = (next: Background[]) => api.jsonStorage.set({ backgrounds: next }, true)
+	const save = (next: Background[]) => api.jsonStorage.set({ backgrounds: next })
 	const fail = (e: unknown) => Alert.alert('Could not change the background', String((e as Error)?.message ?? e))
 
 	async function apply(next: Background) {
