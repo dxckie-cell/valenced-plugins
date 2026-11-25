@@ -34,6 +34,8 @@ function Aligned({ props, Original }: { props: GradientProps; Original: Function
 	const { width, height } = useWindowDimensions()
 	const [pos, setPos] = useState({ x: 0, y: 0 })
 	const [strip, setStrip] = useState(false)
+	// shortcut: a screen-sized layer that starts well below the top is taken for the server header's; the chat's starts near the top. Guessed, not measured.
+	const header = !props.mix && (props.wide || props.tall) && pos.y > height * 0.15
 
 	const measure = (e: LayoutChangeEvent) => {
 		setStrip(e.nativeEvent.layout.height < height * MaxStripHeight)
@@ -50,7 +52,7 @@ function Aligned({ props, Original }: { props: GradientProps; Original: Function
 			pointerEvents="none"
 			style={[props.absolute ? StyleSheet.absoluteFill : props.style, props.wide && { width }, props.tall && { height }, { overflow: 'hidden' }]}
 		>
-			{!strip && (
+			{!strip && !header && (
 				<View style={{ position: 'absolute', top: -pos.y, left: -pos.x, width, height }}>
 					<Original {...props} absolute wide={false} tall={false} style={undefined} />
 				</View>
