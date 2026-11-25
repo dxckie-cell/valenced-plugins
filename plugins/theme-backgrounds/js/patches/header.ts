@@ -16,9 +16,9 @@ interface TokensModule {
 /** The server header's surface. Valenced dims it over the image, which leaves a darker slab. */
 const HeaderSurface = 'BACKGROUND_BASE_LOW'
 
-/** Share of the usual dimming the header surface keeps. 0 is fully clear, so the header looks like the channel list. */
+/** Share of the usual dimming the header surface keeps. 0 shows the image undimmed, 1 is Discord's own dark slab. */
 // shortcut: fixed share chosen by eye, make it a setting if it needs tuning per image.
-const KeepShare = 0
+const KeepShare = 0.6
 
 /** Makes the server header's surface mostly transparent, so the image shows through. */
 export function patchHeaderSurface(cleanup: (fn: () => void) => void) {
