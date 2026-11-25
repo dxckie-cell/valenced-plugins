@@ -80,13 +80,14 @@ export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storag
 	const stored = api.jsonStorage.use()
 	const list: Background[] = stored?.backgrounds ?? []
 	const shuffle = stored?.shuffle ?? false
+	const debug = stored?.debug ?? false
 	const [link, setLink] = useState('')
 	// Only one image is open at a time, so the screen stays short.
 	const [open, setOpen] = useState<string | undefined>()
 	// Read again after every change; Discord's own copy only updates on reload, so this is the saved one.
 	const [path, setPath] = useState(currentBackgroundPath)
 
-	const save = (next: Background[]) => api.jsonStorage.set({ backgrounds: next, shuffle })
+	const save = (next: Background[]) => api.jsonStorage.set({ backgrounds: next, shuffle, debug })
 	const fail = (e: unknown) => Alert.alert('Could not change the background', String((e as Error)?.message ?? e))
 
 	async function apply(next: Background) {
@@ -148,7 +149,7 @@ export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storag
 						<Button
 							variant={shuffle ? 'primary' : 'secondary'}
 							text={shuffle ? 'Shuffle on every start: On' : 'Shuffle on every start: Off'}
-							onPress={() => api.jsonStorage.set({ backgrounds: list, shuffle: !shuffle })}
+							onPress={() => api.jsonStorage.set({ backgrounds: list, shuffle: !shuffle, debug })}
 						/>
 						<Text variant="text-xs/medium" color="text-muted">
 							{`Each time Discord starts it picks another image for the next start, from the ${shuffled} marked "In shuffle". Use "Go back to my theme's background" to stop it.`}
@@ -195,6 +196,21 @@ export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storag
 					/>
 				) : null,
 			)}
+			<TableRowGroup title="TROUBLESHOOTING">
+				<View style={{ padding: 16, gap: 8 }}>
+					<Button
+						variant={debug ? 'primary' : 'secondary'}
+						text={debug ? 'Show layer labels: On' : 'Show layer labels: Off'}
+						onPress={() => {
+							api.jsonStorage.set({ backgrounds: list, shuffle, debug: !debug })
+							api.plugin.requireReload()
+						}}
+					/>
+					<Text variant="text-xs/medium" color="text-muted">
+						Writes a small red label on each background layer after a reload. Send a screenshot of it.
+					</Text>
+				</View>
+			</TableRowGroup>
 		</ScrollView>
 	)
 }
