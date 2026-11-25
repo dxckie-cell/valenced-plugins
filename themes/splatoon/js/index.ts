@@ -43,7 +43,8 @@ const tone: Tone = {
 }
 
 const night: Palette = {
-	rail: '#0c0c0c',
+	// Violet-tinted like the original's server list strip, sampled from its screenshot.
+	rail: '#231b33',
 	floor: '#121212',
 	panel: '#141414',
 	page: '#181818',
@@ -182,7 +183,11 @@ const dark: Look = {
 		...states,
 		MOBILE_TEXT_HEADING_PRIMARY: '#7d62ff',
 		INTERACTIVE_NORMAL: '#7d62ff',
+		// The original sets this violet, and it should colour the server list's unread pills.
+		INTERACTIVE_ACTIVE: primary,
 		INTERACTIVE_ICON_ACTIVE: '#7d62ff',
+		// The rail is violet, so keep the system navigation bar as dark as the original's.
+		ANDROID_NAVIGATION_BAR_BACKGROUND: '#121212',
 		INTERACTIVE_ICON_HOVER: pink,
 	},
 }
