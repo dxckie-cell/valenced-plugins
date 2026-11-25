@@ -31,3 +31,8 @@ declare module '@valenced/modules/native' {
 		'valenced.themes.setBackground': [[json: string | null], null]
 	}
 }
+
+/** True when a custom background override is set right now. */
+export function hasCustomBackground() {
+	return currentBackgroundPath() !== undefined
+}
