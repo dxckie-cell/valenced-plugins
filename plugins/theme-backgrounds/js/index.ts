@@ -1,4 +1,5 @@
 import { hasCustomBackground } from './lib/native'
+import { shuffleBackground } from './lib/shuffle'
 import { DEFAULTS, type Storage } from './lib/storage'
 import { patchAlignment } from './patches/align'
 import { patchHeaderSurface } from './patches/header'
@@ -12,7 +13,10 @@ export default plugin<{ jsonStorage: Storage }>({
 		default: DEFAULTS,
 	},
 
-	start(api) {
+	async start(api) {
+		// The saved list loads asynchronously.
+		const saved = (await api.jsonStorage.get().catch(() => undefined)) as Storage | undefined
+		if (saved?.shuffle) await shuffleBackground(saved.backgrounds ?? []).catch(() => {})
 		if (!hasCustomBackground()) return
 		patchAlignment(api.cleanup)
 		patchHeaderSurface(api.cleanup)

@@ -18,9 +18,11 @@ export interface Background {
 
 export interface Storage {
 	backgrounds: Background[]
+	/** Pick another saved image each time the app starts. */
+	shuffle?: boolean
 }
 
-export const DEFAULTS: Storage = { backgrounds: [] }
+export const DEFAULTS: Storage = { backgrounds: [], shuffle: false }
 
 export const newBackground = (url: string, width: number, height: number): Background => ({
 	id: Date.now().toString(36),

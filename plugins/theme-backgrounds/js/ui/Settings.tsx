@@ -1,20 +1,15 @@
 import { Design } from '@valenced/discord/design'
 import type { PluginApi } from '@valenced/plugins/types'
 import { useState } from 'react'
-import { Alert, Dimensions, Image, ScrollView, View } from 'react-native'
-import { croppedUrl } from '../lib/crop'
+import { Alert, Image, ScrollView, View } from 'react-native'
 import { currentBackgroundPath, writeBackground } from '../lib/native'
 import { pickImage } from '../lib/pick'
+import { settingsOf, urlOf } from '../lib/shuffle'
 import { type Background, newBackground, type Storage } from '../lib/storage'
 import Preview from './Preview'
 import Slider from './Slider'
 
 const percent = (n: number) => `${Math.round(n * 100)}%`
-
-const urlOf = (bg: Background) => {
-	const { width, height } = Dimensions.get('window')
-	return croppedUrl(bg, width / height)
-}
 
 interface EditorProps {
 	saved: Background
@@ -57,18 +52,20 @@ function Editor({ saved, active, onSave, onApply, onRemove, onClear }: EditorPro
 }
 
 export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storage }> }) {
-	const { Button, TableRowGroup, TextInput } = Design
-	const list: Background[] = api.jsonStorage.use()?.backgrounds ?? []
+	const { Button, TableRowGroup, TextInput, Text } = Design
+	const stored = api.jsonStorage.use()
+	const list: Background[] = stored?.backgrounds ?? []
+	const shuffle = stored?.shuffle ?? false
 	const [link, setLink] = useState('')
 	// Read again after every change; Discord's own copy only updates on reload, so this is the saved one.
 	const [path, setPath] = useState(currentBackgroundPath)
 
-	const save = (next: Background[]) => api.jsonStorage.set({ backgrounds: next })
+	const save = (next: Background[]) => api.jsonStorage.set({ backgrounds: next, shuffle })
 	const fail = (e: unknown) => Alert.alert('Could not change the background', String((e as Error)?.message ?? e))
 
 	async function apply(next: Background) {
 		try {
-			await writeBackground({ source: 'custom', path: urlOf(next), opacity: next.opacity, blur: next.blur, dimming: next.dimming })
+			await writeBackground(settingsOf(next))
 			save(list.map(b => (b.id === next.id ? next : b)))
 			setPath(currentBackgroundPath())
 			api.plugin.requireReload()
