@@ -2962,7 +2962,7 @@
       "author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
       "icon": "ImageIcon",
       "channels": {
-        "latest": "2.4.0"
+        "latest": "2.4.1"
       },
       "versions": {
         "1.0.0": {
@@ -3091,6 +3091,24 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme-backgrounds@2.4.0.zip",
           "sha256": "1eac736ea18419d7b7e619f66e7882c62b2525326b242b911d6e41fb9f973721",
           "size": 5058,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.settings": {},
+            "valenced.settings.plugins": {},
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
+            }
+          }
+        },
+        "2.4.1": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme-backgrounds@2.4.1.zip",
+          "sha256": "332950546d2963faf5dac7431a44172a147a2672d35bf5739df8da01f1f9a4a2",
+          "size": 5055,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
