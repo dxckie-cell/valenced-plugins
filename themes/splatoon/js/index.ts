@@ -1,6 +1,5 @@
 /// <reference types="@valenced/themes-api" />
 
-import { AshColors } from '../../../shared/discord-defaults'
 import { lazyColors } from '../../../shared/theme-kit'
 import type { Look, Palette, Tone } from '../../../shared/theme-kit'
 
@@ -192,11 +191,8 @@ const dark: Look = {
 		INTERACTIVE_TEXT_HOVER: '#7d62ff',
 		REDESIGN_CHANNEL_NAME_TEXT: '#7d62ff',
 		ICON_STRONG: '#7d62ff',
-		// Another guess for the white server list pills: Discord's white "inverted" and "expressive" badge fills.
-		BADGE_INVERTED_BACKGROUND: primary,
-		BADGE_INVERTED_BORDER: primary,
-		BADGE_EXPRESSIVE_BACKGROUND: primary,
-		BADGE_EXPRESSIVE_BORDER: primary,
+		// A debug colour map showed the server list pills read TEXT_STRONG.
+		TEXT_STRONG: '#7d62ff',
 		// The rail is violet, so keep the system navigation bar as dark as the original's.
 		ANDROID_NAVIGATION_BAR_BACKGROUND: '#121212',
 		INTERACTIVE_ICON_HOVER: pink,
@@ -213,6 +209,7 @@ const light: Look = {
 		INTERACTIVE_TEXT_HOVER: '#4a26d9',
 		REDESIGN_CHANNEL_NAME_TEXT: '#4a26d9',
 		ICON_STRONG: '#4a26d9',
+		TEXT_STRONG: '#4a26d9',
 		INTERACTIVE_ICON_HOVER: '#c4073f',
 	},
 }
@@ -225,14 +222,6 @@ const colors = lazyColors(tone, {
 	midnight: dark,
 	light,
 })
-
-// TEMPORARY debug theme: every semantic key gets its own colour, in 8-step levels, so a screenshot tells which key paints a spot.
-const debugColors = Object.fromEntries(
-	Object.keys(AshColors).map((name, i) => {
-		const hex = (n: number) => (n * 8 + 4).toString(16).padStart(2, '0')
-		return [name, `#${hex((i >> 10) & 31)}${hex((i >> 5) & 31)}${hex(i & 31)}`]
-	}),
-)
 
 export default plugin({
 	preInit({ themes }) {
@@ -254,13 +243,6 @@ export default plugin({
 				const result = colors(discord)
 				return { ...result, raw: { ...result.raw, ...violetRaw } }
 			},
-		})
-		themes.registerTheme('splatoon', 'splatoon-debug', {
-			name: 'Splatoon Debug',
-			description: 'Temporary: every colour key is unique, to find which one paints what.',
-			getColors: () => ({
-				semantic: { dark: debugColors, darker: debugColors, midnight: debugColors, light: debugColors },
-			}),
 		})
 	},
 })
