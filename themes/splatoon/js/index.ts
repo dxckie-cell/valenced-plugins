@@ -186,6 +186,11 @@ const dark: Look = {
 		// The original sets this violet, and it should colour the server list's unread pills.
 		INTERACTIVE_ACTIVE: primary,
 		INTERACTIVE_ICON_ACTIVE: '#7d62ff',
+		// Selected and unread channel names, and the strong icons (selected rows, server list pills), are violet in the original.
+		INTERACTIVE_TEXT_ACTIVE: '#7d62ff',
+		INTERACTIVE_TEXT_HOVER: '#7d62ff',
+		REDESIGN_CHANNEL_NAME_TEXT: '#7d62ff',
+		ICON_STRONG: '#7d62ff',
 		// The rail is violet, so keep the system navigation bar as dark as the original's.
 		ANDROID_NAVIGATION_BAR_BACKGROUND: '#121212',
 		INTERACTIVE_ICON_HOVER: pink,
@@ -198,6 +203,10 @@ const light: Look = {
 		CHANNEL_ICON: '#6b7d00',
 		MOBILE_TEXT_HEADING_PRIMARY: '#4a26d9',
 		INTERACTIVE_ICON_ACTIVE: '#4a26d9',
+		INTERACTIVE_TEXT_ACTIVE: '#4a26d9',
+		INTERACTIVE_TEXT_HOVER: '#4a26d9',
+		REDESIGN_CHANNEL_NAME_TEXT: '#4a26d9',
+		ICON_STRONG: '#4a26d9',
 		INTERACTIVE_ICON_HOVER: '#c4073f',
 	},
 }
