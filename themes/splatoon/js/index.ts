@@ -1,5 +1,6 @@
 /// <reference types="@valenced/themes-api" />
 
+import { AshColors } from '../../../shared/discord-defaults'
 import { lazyColors } from '../../../shared/theme-kit'
 import type { Look, Palette, Tone } from '../../../shared/theme-kit'
 
@@ -225,6 +226,14 @@ const colors = lazyColors(tone, {
 	light,
 })
 
+// TEMPORARY debug theme: every semantic key gets its own colour, in 8-step levels, so a screenshot tells which key paints a spot.
+const debugColors = Object.fromEntries(
+	Object.keys(AshColors).map((name, i) => {
+		const hex = (n: number) => (n * 8 + 4).toString(16).padStart(2, '0')
+		return [name, `#${hex((i >> 10) & 31)}${hex((i >> 5) & 31)}${hex(i & 31)}`]
+	}),
+)
+
 export default plugin({
 	preInit({ themes }) {
 		themes.registerGroup('splatoon', {
@@ -245,6 +254,13 @@ export default plugin({
 				const result = colors(discord)
 				return { ...result, raw: { ...result.raw, ...violetRaw } }
 			},
+		})
+		themes.registerTheme('splatoon', 'splatoon-debug', {
+			name: 'Splatoon Debug',
+			description: 'Temporary: every colour key is unique, to find which one paints what.',
+			getColors: () => ({
+				semantic: { dark: debugColors, darker: debugColors, midnight: debugColors, light: debugColors },
+			}),
 		})
 	},
 })
