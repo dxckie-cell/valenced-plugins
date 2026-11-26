@@ -211,6 +211,15 @@ const light: Look = {
 	},
 }
 
+// The original recolours these raw palette entries violet. Something in the server list reads one of them, as the unread pills stay white.
+const violetRaw = { BRAND_500: primary, PLUM_3: primary, PLUM_11: primary, PLUM_13: primary }
+const colors = lazyColors(tone, {
+	dark,
+	darker: dark,
+	midnight: dark,
+	light,
+})
+
 export default plugin({
 	preInit({ themes }) {
 		themes.registerGroup('splatoon', {
@@ -227,12 +236,10 @@ export default plugin({
 				blur: 0.75,
 				dimming: 0.4,
 			},
-			getColors: lazyColors(tone, {
-				dark,
-				darker: dark,
-				midnight: dark,
-				light,
-			}),
+			getColors: discord => {
+				const result = colors(discord)
+				return { ...result, raw: { ...result.raw, ...violetRaw } }
+			},
 		})
 	},
 })
