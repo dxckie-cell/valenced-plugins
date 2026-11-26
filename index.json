@@ -3958,7 +3958,7 @@
       "description": "Ink-black surfaces with Splatoon violet, hot pink and lime, or a pale violet day on Light.",
       "author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
       "channels": {
-        "latest": "1.1.5"
+        "latest": "1.1.6"
       },
       "versions": {
         "1.0.0": {
@@ -4061,6 +4061,22 @@
           "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.splatoon@1.1.5.zip",
           "sha256": "7c1a3036a883e42b0d81f87b76779ad692d629dba9fd05ebad93317708a92159",
           "size": 10601,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": ">=352.2"
+            },
+            "valenced.api.themes": {
+              "version": ">=1.0.1 <2"
+            }
+          }
+        },
+        "1.1.6": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.theme.splatoon@1.1.6.zip",
+          "sha256": "bbfe598b9583c6695972f713340573d4a8ff2f90fab20173877792f0772328bb",
+          "size": 10616,
           "dependencies": {
             "valenced.api": {
               "version": ">=1 <2"
