@@ -191,6 +191,11 @@ const dark: Look = {
 		INTERACTIVE_TEXT_HOVER: '#7d62ff',
 		REDESIGN_CHANNEL_NAME_TEXT: '#7d62ff',
 		ICON_STRONG: '#7d62ff',
+		// Another guess for the white server list pills: Discord's white "inverted" and "expressive" badge fills.
+		BADGE_INVERTED_BACKGROUND: primary,
+		BADGE_INVERTED_BORDER: primary,
+		BADGE_EXPRESSIVE_BACKGROUND: primary,
+		BADGE_EXPRESSIVE_BORDER: primary,
 		// The rail is violet, so keep the system navigation bar as dark as the original's.
 		ANDROID_NAVIGATION_BAR_BACKGROUND: '#121212',
 		INTERACTIVE_ICON_HOVER: pink,
