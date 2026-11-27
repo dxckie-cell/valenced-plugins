@@ -3,6 +3,14 @@ build/
 plugins/*/build/
 themes/*/build/
 
+# Gradle / Android
+.gradle/
+.kotlin/
+local.properties
+
+# Native plugin jars are built in CI by scripts/build-native.sh
+plugins/mahiro-oyama/prebuilt/
+
 # JS
 node_modules/
 

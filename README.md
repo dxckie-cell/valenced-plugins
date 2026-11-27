@@ -1,6 +1,6 @@
 # dxckie-cell plugins for Valenced
 
-Nineteen Valenced plugins in one repository.
+Twenty Valenced plugins in one repository.
 
 ## Install
 
@@ -35,6 +35,7 @@ Then install the plugins you want and reload Valenced.
 | Pastelize | `dxckie.pastelize` | Gives names without a role color a pastel color picked from the user ID. Port of Cynosphere's Vendetta plugin Pastelize, using the fixed copy from EKSIF. |
 | NoMosaic | `dxckie.no-mosaic` | Shows message images and videos one under another instead of in a grid. Port of the NoMosaic plugin from Vencord and Equicord. |
 | Questify+ | `dxckie.questify-plus` | Browse Discord quests, track progress, and auto-complete supported quests from their menus. Based on Questify by Wolfie. |
+| Mahiro Oyama | `dxckie.mahiro-oyama` | Mahiro Oyama, a Shimeji pet that lives on top of Discord. She walks, dashes, sits, climbs the screen edges and ceiling and falls. Tap her to jump, drag to carry, flick to throw. Native plugin built like Capri Pet. |
 
 ## Development
 

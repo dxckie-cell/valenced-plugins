@@ -1,0 +1,24 @@
+{
+	"format": 1,
+	"id": "dxckie.mahiro-oyama",
+	"name": "Mahiro Oyama",
+	"description": "Mahiro Oyama, a Shimeji pet that lives on top of Discord. She walks, dashes, sits, climbs the screen edges and the ceiling, and falls. Tap, drag and throw her.",
+	"author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+	"icon": "ReactionIcon",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1.0 <2"
+		},
+		"discord": {
+			"version": "*"
+		}
+	},
+	"dist": {
+		"script": "index.js",
+		"android": {
+			"path": "plugin.jar",
+			"class": "com.dxckie.mahiro.MahiroPlugin"
+		}
+	}
+}
