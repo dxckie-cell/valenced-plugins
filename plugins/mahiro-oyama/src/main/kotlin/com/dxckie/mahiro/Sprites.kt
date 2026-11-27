@@ -23,7 +23,10 @@ internal object Sprites {
 		for (i in 0 until 256) {
 			val stream = resource("sprites/%04d.webp".format(i)) ?: break
 			val bmp = stream.use { BitmapFactory.decodeStream(it, null, opts) } ?: break
-			out.add(bmp)
+			// Drawn 1:1, so the GPU never has to resample a 512 px sprite for every frame.
+			val fitted = if (bmp.width == targetPx) bmp else Bitmap.createScaledBitmap(bmp, targetPx, targetPx, true)
+			if (fitted !== bmp) bmp.recycle()
+			out.add(fitted)
 		}
 		bitmaps = out
 		loadedFor = targetPx

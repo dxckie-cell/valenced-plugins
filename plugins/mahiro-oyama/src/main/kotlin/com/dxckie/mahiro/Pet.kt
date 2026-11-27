@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.os.Build
 import android.os.SystemClock
+import android.view.Choreographer
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
@@ -22,6 +23,11 @@ internal class PetView(context: Context) : View(context) {
 	var flip = false
 	private val paint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)
 	private val dest = RectF()
+
+	init {
+		// Moving the pet then only moves a GPU texture; it is redrawn only when the sprite changes.
+		setLayerType(LAYER_TYPE_HARDWARE, null)
+	}
 
 	override fun onDraw(canvas: Canvas) {
 		val bmp = frame ?: return
@@ -54,14 +60,19 @@ internal class PetView(context: Context) : View(context) {
 /**
  * Runs the Shimeji animation graph (animation.json) on a [PetView] added to Discord's window.
  * Everything here runs on the main thread. One tick is 40 ms (25 per second), the unit of
- * `durationTicks` and of a frame's `dx` / `dy`.
+ * `durationTicks` and of a frame's `dx` / `dy`. Ticks run from the display's vsync, and the
+ * drawn position is interpolated between ticks so movement is smooth at any refresh rate.
  */
 internal object Pet {
 	private const val TICK_MS = 40L
 
-	private val tickRunnable = Runnable { tick() }
+	private val frameCallback = Choreographer.FrameCallback { onFrame(it) }
 	private var running = false
-	private var lastTick = 0L
+	private var lastNanos = 0L
+	private var acc = 0f
+	private var prevX = 0f
+	private var prevY = 0f
+	private var rootCheckAt = 0L
 
 	private var script: Script? = null
 	private var move: Move? = null
@@ -107,14 +118,14 @@ internal object Pet {
 			script = Script.parse(text)
 		}
 		running = true
-		lastTick = SystemClock.uptimeMillis()
-		mainHandler.removeCallbacks(tickRunnable)
-		mainHandler.post(tickRunnable)
+		lastNanos = 0
+		Choreographer.getInstance().removeFrameCallback(frameCallback)
+		Choreographer.getInstance().postFrameCallback(frameCallback)
 	}
 
 	fun stopNow() {
 		running = false
-		mainHandler.removeCallbacks(tickRunnable)
+		Choreographer.getInstance().removeFrameCallback(frameCallback)
 		detach()
 		posReady = false
 		dragging = false
@@ -138,6 +149,8 @@ internal object Pet {
 		measure()
 		x += (old - size) / 2f
 		y += old - size
+		prevX = x
+		prevY = y
 		v.layoutParams = v.layoutParams.apply { width = size.toInt(); height = size.toInt() }
 		boundsAt = 0
 	}
@@ -149,6 +162,11 @@ internal object Pet {
 	}
 
 	private fun ensureAttached(): Boolean {
+		// Looking through every window is slow; once the pet is attached, check twice a second.
+		val now = SystemClock.uptimeMillis()
+		val current = view
+		if (current != null && now - rootCheckAt < 500 && current.isAttachedToWindow) return true
+		rootCheckAt = now
 		val root = windowRoots().filterIsInstance<ViewGroup>().maxByOrNull { it.width.toLong() * it.height } ?: return false
 		if (decor === root && view?.parent === root) return true
 		detach()
@@ -200,14 +218,20 @@ internal object Pet {
 
 	// ---------------------------------------------------------------- loop
 
-	private fun tick() {
+	private fun onFrame(nanos: Long) {
 		if (!running) return
-		val now = SystemClock.uptimeMillis()
-		val n = ((now - lastTick + TICK_MS / 2) / TICK_MS).toInt().coerceIn(1, 4)
-		lastTick = now
-		runCatching { repeat(n) { step() }; render() }
-			.onFailure { android.util.Log.e("MahiroOyama", "tick failed", it) }
-		if (running) mainHandler.postDelayed(tickRunnable, TICK_MS)
+		acc += if (lastNanos == 0L) 0f else ((nanos - lastNanos) / 1_000_000f).coerceAtMost(4f * TICK_MS)
+		lastNanos = nanos
+		runCatching {
+			while (acc >= TICK_MS) {
+				acc -= TICK_MS
+				prevX = x
+				prevY = y
+				step()
+			}
+			render()
+		}.onFailure { android.util.Log.e("MahiroOyama", "frame failed", it) }
+		if (running) Choreographer.getInstance().postFrameCallback(frameCallback)
 	}
 
 	private fun step() {
@@ -289,6 +313,8 @@ internal object Pet {
 		val s = script ?: return
 		x = atX
 		y = atY
+		prevX = atX
+		prevY = atY
 		posReady = true
 		dragging = false
 		flinging = false
@@ -453,10 +479,17 @@ internal object Pet {
 	private fun render() {
 		val v = view ?: return
 		val m = move ?: return
-		v.frame = Sprites.get(m.frames[frameIdx].sprite)
-		v.flip = facing > 0
-		v.translationX = x
-		v.translationY = y
-		v.invalidate()
+		val bmp = Sprites.get(m.frames[frameIdx].sprite)
+		val flip = facing > 0
+		if (v.frame !== bmp || v.flip != flip) {
+			v.frame = bmp
+			v.flip = flip
+			v.invalidate()
+		}
+		// Between ticks the pet is drawn part of the way from its last position to its new one;
+		// while dragged it sticks to the finger.
+		val t = if (dragging) 1f else (acc / TICK_MS).coerceIn(0f, 1f)
+		v.translationX = prevX + (x - prevX) * t
+		v.translationY = prevY + (y - prevY) * t
 	}
 }
