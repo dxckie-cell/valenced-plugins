@@ -844,6 +844,30 @@
         }
       }
     },
+    "dxckie.mahiro-oyama": {
+      "name": "Mahiro Oyama",
+      "description": "Mahiro Oyama, a Shimeji pet that lives on top of Discord. She walks, dashes, sits, climbs the screen edges and the ceiling, and falls. Tap, drag and throw her.",
+      "author": "dxckie (https://github.com/dxckie-cell \"GitHub\")",
+      "icon": "ReactionIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.mahiro-oyama@1.0.0.zip",
+          "sha256": "e81de1021c7620b4b54ca13efc9f4a710f8b2fc044294b7b95b535afb4b2df51",
+          "size": 582556,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1.0 <2"
+            },
+            "discord": {
+              "version": "*"
+            }
+          }
+        }
+      }
+    },
     "dxckie.no-mosaic": {
       "name": "NoMosaic",
       "description": "Shows message images and videos one under another instead of in a grid.",
