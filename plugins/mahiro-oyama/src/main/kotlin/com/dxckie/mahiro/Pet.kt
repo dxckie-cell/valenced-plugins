@@ -96,6 +96,10 @@ internal object Pet {
 	/** minX, maxX, minY, maxY of the view's top-left corner, so the body (not the padding) meets the edges. */
 	private val bounds = FloatArray(4)
 	private var boundsAt = 0L
+	/** The screen edges the body may reach (below the status bar, above the nav bar or keyboard). */
+	private var areaR = 0f
+	private var areaT = 0f
+	private var areaB = 0f
 
 	private var pressing = false
 	private var dragging = false
@@ -188,8 +192,20 @@ internal object Pet {
 	/** The edges the pet can reach: under the status bar, above the nav bar or keyboard. */
 	private fun bounds(force: Boolean = false): FloatArray {
 		val now = SystemClock.uptimeMillis()
-		if (!force && now - boundsAt < 400) return bounds
 		val root = decor ?: return bounds
+		if (force || now - boundsAt >= 400) refreshArea(root, now)
+		// The body (not the transparent sprite margin) meets the edge, measured on the frame being drawn.
+		val box = Sprites.box(move?.frames?.getOrNull(frameIdx)?.sprite ?: 0)
+		val left = if (facing > 0) 1f - box[2] else box[0]
+		val right = if (facing > 0) 1f - box[0] else box[2]
+		bounds[0] = -size * left
+		bounds[1] = (areaR - size * right).coerceAtLeast(bounds[0])
+		bounds[2] = areaT - size * box[1]
+		bounds[3] = (areaB - size * box[3]).coerceAtLeast(bounds[2])
+		return bounds
+	}
+
+	private fun refreshArea(root: ViewGroup, now: Long) {
 		var top = 0
 		var bottom = 0
 		runCatching {
@@ -207,13 +223,10 @@ internal object Pet {
 				}
 			}
 		}
-		// The sprites have transparent room around the body: 11% at the sides, 9% on top, 10% below.
-		bounds[0] = -size * 0.11f
-		bounds[1] = (root.width - size * 0.89f).coerceAtLeast(bounds[0])
-		bounds[2] = top - size * 0.09f
-		bounds[3] = (root.height - bottom - size * 0.90f).coerceAtLeast(bounds[2])
+		areaR = root.width.toFloat()
+		areaT = top.toFloat()
+		areaB = (root.height - bottom).toFloat()
 		boundsAt = now
-		return bounds
 	}
 
 	// ---------------------------------------------------------------- loop
@@ -241,9 +254,18 @@ internal object Pet {
 		if (!posReady) spawn(b[0] + Random.nextFloat() * (b[1] - b[0]), b[2])
 		var m = move ?: return
 		// The keyboard went away under a pet standing on it: it falls, like Shimeji off a closed window.
-		if (!dragging && !flinging && m.type == "GROUND" && y < b[3] - dp(3f)) {
-			enter(s.moves[s.default] ?: return)
-			m = move ?: return
+		// Sprites differ a little in where the body ends, so keep it flush with the edge it rides.
+		if (!dragging && !flinging) {
+			when (m.type) {
+				"GROUND" -> if (y < b[3] - maxOf(dp(3f), size * 0.03f)) {
+					enter(s.moves[s.default] ?: return)
+					m = move ?: return
+				} else {
+					y = b[3]
+				}
+				"WALL" -> x = if (facing < 0) b[0] else b[1]
+				"CEILING" -> y = b[2]
+			}
 		}
 		if (flinging) stepFling(b) else if (!dragging) stepMove(m, b)
 
