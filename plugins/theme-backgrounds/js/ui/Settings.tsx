@@ -169,7 +169,7 @@ export default function Settings({ api }: { api: PluginApi<{ jsonStorage: Storag
 						}}
 					/>
 					<Text variant="text-xs/medium" color="text-muted">
-						Removes the image slice behind the server name and Search. It can leave the chat background blank on some screens. If that happens, turn it off.
+						Removes the image slice behind the server name and Search. If a chat background goes blank, turn it off.
 					</Text>
 				</View>
 			</TableRowGroup>
