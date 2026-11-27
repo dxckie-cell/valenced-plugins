@@ -22,6 +22,8 @@ export interface Storage {
 	backgrounds: Background[]
 	/** Pick another saved image each time the app starts. */
 	shuffle?: boolean
+	/** Clears the server header's image slice. Can blank the chat background on some screens, so it is opt-in. */
+	hideHeader?: boolean
 }
 
 export const DEFAULTS: Storage = { backgrounds: [], shuffle: false }

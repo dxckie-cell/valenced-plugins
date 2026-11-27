@@ -60,7 +60,7 @@ function Aligned({ props, Original }: { props: GradientProps; Original: Function
 	)
 }
 
-export function patchAlignment(cleanup: (fn: () => void) => void) {
+export function patchAlignment(cleanup: (fn: () => void) => void, hideHeader = false) {
 	cleanup(
 		getModules(
 			withProps<GradientModule>('CustomThemedGradient', 'validateColors'),
@@ -70,9 +70,9 @@ export function patchAlignment(cleanup: (fn: () => void) => void) {
 						const [props] = args as [GradientProps]
 						// Previews and swatches draw their own gradient and are not part of the screen.
 						if (props.gradientOverride != null) return <Original {...props} />
-						// shortcut: as in 2.4.1, every screen-sized layer except the dimmed channel-list kind draws nothing,
-						// which hides the server header's image slice but also blanks the chat background on some screens.
-						if (!props.mix && (props.wide || props.tall)) return null
+						// shortcut: every screen-sized layer except the dimmed channel-list kind draws nothing, which hides the server
+						// header's image slice but also blanks the chat background on some screens. Opt-in until the header's layer is told apart.
+						if (hideHeader && !props.mix && (props.wide || props.tall)) return null
 						return <Aligned props={props} Original={Original as FunctionComponent<GradientProps>} />
 					}),
 				)
