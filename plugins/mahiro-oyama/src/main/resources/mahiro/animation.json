@@ -17,17 +17,12 @@
         {
           "sprite": 0,
           "dx": -2,
-          "durationTicks": 14
+          "durationTicks": 10
         },
         {
           "sprite": 1,
           "dx": -2,
-          "durationTicks": 14
-        },
-        {
-          "sprite": 0,
-          "dx": -2,
-          "durationTicks": 14
+          "durationTicks": 10
         }
       ],
       "auto": {
@@ -40,6 +35,10 @@
             "to": "walk_left",
             "weight": 2,
             "setFacing": "LEFT"
+          },
+          {
+            "to": "idle_then_walk_left",
+            "weight": 1
           }
         ]
       },
@@ -51,6 +50,16 @@
             {
               "to": "walk_2_right",
               "weight": 1,
+              "setFacing": "RIGHT"
+            },
+            {
+              "to": "idle_then_walk_2_right",
+              "weight": 0.5,
+              "setFacing": "RIGHT"
+            },
+            {
+              "to": "stand_then_walk_2_right",
+              "weight": 0.5,
               "setFacing": "RIGHT"
             }
           ]
@@ -82,17 +91,12 @@
         {
           "sprite": 0,
           "dx": 2,
-          "durationTicks": 14
+          "durationTicks": 10
         },
         {
           "sprite": 1,
           "dx": 2,
-          "durationTicks": 14
-        },
-        {
-          "sprite": 0,
-          "dx": 2,
-          "durationTicks": 14
+          "durationTicks": 10
         }
       ],
       "auto": {
@@ -105,6 +109,10 @@
             "to": "walk_right",
             "weight": 2,
             "setFacing": "RIGHT"
+          },
+          {
+            "to": "idle_then_walk_right",
+            "weight": 1
           }
         ]
       },
@@ -116,6 +124,16 @@
             {
               "to": "walk_2_left",
               "weight": 1,
+              "setFacing": "LEFT"
+            },
+            {
+              "to": "idle_then_walk_2_left",
+              "weight": 0.5,
+              "setFacing": "LEFT"
+            },
+            {
+              "to": "stand_then_walk_2_left",
+              "weight": 0.5,
               "setFacing": "LEFT"
             }
           ]
@@ -216,6 +234,10 @@
           {
             "to": "Stand",
             "weight": 1
+          },
+          {
+            "to": "Idle",
+            "weight": 12.48
           }
         ]
       },
@@ -327,6 +349,10 @@
           {
             "to": "Stand",
             "weight": 1
+          },
+          {
+            "to": "Idle",
+            "weight": 12.48
           }
         ]
       },
@@ -422,6 +448,10 @@
           {
             "to": "Stand",
             "weight": 1
+          },
+          {
+            "to": "Idle",
+            "weight": 12.48
           }
         ]
       }
@@ -490,6 +520,10 @@
           {
             "to": "Stand",
             "weight": 1
+          },
+          {
+            "to": "Idle",
+            "weight": 12.48
           }
         ]
       }
@@ -568,6 +602,10 @@
           {
             "to": "Stand",
             "weight": 1
+          },
+          {
+            "to": "Idle",
+            "weight": 12.48
           }
         ]
       },
@@ -673,6 +711,10 @@
           {
             "to": "Stand",
             "weight": 1
+          },
+          {
+            "to": "Idle",
+            "weight": 12.48
           }
         ]
       },
@@ -825,6 +867,16 @@
               "to": "walk_right",
               "weight": 1,
               "setFacing": "RIGHT"
+            },
+            {
+              "to": "idle_then_walk_right",
+              "weight": 0.5,
+              "setFacing": "RIGHT"
+            },
+            {
+              "to": "stand_then_walk_right",
+              "weight": 0.5,
+              "setFacing": "RIGHT"
             }
           ]
         }
@@ -963,6 +1015,16 @@
             {
               "to": "walk_left",
               "weight": 1,
+              "setFacing": "LEFT"
+            },
+            {
+              "to": "idle_then_walk_left",
+              "weight": 0.5,
+              "setFacing": "LEFT"
+            },
+            {
+              "to": "stand_then_walk_left",
+              "weight": 0.5,
               "setFacing": "LEFT"
             }
           ]
@@ -1134,6 +1196,10 @@
           {
             "to": "Stand",
             "weight": 1
+          },
+          {
+            "to": "Idle",
+            "weight": 12.48
           }
         ]
       }
@@ -1218,6 +1284,10 @@
           {
             "to": "Stand",
             "weight": 1
+          },
+          {
+            "to": "Idle",
+            "weight": 12.48
           }
         ]
       },
@@ -1316,6 +1386,10 @@
           {
             "to": "Stand",
             "weight": 1
+          },
+          {
+            "to": "Idle",
+            "weight": 12.48
           }
         ]
       },
@@ -1557,7 +1631,7 @@
       "frames": [
         {
           "sprite": 16,
-          "durationTicks": 6
+          "durationTicks": 150
         }
       ],
       "auto": {
@@ -1631,8 +1705,14 @@
         },
         "onFinish": [
           {
-            "to": "Stand",
-            "weight": 1
+            "to": "walk_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          },
+          {
+            "to": "walk_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
           }
         ]
       }
@@ -1733,9 +1813,9 @@
           "facing": "LEFT",
           "choices": [
             {
-              "to": "climb_down_left",
+              "to": "climb_ceiling_3_right",
               "weight": 1,
-              "setFacing": "LEFT"
+              "setFacing": "RIGHT"
             }
           ]
         }
@@ -1837,9 +1917,9 @@
           "facing": "RIGHT",
           "choices": [
             {
-              "to": "climb_down_right",
+              "to": "climb_ceiling_3_left",
               "weight": 1,
-              "setFacing": "RIGHT"
+              "setFacing": "LEFT"
             }
           ]
         }
@@ -1936,17 +2016,12 @@
         {
           "sprite": 0,
           "dx": -2,
-          "durationTicks": 14
+          "durationTicks": 10
         },
         {
           "sprite": 1,
           "dx": -2,
-          "durationTicks": 14
-        },
-        {
-          "sprite": 0,
-          "dx": -2,
-          "durationTicks": 14
+          "durationTicks": 10
         }
       ],
       "auto": {
@@ -1959,6 +2034,10 @@
             "to": "walk_2_left",
             "weight": 2,
             "setFacing": "LEFT"
+          },
+          {
+            "to": "idle_then_walk_2_left",
+            "weight": 1
           }
         ]
       },
@@ -1970,6 +2049,16 @@
             {
               "to": "walk_3_right",
               "weight": 1,
+              "setFacing": "RIGHT"
+            },
+            {
+              "to": "idle_then_walk_3_right",
+              "weight": 0.5,
+              "setFacing": "RIGHT"
+            },
+            {
+              "to": "stand_then_walk_3_right",
+              "weight": 0.5,
               "setFacing": "RIGHT"
             }
           ]
@@ -2001,17 +2090,12 @@
         {
           "sprite": 0,
           "dx": -2,
-          "durationTicks": 14
+          "durationTicks": 10
         },
         {
           "sprite": 1,
           "dx": -2,
-          "durationTicks": 14
-        },
-        {
-          "sprite": 0,
-          "dx": -2,
-          "durationTicks": 14
+          "durationTicks": 10
         }
       ],
       "auto": {
@@ -2024,6 +2108,10 @@
             "to": "walk_3_left",
             "weight": 2,
             "setFacing": "LEFT"
+          },
+          {
+            "to": "idle_then_walk_3_left",
+            "weight": 1
           }
         ]
       },
@@ -2035,6 +2123,16 @@
             {
               "to": "walk_4_right",
               "weight": 1,
+              "setFacing": "RIGHT"
+            },
+            {
+              "to": "idle_then_walk_4_right",
+              "weight": 0.5,
+              "setFacing": "RIGHT"
+            },
+            {
+              "to": "stand_then_walk_4_right",
+              "weight": 0.5,
               "setFacing": "RIGHT"
             }
           ]
@@ -2066,17 +2164,12 @@
         {
           "sprite": 0,
           "dx": 2,
-          "durationTicks": 14
+          "durationTicks": 10
         },
         {
           "sprite": 1,
           "dx": 2,
-          "durationTicks": 14
-        },
-        {
-          "sprite": 0,
-          "dx": 2,
-          "durationTicks": 14
+          "durationTicks": 10
         }
       ],
       "auto": {
@@ -2089,6 +2182,10 @@
             "to": "walk_2_right",
             "weight": 2,
             "setFacing": "RIGHT"
+          },
+          {
+            "to": "idle_then_walk_2_right",
+            "weight": 1
           }
         ]
       },
@@ -2100,6 +2197,16 @@
             {
               "to": "walk_3_left",
               "weight": 1,
+              "setFacing": "LEFT"
+            },
+            {
+              "to": "idle_then_walk_3_left",
+              "weight": 0.5,
+              "setFacing": "LEFT"
+            },
+            {
+              "to": "stand_then_walk_3_left",
+              "weight": 0.5,
               "setFacing": "LEFT"
             }
           ]
@@ -2131,17 +2238,12 @@
         {
           "sprite": 0,
           "dx": 2,
-          "durationTicks": 14
+          "durationTicks": 10
         },
         {
           "sprite": 1,
           "dx": 2,
-          "durationTicks": 14
-        },
-        {
-          "sprite": 0,
-          "dx": 2,
-          "durationTicks": 14
+          "durationTicks": 10
         }
       ],
       "auto": {
@@ -2154,6 +2256,10 @@
             "to": "walk_3_right",
             "weight": 2,
             "setFacing": "RIGHT"
+          },
+          {
+            "to": "idle_then_walk_3_right",
+            "weight": 1
           }
         ]
       },
@@ -2165,6 +2271,16 @@
             {
               "to": "walk_4_left",
               "weight": 1,
+              "setFacing": "LEFT"
+            },
+            {
+              "to": "idle_then_walk_4_left",
+              "weight": 0.5,
+              "setFacing": "LEFT"
+            },
+            {
+              "to": "stand_then_walk_4_left",
+              "weight": 0.5,
               "setFacing": "LEFT"
             }
           ]
@@ -2196,17 +2312,12 @@
         {
           "sprite": 0,
           "dx": -2,
-          "durationTicks": 14
+          "durationTicks": 10
         },
         {
           "sprite": 1,
           "dx": -2,
-          "durationTicks": 14
-        },
-        {
-          "sprite": 0,
-          "dx": -2,
-          "durationTicks": 14
+          "durationTicks": 10
         }
       ],
       "auto": {
@@ -2219,6 +2330,10 @@
             "to": "walk_4_left",
             "weight": 2,
             "setFacing": "LEFT"
+          },
+          {
+            "to": "idle_then_walk_4_left",
+            "weight": 1
           }
         ]
       },
@@ -2235,6 +2350,16 @@
             {
               "to": "walk_5_right",
               "weight": 1,
+              "setFacing": "RIGHT"
+            },
+            {
+              "to": "idle_then_walk_5_right",
+              "weight": 1.0,
+              "setFacing": "RIGHT"
+            },
+            {
+              "to": "stand_then_walk_5_right",
+              "weight": 1.0,
               "setFacing": "RIGHT"
             }
           ]
@@ -2266,17 +2391,12 @@
         {
           "sprite": 0,
           "dx": -2,
-          "durationTicks": 14
+          "durationTicks": 10
         },
         {
           "sprite": 1,
           "dx": -2,
-          "durationTicks": 14
-        },
-        {
-          "sprite": 0,
-          "dx": -2,
-          "durationTicks": 14
+          "durationTicks": 10
         }
       ],
       "auto": {
@@ -2289,6 +2409,10 @@
             "to": "walk_5_left",
             "weight": 2,
             "setFacing": "LEFT"
+          },
+          {
+            "to": "idle_then_walk_5_left",
+            "weight": 1
           }
         ]
       },
@@ -2331,17 +2455,12 @@
         {
           "sprite": 0,
           "dx": 2,
-          "durationTicks": 14
+          "durationTicks": 10
         },
         {
           "sprite": 1,
           "dx": 2,
-          "durationTicks": 14
-        },
-        {
-          "sprite": 0,
-          "dx": 2,
-          "durationTicks": 14
+          "durationTicks": 10
         }
       ],
       "auto": {
@@ -2354,6 +2473,10 @@
             "to": "walk_4_right",
             "weight": 2,
             "setFacing": "RIGHT"
+          },
+          {
+            "to": "idle_then_walk_4_right",
+            "weight": 1
           }
         ]
       },
@@ -2370,6 +2493,16 @@
             {
               "to": "walk_5_left",
               "weight": 1,
+              "setFacing": "LEFT"
+            },
+            {
+              "to": "idle_then_walk_5_left",
+              "weight": 1.0,
+              "setFacing": "LEFT"
+            },
+            {
+              "to": "stand_then_walk_5_left",
+              "weight": 1.0,
               "setFacing": "LEFT"
             }
           ]
@@ -2401,17 +2534,12 @@
         {
           "sprite": 0,
           "dx": 2,
-          "durationTicks": 14
+          "durationTicks": 10
         },
         {
           "sprite": 1,
           "dx": 2,
-          "durationTicks": 14
-        },
-        {
-          "sprite": 0,
-          "dx": 2,
-          "durationTicks": 14
+          "durationTicks": 10
         }
       ],
       "auto": {
@@ -2424,6 +2552,10 @@
             "to": "walk_5_right",
             "weight": 2,
             "setFacing": "RIGHT"
+          },
+          {
+            "to": "idle_then_walk_5_right",
+            "weight": 1
           }
         ]
       },
@@ -2454,6 +2586,908 @@
           ]
         }
       ]
+    },
+    {
+      "key": "idle_then_walk_left",
+      "type": "GROUND",
+      "subtype": "IDLE",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 17,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 18,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 19,
+          "durationTicks": 8
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "walk_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "idle_then_walk_right",
+      "type": "GROUND",
+      "subtype": "IDLE",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 17,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 18,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 19,
+          "durationTicks": 8
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "walk_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "idle_then_walk_2_left",
+      "type": "GROUND",
+      "subtype": "IDLE",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 17,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 18,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 19,
+          "durationTicks": 8
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "walk_2_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "idle_then_walk_3_left",
+      "type": "GROUND",
+      "subtype": "IDLE",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 17,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 18,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 19,
+          "durationTicks": 8
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "walk_3_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "idle_then_walk_2_right",
+      "type": "GROUND",
+      "subtype": "IDLE",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 17,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 18,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 19,
+          "durationTicks": 8
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "walk_2_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "idle_then_walk_3_right",
+      "type": "GROUND",
+      "subtype": "IDLE",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 17,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 18,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 19,
+          "durationTicks": 8
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "walk_3_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "idle_then_walk_4_left",
+      "type": "GROUND",
+      "subtype": "IDLE",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 17,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 18,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 19,
+          "durationTicks": 8
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "walk_4_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "idle_then_walk_5_left",
+      "type": "GROUND",
+      "subtype": "IDLE",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 17,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 18,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 19,
+          "durationTicks": 8
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "walk_5_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "idle_then_walk_4_right",
+      "type": "GROUND",
+      "subtype": "IDLE",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 17,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 18,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 19,
+          "durationTicks": 8
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "walk_4_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "idle_then_walk_5_right",
+      "type": "GROUND",
+      "subtype": "IDLE",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 17,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 18,
+          "durationTicks": 8
+        },
+        {
+          "sprite": 19,
+          "durationTicks": 8
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "walk_5_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "climb_ceiling_3_left",
+      "type": "CEILING",
+      "subtype": "CLIMBCEILING",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "LEFT",
+      "frames": [
+        {
+          "sprite": 20,
+          "durationTicks": 6,
+          "dx": -2
+        },
+        {
+          "sprite": 21,
+          "durationTicks": 6,
+          "dx": -2
+        },
+        {
+          "sprite": 22,
+          "durationTicks": 6,
+          "dx": -2
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "climb_ceiling_3_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      },
+      "editorMirrorSibling": true,
+      "borderTransitions": [
+        {
+          "when": "LEFT",
+          "facing": "LEFT",
+          "choices": [
+            {
+              "to": "climb_down_left",
+              "weight": 1,
+              "setFacing": "LEFT"
+            },
+            {
+              "to": "climb_ceiling_4_right",
+              "weight": 1,
+              "setFacing": "RIGHT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "climb_ceiling_4_left",
+      "type": "CEILING",
+      "subtype": "CLIMBCEILING",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "LEFT",
+      "frames": [
+        {
+          "sprite": 20,
+          "durationTicks": 6,
+          "dx": -2
+        },
+        {
+          "sprite": 21,
+          "durationTicks": 6,
+          "dx": -2
+        },
+        {
+          "sprite": 22,
+          "durationTicks": 6,
+          "dx": -2
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "climb_ceiling_4_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      },
+      "editorMirrorSibling": true,
+      "borderTransitions": [
+        {
+          "when": "LEFT",
+          "facing": "LEFT",
+          "choices": [
+            {
+              "to": "climb_ceiling_5_right",
+              "weight": 1,
+              "setFacing": "RIGHT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "climb_ceiling_5_left",
+      "type": "CEILING",
+      "subtype": "CLIMBCEILING",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "LEFT",
+      "frames": [
+        {
+          "sprite": 20,
+          "durationTicks": 6,
+          "dx": -2
+        },
+        {
+          "sprite": 21,
+          "durationTicks": 6,
+          "dx": -2
+        },
+        {
+          "sprite": 22,
+          "durationTicks": 6,
+          "dx": -2
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "climb_ceiling_5_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      },
+      "editorMirrorSibling": true,
+      "borderTransitions": [
+        {
+          "when": "LEFT",
+          "facing": "LEFT",
+          "choices": [
+            {
+              "to": "climb_down_left",
+              "weight": 1,
+              "setFacing": "LEFT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "climb_ceiling_3_right",
+      "type": "CEILING",
+      "subtype": "CLIMBCEILING",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "RIGHT",
+      "frames": [
+        {
+          "sprite": 20,
+          "durationTicks": 6,
+          "dx": 2
+        },
+        {
+          "sprite": 21,
+          "durationTicks": 6,
+          "dx": 2
+        },
+        {
+          "sprite": 22,
+          "durationTicks": 6,
+          "dx": 2
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "climb_ceiling_3_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      },
+      "editorMirrorSibling": true,
+      "borderTransitions": [
+        {
+          "when": "RIGHT",
+          "facing": "RIGHT",
+          "choices": [
+            {
+              "to": "climb_down_right",
+              "weight": 1,
+              "setFacing": "RIGHT"
+            },
+            {
+              "to": "climb_ceiling_4_left",
+              "weight": 1,
+              "setFacing": "LEFT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "climb_ceiling_4_right",
+      "type": "CEILING",
+      "subtype": "CLIMBCEILING",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "RIGHT",
+      "frames": [
+        {
+          "sprite": 20,
+          "durationTicks": 6,
+          "dx": 2
+        },
+        {
+          "sprite": 21,
+          "durationTicks": 6,
+          "dx": 2
+        },
+        {
+          "sprite": 22,
+          "durationTicks": 6,
+          "dx": 2
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "climb_ceiling_4_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      },
+      "editorMirrorSibling": true,
+      "borderTransitions": [
+        {
+          "when": "RIGHT",
+          "facing": "RIGHT",
+          "choices": [
+            {
+              "to": "climb_ceiling_5_left",
+              "weight": 1,
+              "setFacing": "LEFT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "climb_ceiling_5_right",
+      "type": "CEILING",
+      "subtype": "CLIMBCEILING",
+      "level": 1,
+      "loop": "LOOP",
+      "direction": "RIGHT",
+      "frames": [
+        {
+          "sprite": 20,
+          "durationTicks": 6,
+          "dx": 2
+        },
+        {
+          "sprite": 21,
+          "durationTicks": 6,
+          "dx": 2
+        },
+        {
+          "sprite": 22,
+          "durationTicks": 6,
+          "dx": 2
+        }
+      ],
+      "auto": {
+        "maxDurationTicks": {
+          "minTicks": 240,
+          "maxTicks": 480
+        },
+        "onFinish": [
+          {
+            "to": "climb_ceiling_5_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      },
+      "editorMirrorSibling": true,
+      "borderTransitions": [
+        {
+          "when": "RIGHT",
+          "facing": "RIGHT",
+          "choices": [
+            {
+              "to": "climb_down_right",
+              "weight": 1,
+              "setFacing": "RIGHT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "stand_then_walk_2_right",
+      "type": "GROUND",
+      "subtype": "STAND",
+      "level": 1,
+      "loop": "ONESHOT",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 16,
+          "durationTicks": 150
+        }
+      ],
+      "auto": {
+        "onFinish": [
+          {
+            "to": "walk_2_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "stand_then_walk_2_left",
+      "type": "GROUND",
+      "subtype": "STAND",
+      "level": 1,
+      "loop": "ONESHOT",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 16,
+          "durationTicks": 150
+        }
+      ],
+      "auto": {
+        "onFinish": [
+          {
+            "to": "walk_2_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "stand_then_walk_right",
+      "type": "GROUND",
+      "subtype": "STAND",
+      "level": 1,
+      "loop": "ONESHOT",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 16,
+          "durationTicks": 150
+        }
+      ],
+      "auto": {
+        "onFinish": [
+          {
+            "to": "walk_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "stand_then_walk_left",
+      "type": "GROUND",
+      "subtype": "STAND",
+      "level": 1,
+      "loop": "ONESHOT",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 16,
+          "durationTicks": 150
+        }
+      ],
+      "auto": {
+        "onFinish": [
+          {
+            "to": "walk_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "stand_then_walk_3_right",
+      "type": "GROUND",
+      "subtype": "STAND",
+      "level": 1,
+      "loop": "ONESHOT",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 16,
+          "durationTicks": 150
+        }
+      ],
+      "auto": {
+        "onFinish": [
+          {
+            "to": "walk_3_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "stand_then_walk_4_right",
+      "type": "GROUND",
+      "subtype": "STAND",
+      "level": 1,
+      "loop": "ONESHOT",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 16,
+          "durationTicks": 150
+        }
+      ],
+      "auto": {
+        "onFinish": [
+          {
+            "to": "walk_4_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "stand_then_walk_3_left",
+      "type": "GROUND",
+      "subtype": "STAND",
+      "level": 1,
+      "loop": "ONESHOT",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 16,
+          "durationTicks": 150
+        }
+      ],
+      "auto": {
+        "onFinish": [
+          {
+            "to": "walk_3_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "stand_then_walk_4_left",
+      "type": "GROUND",
+      "subtype": "STAND",
+      "level": 1,
+      "loop": "ONESHOT",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 16,
+          "durationTicks": 150
+        }
+      ],
+      "auto": {
+        "onFinish": [
+          {
+            "to": "walk_4_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "stand_then_walk_5_right",
+      "type": "GROUND",
+      "subtype": "STAND",
+      "level": 1,
+      "loop": "ONESHOT",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 16,
+          "durationTicks": 150
+        }
+      ],
+      "auto": {
+        "onFinish": [
+          {
+            "to": "walk_5_right",
+            "weight": 1,
+            "setFacing": "RIGHT"
+          }
+        ]
+      }
+    },
+    {
+      "key": "stand_then_walk_5_left",
+      "type": "GROUND",
+      "subtype": "STAND",
+      "level": 1,
+      "loop": "ONESHOT",
+      "direction": "ANY",
+      "frames": [
+        {
+          "sprite": 16,
+          "durationTicks": 150
+        }
+      ],
+      "auto": {
+        "onFinish": [
+          {
+            "to": "walk_5_left",
+            "weight": 1,
+            "setFacing": "LEFT"
+          }
+        ]
+      }
     }
   ],
   "events": [
