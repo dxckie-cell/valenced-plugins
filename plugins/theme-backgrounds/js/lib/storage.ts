@@ -24,6 +24,8 @@ export interface Storage {
 	shuffle?: boolean
 	/** Clears the server header's image slice. */
 	hideHeader?: boolean
+	/** Writes each themed layer's flags and place on it, to tell the server header's apart. */
+	debug?: boolean
 }
 
 export const DEFAULTS: Storage = { backgrounds: [], shuffle: false }
