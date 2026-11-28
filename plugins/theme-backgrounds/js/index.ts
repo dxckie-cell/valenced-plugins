@@ -1,8 +1,8 @@
 import { hasCustomBackground } from './lib/native'
 import { shuffleBackground } from './lib/shuffle'
 import { DEFAULTS, type Storage } from './lib/storage'
-import { patchAlignment } from './patches/align'
 import { patchHeaderSurface } from './patches/header'
+import { patchHeaderLayer } from './patches/headerLayer'
 import Settings from './ui/Settings'
 
 // Apply in settings writes the background override, which Valenced keeps on its own.
@@ -18,7 +18,7 @@ export default plugin<{ jsonStorage: Storage }>({
 		const saved = (await api.jsonStorage.get().catch(() => undefined)) as Storage | undefined
 		if (saved?.shuffle) await shuffleBackground(saved.backgrounds ?? []).catch(() => {})
 		if (!hasCustomBackground()) return
-		patchAlignment(api.cleanup)
+		patchHeaderLayer(api.cleanup)
 		patchHeaderSurface(api.cleanup)
 	},
 
