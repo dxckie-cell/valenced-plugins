@@ -5,7 +5,7 @@
 	"description": "Put your own image behind Discord and keep your current theme. Crop, zoom, dim and blur it with a live preview.",
 	"author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
 	"icon": "ImageIcon",
-	"version": "2.9.2",
+	"version": "2.10.0",
 	"dependencies": {
 		"valenced.api": {
 			"version": ">=1 <2"
