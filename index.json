@@ -4404,6 +4404,36 @@
           }
         }
       }
+    },
+    "dxckie.uwuify": {
+      "name": "UwUify",
+      "description": "UwUifies the messages you send. Turn it on or off with /uwuify.",
+      "author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
+      "contributors": [
+        "ECHO"
+      ],
+      "icon": "EmojiSmilingFaceWithHeartsIcon",
+      "channels": {
+        "latest": "1.0.0"
+      },
+      "versions": {
+        "1.0.0": {
+          "url": "https://dxckie-cell.github.io/valenced-plugins/pool/dxckie.uwuify@1.0.0.zip",
+          "sha256": "3216e6d5662de41ffdd6cdf5cecd8e44dd70c193756ff823cf7ee206bd981e08",
+          "size": 1329,
+          "dependencies": {
+            "valenced.api": {
+              "version": ">=1 <2"
+            },
+            "discord": {
+              "version": "*"
+            },
+            "dev.cocobo1.command-lib": {
+              "version": ">=2 <3"
+            }
+          }
+        }
+      }
     }
   }
 }
