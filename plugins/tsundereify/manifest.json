@@ -1,0 +1,23 @@
+{
+	"format": 1,
+	"id": "dxckie.tsundereify",
+	"name": "Tsundereify",
+	"description": "Makes the messages you send sound tsundere. Turn it on or off with /tsundereify.",
+	"author": "dxckie <772390964471791630> (https://github.com/dxckie-cell \"GitHub\")",
+	"icon": "EmojiSmilingFaceWithHeartsIcon",
+	"version": "1.0.0",
+	"dependencies": {
+		"valenced.api": {
+			"version": ">=1 <2"
+		},
+		"discord": {
+			"version": "*"
+		},
+		"dev.cocobo1.command-lib": {
+			"version": ">=2 <3"
+		}
+	},
+	"dist": {
+		"script": "index.js"
+	}
+}

@@ -32,6 +32,7 @@ Then install the plugins you want and reload Valenced.
 | Klipy Gif Fix | `dxckie.klipy-gif-fix` | Saves and shares Klipy GIFs as `.gif` instead of `.mp4`. Works out of the box, with no setup or API key needed. Port of dxckie-cell's Vendetta plugin Klipy Gif Fix, inspired by Tenor Gif Fix by nexpid. |
 | Giphy Gif Fix | `dxckie.giphy-gif-fix` | Saves and shares Giphy GIFs as `.gif` instead of `.mp4`. Works out of the box, with no API key. Inspired by Tenor Gif Fix by nexpid. |
 | UwUify | `dxckie.uwuify` | UwUifies the messages you send. Turn it on or off with `/uwuify`. Needs Coco's Command Lib. Based on the UwUify plugin for Vencord by ECHO. |
+| Tsundereify | `dxckie.tsundereify` | Makes the messages you send sound tsundere ("b-baka!", "it's not like I care"). Turn it on or off with `/tsundereify`. Needs Coco's Command Lib. |
 | Backgrounds                | `dxckie.theme-backgrounds`          | Put your own image behind Discord and keep your current theme. Crop, zoom, dim and blur it, with a live preview in settings. |
 | Pastelize | `dxckie.pastelize` | Gives names without a role color a pastel color picked from the user ID. Port of Cynosphere's Vendetta plugin Pastelize, using the fixed copy from EKSIF. |
 | NoMosaic | `dxckie.no-mosaic` | Shows message images and videos one under another instead of in a grid. Port of the NoMosaic plugin from Vencord and Equicord. |
